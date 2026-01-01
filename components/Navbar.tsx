@@ -1,8 +1,9 @@
 "use client";
 
-import { SuffixPathnameNormalizer } from "next/dist/server/normalizers/request/suffix";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Search as SearchIcon, User as UserIcon } from "lucide-react";
+import path from "path";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,10 +16,10 @@ export default function Navbar() {
         {/* Usamos flex-1 para que ocupe el mismo espacio que la derecha */}
         <div className="flex-1 flex items-center justify-evenly mr-10">
           <NavLink href="/products" currentPath={pathname}>
-            <span className="text-black text-lg hover:text-orange-400 ">Tienda</span>
+            <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/products" && "text-orange-500"}`}>Tienda</span>
           </NavLink>
           <NavLink href="/plans" currentPath={pathname}>
-             <span className="text-black text-lg hover:text-orange-400">Planes</span>
+             <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/plans" && "text-orange-500"}`}>Planes</span>
           </NavLink>
         </div>
 
@@ -26,7 +27,7 @@ export default function Navbar() {
         <div className="shrink-0">
           <Link 
             href="/" 
-            className="text-2xl font-black tracking-widest text-black uppercase hover:text-orange-500 transition-colors"
+            className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
           >
             Nan Salazar
           </Link>
@@ -59,8 +60,8 @@ export default function Navbar() {
           </div>
 
           {/* Ícono de Usuario */}
-          <Link href="/user" className="p-2 bg-black rounded-full hover:bg-orange-500 text-white transition-colors">
-            <UserIcon className="w-5 h-5" />
+          <Link href="/user" className={`p-2 bg-black rounded-full hover:bg-orange-500 text-white transition-colors ${pathname == "/user" && "bg-orange-500"}`}>
+            <UserIcon className="w-5 h-5"/>
           </Link>
         </div>
 
@@ -83,25 +84,5 @@ function NavLink({ href, children, currentPath }: { href: string; children: Reac
     >
       {children}
     </Link>
-  );
-}
-
-// 2. Icono de Lupa (SVG)
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
-// 3. Icono de Usuario (SVG)
-function UserIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
   );
 }

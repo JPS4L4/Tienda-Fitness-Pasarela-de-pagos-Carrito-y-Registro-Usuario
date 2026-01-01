@@ -7,6 +7,7 @@ import facebookIcon from '../../../images/icons/facebook_icon.webp'
 
 export default function UserPage() {
     const [mode, setMode] = useState<"login" | "register">("login")
+    const [userName, setUserName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
@@ -15,7 +16,7 @@ export default function UserPage() {
         if (mode === "login") {
             console.log("Iniciar sesión con:", { email, password })
         } else {
-            console.log("Registro con:", { email, password })
+            console.log("Registro con:", { userName,email, password })
         }
     }
 
@@ -45,6 +46,26 @@ export default function UserPage() {
                 {/* FORMULARIO */}
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                     <div className="space-y-4">
+                        {
+                            mode === "register" && (
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-slate-700">
+                                        Nombre Usuario
+                                    </label>
+                                    <input
+                                        id="name"
+                                        name="name"
+                                        type="text"
+                                        autoComplete="name"
+                                        required
+                                        value={userName}
+                                        onChange={(e) => setUserName(e.target.value)}
+                                        placeholder="¿Cómo quieres que te llamemos?"
+                                        className="mt-1 block w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
+                                    />
+                                </div>
+                            )
+                        }
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-slate-700">
                                 Correo Electrónico
@@ -78,7 +99,25 @@ export default function UserPage() {
                                 className="mt-1 block w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
                             />
                         </div>
+                         {
+                            mode === "register" && (
+                                <div>
+                                    <label htmlFor="repassword" className="block text-sm font-medium text-slate-700">
+                                        Confirmar tu Contraseña
+                                    </label>
+                                    <input
+                                        id="repassword"
+                                        name="repassword"
+                                        type="password"
+                                        required
+                                        placeholder="••••••••"
+                                        className="mt-1 block w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
+                                    />
+                                </div>
+                            )
+                        }
                     </div>
+                    
 
                     <button
                         type="submit"
