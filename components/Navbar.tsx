@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search as SearchIcon, User as UserIcon } from "lucide-react";
-import path from "path";
 
 export default function Navbar() {
   const pathname = usePathname();

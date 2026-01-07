@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link";
-import Image from "next/link"; // Opcional si usas el componente Image de Next
+import itemCard from "@/components/cards/items";
+import { featuredProducts } from "@/components/cards/items";
 
 export default function Home() {
   return (
@@ -121,16 +124,10 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((prod) => (
-            <div key={prod} className="group cursor-pointer">
-              <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden relative">
-                 {/* Aquí iría tu imagen del producto */}
-                 <div className="absolute inset-0 bg-gray-200 group-hover:scale-105 transition-transform duration-500"></div>
+            {featuredProducts.slice(0,4).map((product) => (
+              <div key={product.id}>
+                {itemCard(product)}
               </div>
-              <h3 className="font-bold text-lg">Producto Fitness {prod}</h3>
-              <p className="text-gray-500 text-sm">Accesorios</p>
-              <p className="mt-2 font-medium">$24.00</p>
-            </div>
           ))}
         </div>
       </section>
