@@ -8,7 +8,7 @@ import {db} from "@/app/data/data";
 
 const featuredItems = db.items;
 const featuredPlans = db.plans;
-const reviews = db.comments;
+const reviews = db.comments; 
 
 export default function Home() {
   return (

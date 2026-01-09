@@ -4,7 +4,7 @@ import "./globals.css";
 import { useEffect } from "react";
 import Link from "next/link";
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function Error({ error }: { error: Error }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -16,7 +16,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
         <p className="mt-6 text-lg text-gray-700">Ha ocurrido un {error.name} | {error.message ?? "inesperado"}</p>
         <div className="flex items-center justify-center gap-6">
         <button
-          onClick={() => reset()}
+          onClick={() => window.location.reload()}
           className="mt-10 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500" >
           Intentar de nuevo
         </button>

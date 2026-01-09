@@ -1,9 +1,6 @@
 "use client"
-import { Plan } from "@/app/data/data";
 import { Check, Apple, Dumbbell, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-export type PlanType = "nutricion" | "entrenamiento";
 
 const typeStyles = {
   nutricion: {
@@ -19,10 +16,6 @@ const typeStyles = {
     accent: "text-blue-600"
   }
 };
-
-export const featuredPlans: Plan[] = [
-  
-];
 
 export const PlanCard = ({ plan }: { plan: any }) => {
   const style = typeStyles[plan.type as keyof typeof typeStyles];

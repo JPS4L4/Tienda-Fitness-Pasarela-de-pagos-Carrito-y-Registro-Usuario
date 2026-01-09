@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import itemCard from "@/components/cards/items";
+import ItemCard from "@/components/cards/items";
 import {db} from "@/app/data/data";
+import LocalSearchAutocomplete from "@/components/LocalSearchAutocomplete";
+import { Search as SearchIcon } from "lucide-react";
 
 const featuredItems = db.items;
 
@@ -15,10 +17,20 @@ export default function StorePage() {
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
   const [sortBy, setSortBy] = useState("relevance");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filtrar y ordenar productos
   const filteredItems = useMemo(() => {
     let result = featuredItems;
+
+    // Filtro por búsqueda
+    if (searchQuery.trim()) {
+      const searchTerm = searchQuery.toLowerCase();
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(searchTerm) ||
+        p.category.toLowerCase().includes(searchTerm)
+      );
+    }
 
     // Filtro por categoría
     if (selectedCategory) {
@@ -61,7 +73,7 @@ export default function StorePage() {
     }
 
     return result;
-  }, [selectedCategory, minPrice, maxPrice, freeShippingOnly, sortBy]);
+  }, [selectedCategory, minPrice, maxPrice, freeShippingOnly, sortBy, searchQuery]);
 
   const handlePriceFilter = () => {
     // Este manejador se ejecuta cuando el usuario presiona enter o hace clic en el botón
@@ -73,6 +85,7 @@ export default function StorePage() {
     setMinPrice(null);
     setMaxPrice(null);
     setFreeShippingOnly(false);
+    setSearchQuery("");
   };
   return (
     <div className="bg-gray-100 min-h-screen pb-12">
@@ -90,11 +103,32 @@ export default function StorePage() {
           
           {/* --- SIDEBAR DE FILTROS (Izquierda) --- */}
           {/* 'hidden lg:block' lo oculta en celular y lo muestra en pantallas grandes */}
-          <aside className="w-64 hidden lg:block shrink-0">
+          <aside className="w-64 hidden lg:block shrink-0 overflow-visible">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Filtros</h2>
+            {/*Barra de Búsqueda Local */}
+            <div className="mb-6 relative z-40">
+              <h3 className="font-semibold text-gray-900 mb-3">Buscar</h3>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-orange-500 focus:outline-none"
+                />
+                <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none" />
+                {searchQuery && (
+                  <LocalSearchAutocomplete 
+                    query={searchQuery} 
+                    items={featuredItems}
+                    onResultClick={(title) => setSearchQuery(title)}
+                  />
+                )}
+              </div>
+            </div>
             
             {/* Botón Limpiar Filtros */}
-            {(selectedCategory || minPrice !== null || maxPrice !== null || freeShippingOnly) && (
+            {(selectedCategory || minPrice !== null || maxPrice !== null || freeShippingOnly || searchQuery) && (
               <button 
                 onClick={clearFilters}
                 className="mb-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded text-sm font-semibold transition"
@@ -194,9 +228,7 @@ export default function StorePage() {
             {filteredItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 {filteredItems.map((item) => (
-                <div key={item.id}>
-                    {itemCard(item)}
-                </div>
+                  <ItemCard key={item.id} {...item} />
                 ))}
               </div>
             ) : (

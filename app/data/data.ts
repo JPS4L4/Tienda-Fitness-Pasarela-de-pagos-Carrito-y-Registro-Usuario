@@ -1,6 +1,6 @@
-import { PlanType } from "@/components/cards/plans";
+export type PlanType = "nutricion" | "entrenamiento";
 
-export interface itemProps {
+export interface ItemProps {
   id: number;
   title: string;
   price: number;
@@ -13,7 +13,6 @@ export interface itemProps {
   isOfferOfTheDay?: boolean;
 }
 
-
 export interface CommentsProps {
   name: string;
   role: string;
@@ -24,15 +23,23 @@ export interface CommentsProps {
 
 export interface Plan {
   id: number;
-  type: PlanType;
+  type: PlanType; // <-- Esto es lo que causaba el error
   title: string;
   coverage: string[];
   price?: string;
 }
 
-export const db = {
+// Definimos la estructura global de la "DB"
+interface Database {
+  users: any[]; // Puedes definir una interfaz User más adelante
+  plans: Plan[];
+  items: ItemProps[];
+  comments: CommentsProps[];
+}
+
+export const db: Database = {
     users:[],
-    plans:[
+    plans: [
         {
     id: 1,
     type: "nutricion",
@@ -82,7 +89,7 @@ export const db = {
   {
     id: 5,
     type: "nutricion",
-    title: "Plan de Pérdida de Grasa",
+    title: "Plan de Perdida de Grasa",
     price: "Desde $79",
     coverage: [
       "Déficit calórico personalizado",

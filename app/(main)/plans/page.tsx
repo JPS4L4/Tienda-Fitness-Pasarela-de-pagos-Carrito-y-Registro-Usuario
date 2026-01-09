@@ -1,12 +1,32 @@
 "use client";
 
-import { featuredPlans, PlanCard, PlanType } from "@/components/cards/plans";
-import { useState } from "react";
+import { db, Plan, PlanType } from "@/app/data/data";
+import { PlanCard } from "@/components/cards/plans";
+import { useState, useMemo } from "react";
+import PlanSearchAutocomplete from "@/components/PlanSearchAutocomplete";
+import { Search as SearchIcon } from "lucide-react";
 
 export default function PlansPage() {
   const [selectedSection, setSelectedSection] = useState<PlanType>("nutricion");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filtered = featuredPlans.filter((p) => p.type === selectedSection);
+  const featuredPlans: Plan[] = db.plans;
+
+  const filtered = useMemo(() => {
+    let result = featuredPlans.filter((p) => p.type === selectedSection);
+
+    // Filtro por búsqueda
+    if (searchQuery.trim()) {
+      const searchTerm = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchTerm) ||
+          p.type.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return result;
+  }, [selectedSection, searchQuery]);
 
   // Definimos los colores del selector dinámicamente según la sección activa
   const activeStyles = {
@@ -17,11 +37,36 @@ export default function PlansPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-16 px-4">
       <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Nuestros Planes</h1>
+        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+          Nuestros Planes
+        </h1>
         <p className="text-slate-600 max-w-2xl mx-auto">
-          Selecciona la categoría de planes para ver la cobertura incluida. 
-          Cada opción está diseñada para adaptarse a tus objetivos específicos.
+          Selecciona la categoría de planes para ver la cobertura incluida. Cada
+          opción está diseñada para adaptarse a tus objetivos específicos.
         </p>
+      </div>
+
+      {/* Barra de Búsqueda Local */}
+      <div className="max-w-3xl mx-auto mb-12 flex justify-center relative">
+        <div className="w-full max-w-sm relative">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar planes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full p-3 text-sm text-gray-700 border-2 border-slate-300 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+            />
+            <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-3.5 pointer-events-none" />
+            {searchQuery && (
+              <PlanSearchAutocomplete
+                query={searchQuery}
+                plans={featuredPlans}
+                onResultClick={(title) => setSearchQuery(title)}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Selector de secciones dinámico */}

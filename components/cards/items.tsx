@@ -1,11 +1,25 @@
 "use client"
 
-import { itemProps } from "@/app/data/data";
+import { ItemProps } from "@/app/data/data";
+import { ShoppingCart, Check } from "lucide-react";
+import { useState } from "react";
 
-const itemCard = ({
+const ItemCard = ({
     id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay
-}: itemProps
+}: ItemProps
 ) => {
+    const [isAdded, setIsAdded] = useState(false);
+
+    const handleAddToCart = () => {
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000);
+    };
+
+    const handleBuyNow = () => {
+        console.log(`Comprar producto: ${id} - ${title}`);
+        // Aquí iría la lógica de compra directa
+    };
+
     return(
        <div className="flex flex-col bg-white rounded-md border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full max-w-[350px] overflow-hidden group">
       
@@ -30,7 +44,7 @@ const itemCard = ({
       </div>
 
       {/* Cuerpo de la tarjeta */}
-      <div className="p-4 flex flex-col gap-1">
+      <div className="p-4 flex flex-col gap-1 flex-1">
         
         {/* Precios */}
         {originalPrice && (
@@ -65,9 +79,39 @@ const itemCard = ({
         <h3 className="text-sm text-slate-500 font-normal mt-1 leading-tight line-clamp-2">
             {category}
         </h3>
+
+        {/* Botones de acción */}
+        <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-gray-100">
+          <button
+            onClick={handleBuyNow}
+            className="flex-1 bg-orange-600 opacity-70 hover:bg-orange-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            Comprar
+          </button>
+          <button
+            onClick={handleAddToCart}
+            className={`flex-1 py-2 px-3 rounded text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              isAdded
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+            }`}
+          >
+            {isAdded ? (
+              <>
+                <Check className="w-4 h-4" />
+                Agregado
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                Carrito
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
     )
 }
 
-export default itemCard;
+export default ItemCard;
