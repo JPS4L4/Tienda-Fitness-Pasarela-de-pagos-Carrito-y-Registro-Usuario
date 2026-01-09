@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from "react";
 import itemCard from "@/components/cards/items";
-import { featuredProducts } from "@/components/cards/items";
+import {db} from "@/app/data/data";
+
+const featuredItems = db.items;
 
 // Obtener categorías únicas
-const allCategories = [...new Set(featuredProducts.map(p => p.category))];
+const allCategories = [...new Set(featuredItems.map(p => p.category))];
 
 export default function StorePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -15,8 +17,8 @@ export default function StorePage() {
   const [sortBy, setSortBy] = useState("relevance");
 
   // Filtrar y ordenar productos
-  const filteredProducts = useMemo(() => {
-    let result = featuredProducts;
+  const filteredItems = useMemo(() => {
+    let result = featuredItems;
 
     // Filtro por categoría
     if (selectedCategory) {
@@ -106,7 +108,7 @@ export default function StorePage() {
               <h3 className="font-semibold text-gray-900 mb-3">Categorías</h3>
               <ul className="text-sm space-y-2">
                 {allCategories.map(cat => {
-                  const count = featuredProducts.filter(p => p.category === cat).length;
+                  const count = featuredItems.filter(p => p.category === cat).length;
                   return (
                     <li 
                       key={cat}
@@ -171,7 +173,7 @@ export default function StorePage() {
             {/* Cabecera de Resultados */}
             <div className="bg-white p-4 rounded shadow-sm mb-4 flex justify-between items-center flex-wrap gap-4">
               <span className="text-gray-700 text-sm font-semibold">
-                {filteredProducts.length} resultado{filteredProducts.length !== 1 ? "s" : ""}
+                {filteredItems.length} resultado{filteredItems.length !== 1 ? "s" : ""}
               </span>
               
               <div className="flex items-center gap-2 text-sm">
@@ -189,11 +191,11 @@ export default function StorePage() {
             </div>
 
             {/* Grid */}
-            {filteredProducts.length > 0 ? (
+            {filteredItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                {filteredProducts.map((prod) => (
-                <div key={prod.id}>
-                    {itemCard(prod)}
+                {filteredItems.map((item) => (
+                <div key={item.id}>
+                    {itemCard(item)}
                 </div>
                 ))}
               </div>
