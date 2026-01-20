@@ -3,8 +3,8 @@
 import { db, Plan, PlanType } from "@/app/data/data";
 import { PlanCard } from "@/components/cards/plans";
 import { useState, useMemo } from "react";
-import PlanSearchAutocomplete from "@/components/PlanSearchAutocomplete";
-import { Search as SearchIcon } from "lucide-react";
+/* import PlanSearchAutocomplete from "@/components/PlanSearchAutocomplete";
+import { Search as SearchIcon } from "lucide-react"; */
 
 export default function PlansPage() {
   const [selectedSection, setSelectedSection] = useState<PlanType>("nutricion");
@@ -47,7 +47,7 @@ export default function PlansPage() {
       </div>
 
       {/* Barra de Búsqueda Local */}
-      <div className="max-w-3xl mx-auto mb-12 flex justify-center relative">
+     {/*  <div className="max-w-3xl mx-auto mb-12 flex justify-center relative">
         <div className="w-full max-w-sm relative">
           <div className="relative">
             <input
@@ -67,7 +67,7 @@ export default function PlansPage() {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Selector de secciones dinámico */}
       <div className="max-w-3xl mx-auto mb-12 flex flex-wrap items-center justify-center gap-4">

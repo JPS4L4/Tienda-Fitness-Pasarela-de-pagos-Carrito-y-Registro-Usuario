@@ -66,10 +66,10 @@ export const PlanCard = ({ plan }: { plan: any }) => {
 
       {/* Acción */}
       <Link 
-        href="/contact" 
+        href={`/plans/${plan.slug}`} 
         className={`flex items-center justify-center gap-2 w-full ${style.button} text-white py-4 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-current/20`}
-      >
-        Contratar Plan
+        prefetch>
+        Saber más
         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
       </Link>
     </div>

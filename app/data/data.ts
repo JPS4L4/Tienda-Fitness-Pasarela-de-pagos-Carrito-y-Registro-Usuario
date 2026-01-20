@@ -27,6 +27,7 @@ export interface Plan {
   title: string;
   coverage: string[];
   price?: string;
+  slug?: string;
 }
 
 // Definimos la estructura global de la "DB"
@@ -50,6 +51,7 @@ export const db: Database = {
       "Plan alimenticio personalizado (4 semanas)",
       "Lista de compras y recetas",
     ],
+    slug: "plan-nutricional-basico",
   },
   {
     id: 2,
@@ -62,6 +64,7 @@ export const db: Database = {
       "Seguimiento quincenal con ajustes",
       "Educación nutricional",
     ],
+    slug: "plan-nutricional-avanzado",
   },
   {
     id: 3,
@@ -73,6 +76,7 @@ export const db: Database = {
       "Variantes para nivel principiante/intermedio",
       "Instrucciones en video y progresiones",
     ],
+    slug: "plan-entrenamiento-home-gym",
   },
   {
     id: 4,
@@ -85,6 +89,7 @@ export const db: Database = {
       "Control de cargas y progresión semanal",
       "Consejos de recuperación y movilidad",
     ],
+    slug: "plan-fuerza-rendimiento",
   },
   {
     id: 5,
@@ -96,6 +101,7 @@ export const db: Database = {
       "Plan alimenticio y recetas",
       "Seguimiento y ajustes semanales",
     ],
+    slug: "plan-perdida-de-grasa",
   },
     ],
     items:[
