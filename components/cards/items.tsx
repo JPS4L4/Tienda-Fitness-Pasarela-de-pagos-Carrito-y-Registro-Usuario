@@ -1,117 +1,131 @@
 "use client"
 
 import { ItemProps } from "@/app/data/data";
-import { ShoppingCart, Check} from "lucide-react";
-import { useState } from "react";
+import { Heart, ShoppingCart, Check } from "lucide-react";
 import { SafeImage } from "../SafeImage";
+import { useCart } from "@/context/CartContext";
 
 const ItemCard = ({
-   title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay
-}: ItemProps
-) => {
-    const [isAdded, setIsAdded] = useState(false);
+  id,
+  title,
+  price,
+  category,
+  originalPrice,
+  discount,
+  installments,
+  image,
+  isOfferOfTheDay
+}: ItemProps) => {
+  const { cart, addToCart, openCart, removeFromCart } = useCart();
 
-    const handleAddToCart = () => {
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000);
-    };
+  // Verificamos si ya está en el carrito
+  const isInCart = cart.some((item:any) => item.id === id);
 
-    const handleMoreDetails = (title: string) => {
-        if(!title) return;
-        title = title.toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-");
-        window.location.href = `/products/${title}`;
-    };
+  const handleToggleCart = (e: React.MouseEvent) => {
+  e.stopPropagation();
+  if (isInCart) {
+    removeFromCart(id );
+  } else {
+    addToCart({ id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay });
+  }
+};
 
-    return(
-       <div className="flex flex-col bg-white rounded-md border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full max-w-[350px] overflow-hidden group">
+  const handleMoreDetails = () => {
+    const slug = title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+    window.location.href = `/products/${slug}`;
+  };
+
+  return (
+    <div className="flex flex-col bg-white rounded-xl border border-gray-200 hover:shadow-2xl hover:border-gray-300 transition-all duration-300 cursor-pointer w-full max-w-[350px] overflow-hidden group relative">
       
-      {/* Cuerpo de la tarjeta */}
-      <div className="p-4 flex flex-col gap-1 flex-1">
-        {/*Contenedor OnClick para Ir a los detalles del producto */}
-        <div onClick={() => handleMoreDetails(title)} className="flex-1 flex flex-col gap-2">
-         {/* Contenedor de Imagen y Badge */}
-      <div className="relative border-b border-gray-100 aspect-square flex items-center justify-center p-4">
+      {/* Contenedor de imagen */}
+      <div className="relative aspect-square overflow-hidden bg-gray-50" onClick={handleMoreDetails}>
+        {/* Ícono de corazón (arriba izquierda) */}
+        <button
+          className="absolute top-3 left-3 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white hover:shadow-lg transition-all duration-200 group-hover:opacity-100 opacity-90"
+          aria-label="Añadir a favoritos"
+        >
+          <Heart className="w-5 h-5 text-red-500 hover:text-red-600 transition-colors" />
+        </button>
+
+        {/* Ícono de carrito / check (abajo derecha) */}
+        <button
+          onClick={handleToggleCart}
+          className={`absolute bottom-3 right-3 z-30 p-2.5 rounded-full transition-all duration-300 shadow-md group-hover:opacity-100 opacity-90 ${
+            isInCart
+              ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+              : "bg-white/80 backdrop-blur-sm hover:bg-indigo-50 text-indigo-600 hover:text-indigo-700"
+          }`}
+          aria-label={isInCart ? "Ya en carrito" : "Añadir al carrito"}
+        >
+          {isInCart ? (
+            <Check className="w-6 h-6" />
+          ) : (
+            <ShoppingCart className="w-6 h-6" />
+          )}
+        </button>
+
+        {/* Badge oferta */}
         {isOfferOfTheDay && (
-          <span className="absolute top-3 right-3 z-20 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider uppercase">
+          <span className="absolute top-3 right-3 z-20 bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-md">
             Oferta del día
           </span>
         )}
-        
-        <SafeImage src={image} alt={title}/>
+
+        <SafeImage 
+          src={image} 
+          alt={title} 
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          containerClassName="w-full h-full"
+        />
       </div>
+
+      {/* Contenido inferior */}
+      <div className="p-4 flex flex-col gap-2 flex-1" onClick={handleMoreDetails}>
         {/* Precios */}
-        {originalPrice && (
-          <span className="text-gray-400 text-xs line-through">
-            ${originalPrice.toLocaleString()}
-          </span>
-        )}
-        
         <div className="flex items-center gap-2">
-          <span className="text-2xl text-slate-900 font-normal">
+          <span className="text-2xl font-bold text-slate-900">
             ${price.toLocaleString()}
           </span>
           {discount && (
-            <span className="text-emerald-500 text-sm font-medium">
+            <span className="text-emerald-600 text-sm font-medium">
               {discount}% OFF
             </span>
           )}
         </div>
 
+        {originalPrice && originalPrice > price && (
+          <span className="text-sm text-gray-400 line-through">
+            ${originalPrice.toLocaleString()}
+          </span>
+        )}
+
         {/* Cuotas */}
         {installments && (
-          <p className="text-sm text-slate-800">
-            en <span className="text-emerald-500">{installments}x ${Math.round(price/installments).toLocaleString()}</span> sin interés
+          <p className="text-sm text-slate-600">
+            en <span className="text-emerald-600 font-medium">{installments}x</span> sin interés
           </p>
         )}
 
-        {/* Título del producto */}
-        <h3 className="text-sm text-slate-600 font-normal mt-1 leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">
+        {/* Título */}
+        <h3 className="text-base font-medium text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition-colors mt-1">
           {title}
         </h3>
+
         {/* Categoría */}
-        <h3 className="text-sm text-slate-500 font-normal mt-1 leading-tight line-clamp-2">
-            {category}
-        </h3>
-     
-        </div>
-      
-        {/* Botones de acción */}
-        {/* <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-gray-100">
-          <button
-            onClick={() => handleMoreDetails(title)}
-            className="flex-1 bg-orange-600 opacity-70 hover:bg-orange-700 text-white py-2 px-3 rounded text-sm font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
-          >
-            Comprar
-          </button>
-          <button
-            onClick={handleAddToCart}
-            className={`flex-1 py-2 px-3 rounded text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-              isAdded
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-            }`}
-          >
-            {isAdded ? (
-              <>
-                <Check className="w-4 h-4" />
-                Agregado
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="w-4 h-4" />
-                Carrito
-              </>
-            )}
-          </button>
-        </div> */}
-         </div>
+        <p className="text-sm text-slate-500">
+          {category}
+        </p>
+      </div>
     </div>
-    )
-}
+  );
+};
 
 export default ItemCard;
+

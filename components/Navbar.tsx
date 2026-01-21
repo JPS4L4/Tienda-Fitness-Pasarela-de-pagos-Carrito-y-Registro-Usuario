@@ -5,10 +5,13 @@ import { usePathname } from "next/navigation";
 import { Search as SearchIcon, User as UserIcon, ShoppingCart as ShoppingCartIcon } from "lucide-react";
 import { useState } from "react";
 import GlobalSearchResults from "./GlobalSearchResults";
+import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
+  const { getTotalItems, openCart } = useCart();
+  const totalItems = getTotalItems();
 
   return (
     <nav className="bg-white border-b border-black h-20 sticky top-0 z-50 hover:border-orange-500 transition-colors ease-in-out duration-300">
@@ -51,25 +54,15 @@ export default function Navbar() {
             )
           }          
 
-          {/* Barra de Búsqueda o Icono de Carrito */}
-          {pathname === "/products" || pathname === "/plans" ? (
-            <Link href="/cart" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ShoppingCartIcon className="w-5 h-5 text-black hover:text-orange-500 transition-colors" />
-            </Link>
-          ) : (
-            <div className="relative hidden md:block">
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white text-sm text-gray-800 rounded-full pl-3 pr-8 py-1.5 border border-black focus:outline-none hover:border-orange-500  ease-in duration-100 focus:border-orange-500 w-40 transition-all focus:w-52"
-              />
-              <SearchIcon className="w-4 h-4 text-gray-800 absolute right-3 top-2 pointer-events-none" />
-              {searchQuery && <GlobalSearchResults query={searchQuery} />}
-            </div>
-          )}
-
+          <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <ShoppingCartIcon className="w-5 h-5 text-black hover:text-orange-500 transition-colors" />
+            {totalItems > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </button>
+          
           {/* Ícono de Usuario */}
           <Link href="/user" className={`p-2 bg-black rounded-full hover:bg-orange-500 text-white transition-colors ${pathname == "/user" && "bg-orange-500"}`}>
             <UserIcon className="w-5 h-5"/>

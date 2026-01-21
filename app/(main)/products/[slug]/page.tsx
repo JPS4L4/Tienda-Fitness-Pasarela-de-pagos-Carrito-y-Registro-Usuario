@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import { db, type ItemProps } from "@/app/data/data";
-import { ShoppingCart, Truck, CreditCard, Star } from 'lucide-react';
+import { CreditCard, Star, Truck } from 'lucide-react';
 import { SafeImage } from '@/components/SafeImage';
+import ProductoClient from '@/components/ProductoClient';
 
 function generateSlug(title: string): string {
   return title
@@ -41,7 +42,7 @@ const ProductoPage = async ({ params }: ProductoPageProps) => {
       <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
          {/* Lado izquierdo: Imagen principal */}
-<div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10 group">
+<div className="relative my-auto rounded-3xl overflow-hidden shadow-2xl shadow-black/10 group">
     <SafeImage
     src={producto.image}
     alt={producto.title}
@@ -124,31 +125,7 @@ const ProductoPage = async ({ params }: ProductoPageProps) => {
             </div>
 
             {/* Botones principales */}
-            <button
-              type="button"
-              className="group relative w-full py-6 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <ShoppingCart className="w-7 h-7" />
-                Agregar al Carrito
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-blue-500/0 group-hover:from-indigo-400/20 group-hover:to-blue-400/20 transition-opacity" />
-            </button>
-            <button
-              type="button"
-              className="group relative mt-4 w-full py-6 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                
-                Comprar Ahora
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-blue-500/0 group-hover:from-indigo-400/20 group-hover:to-blue-400/20 transition-opacity" />
-            </button>
-
-            {/* Texto de confianza */}
-            <p className="mt-6 text-center text-gray-500 text-sm">
-              Compra segura • Entrega rápida • Soporte 24/7
-            </p>
+            <ProductoClient producto={producto} precioFinal={precioFinal} />
           </div>
         </div>
       </div>
