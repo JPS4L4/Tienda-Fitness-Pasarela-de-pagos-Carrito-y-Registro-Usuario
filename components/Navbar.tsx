@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search as SearchIcon, User as UserIcon, ShoppingCart as ShoppingCartIcon } from "lucide-react";
+import { User as UserIcon, ShoppingCart as ShoppingCartIcon, LogOut, Heart } from "lucide-react";
 import { useState } from "react";
-import GlobalSearchResults from "./GlobalSearchResults";
 import { useCart } from "@/context/CartContext";
+import { useUser } from "@/hooks/useAuthUser";
+import { signOut } from "next-auth/react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [searchQuery, setSearchQuery] = useState("");
   const { getTotalItems, openCart } = useCart();
+  const { user, isAuthenticated, isLoading } = useUser();
   const totalItems = getTotalItems();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <nav className="bg-white border-b border-black h-20 sticky top-0 z-50 hover:border-orange-500 transition-colors ease-in-out duration-300">
@@ -62,11 +64,79 @@ export default function Navbar() {
               </span>
             )}
           </button>
+
+          <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <Heart className="w-5 h-5 text-black hover:text-red-600 transition-colors" />
+            {totalItems > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </button>
           
-          {/* Ícono de Usuario */}
-          <Link href="/user" className={`p-2 bg-black rounded-full hover:bg-orange-500 text-white transition-colors ${pathname == "/user" && "bg-orange-500"}`}>
-            <UserIcon className="w-5 h-5"/>
-          </Link>
+          {/* Gestión de usuario */}
+          {!isLoading && (
+            isAuthenticated && user ? (
+              // Usuario autenticado: mostrar menú desplegable
+              <div className="relative">
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={`p-2  hover:text-orange-500 text-black transition-colors ${pathname == "/profile" && "bg-orange-500"}`}
+                  title={user.name || "Usuario"}
+                >
+                  <UserIcon className="w-5 h-5 inline-block ml-1" /> Hola!, {user.name?.split(" ")[0] || "Usuario"} 
+                </button>
+
+                {/* Menú desplegable */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    {/* Header con nombre del usuario */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+
+                    {/* Links del menú */}
+                    <Link 
+                      href="/profile" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      👤 Mi Perfil
+                    </Link>
+                    <Link 
+                      href="/purchase" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      📦 Mis Compras
+                    </Link>
+
+                    {/* Separator */}
+                    <div className="border-t border-gray-100 my-2"></div>
+
+                    {/* Botón de logout */}
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false)
+                        signOut({ callbackUrl: "/" })
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Usuario no autenticado: mostrar enlace de login
+              <Link href="/login" className={`text-black text-lg hover:text-orange-400 ${pathname == "/login" && "text-orange-500"}`}>
+                <span>Ingresa</span>
+              </Link>
+            )
+          )}
+          
         </div>
 
       </div>

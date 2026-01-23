@@ -26,7 +26,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-black">
       {/* Selector de cantidad */}
       <div className="flex items-center gap-4 bg-gray-100 rounded-lg p-2 w-fit">
         <button

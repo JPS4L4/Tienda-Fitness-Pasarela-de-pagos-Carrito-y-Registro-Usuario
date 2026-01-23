@@ -3,39 +3,33 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { ItemProps } from "@/app/data/data";
 
-export interface CartItem extends ItemProps {
-  quantity: number;
-}
-
-interface CartContextType {
-  cart: CartItem[];
+interface FavoriteContextType {
+  favorite: favoriteItem[];
   isOpen: boolean;
-  addToCart: (item: ItemProps, quantity?: number) => void;
-  removeFromCart: (itemId: number) => void;
-  updateQuantity: (itemId: number, quantity: number) => void;
-  clearCart: () => void;
-  openCart: () => void;
-  closeCart: () => void;
-  getTotalItems: () => number;
-  getTotalPrice: () => number;
+  addToFavorite: (item: ItemProps) => void;
+  removeFromfavorite: (itemId: number) => void;
+  clearFavorite: () => void;
+  openFavorite: () => void;
+  closefavorite: () => void;
+  getTotalFavorite: () => number;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const FavoriteContext = createContext<FavoriteContextType | undefined>(undefined);
 
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+export const FavoriteProvider = ({ children }: { children: React.ReactNode }) => {
+  const [favorite, setFavorite] = useState<FavoriteItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Cargar carrito desde localStorage al montar el componente
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem("nan-salazar-cart");
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
+      const savedFavorite = localStorage.getItem("nan-salazar-favorite");
+      if (savedFavorite) {
+        setCart(JSON.parse(savedFavorite));
       }
     } catch (error) {
-      console.error("Error loading cart from localStorage:", error);
+      console.error("Error loading favorite from localStorage:", error);
     }
     setIsHydrated(true);
   }, []);
@@ -44,29 +38,29 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (isHydrated) {
       try {
-        localStorage.setItem("nan-salazar-cart", JSON.stringify(cart));
+        localStorage.setItem("nan-salazar-favorite", JSON.stringify(favorite));
       } catch (error) {
         console.error("Error saving cart to localStorage:", error);
       }
     }
-  }, [cart, isHydrated]);
+  }, [favorite, isHydrated]);
 
-  const addToCart = useCallback((item: ItemProps, quantity: number = 1) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+  const addToFavorite = useCallback((item: ItemProps) => {
+    setCart((prevFavorite) => {
+      const existingItem = prevFavorite.find((favoriteItem) => favoriteItem.id === item.id);
 
       if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
-            : cartItem
+        return prevFavorite.map((favoriteItem) =>
+          favoriteItem.id === item.id
+            ? { ...favoriteItem }
+            : favoriteItem
         );
       }
 
-      return [...prevCart, { ...item, quantity }];
+      return [...prevFavorite, { ...item }];
     });
 
-    // Abrir el carrito automáticamente al agregar
+    // Abrir lista de favorite automáticamente al agregar
     setIsOpen(true);
   }, []);
 

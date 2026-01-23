@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  id                           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                         String?
+  email                        String?  @unique
+  emailVerified                DateTime?
+  emailVerificationToken       String?
+  emailVerificationTokenExpiry DateTime?
+  passwordResetToken           String?
+  passwordResetTokenExpiry     DateTime?
+  image                        String?
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  // Relaciones
+  accounts      Account[]
+  favorites     Favorite[]
+  cartItems     CartItem[]
+  reviews       Review[]
+  orders        Order[]
+}
+
+model Account {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  provider  String   // "credentials" | "google" | "facebook" | etc.
+  password  String?  // Solo para provider = "credentials"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, provider])
+}
+
+model Product {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String?  // Detalles adicionales
+  price           Float
+  category        String
+  originalPrice   Float?
+  discount        Int?
+  installments    Int?
+  freeShipping    Boolean? @default(false)
+  image           String?
+  //images          String[]?  // Array de URLs para galería de imágenes adicional
+  isOfferOfTheDay Boolean? @default(false)
+  slug            String   @unique
+  stock           Int?     @default(0)  // Stock disponible
+  specs           Json?    // Especificaciones detalladas (ej: { "talla": ["S", "M"], "color": "rojo" })
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  favorites     Favorite[] @relation("ProductFavorites")
+  cartItems     CartItem[]
+  reviews       Review[]
+}
+
+model Plan {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      String   // "nutricion" | "entrenamiento"
+  title     String
+  price     String
+  coverage  String[] // array de strings
+  slug      String   @unique
+  content   String?  // texto largo / Markdown
+  resources Resource[]  // Relación a la nueva tabla de recursos
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  favorites     Favorite[] @relation("PlanFavorites")
+  reviews       Review[]
+}
+
+model Resource {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  planId    String   @db.ObjectId
+  type      String   // "video" | "pdf" | "image" | "link" | etc.
+  title     String
+  url       String
+  description String?
+  thumbnail String?
+  isDownloadable Boolean? @default(false)
+  order     Int?     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan      Plan     @relation(fields: [planId], references: [id])
+}
+
+model Favorite {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  productId  String?  @db.ObjectId
+  planId     String?  @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product? @relation("ProductFavorites", fields: [productId], references: [id])
+  plan       Plan?    @relation("PlanFavorites", fields: [planId], references: [id])
+}
+
+model CartItem {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  productId  String   @db.ObjectId
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  productId  String?  @db.ObjectId
+  planId     String?  @db.ObjectId
+  rating     Int      // 1-5
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product? @relation(fields: [productId], references: [id])
+  plan       Plan?    @relation(fields: [planId], references: [id])
+}
+
+model Order {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  total      Float
+  status     String   // "pending" | "paid" | "shipped" | etc.
+  items      Json     // array de {productId, quantity, price}
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id])
+}
