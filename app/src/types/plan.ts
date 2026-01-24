@@ -5,7 +5,8 @@ export type PlanUI = {
     title: string;
     shortDescription: string;
     tags: string[];
-    price: string;
+    price: number;
+    currency: string;
     discount?: number | null;
     slug: string;
     coverage: string[];  

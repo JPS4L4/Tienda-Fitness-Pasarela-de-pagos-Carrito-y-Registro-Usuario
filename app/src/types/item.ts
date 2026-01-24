@@ -3,6 +3,7 @@ export type ItemUI = {
   id: string
   title: string
   price: number
+  currency: string
   category: string
   originalPrice?: number
   discount?: number

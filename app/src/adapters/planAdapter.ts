@@ -1,33 +1,46 @@
 // app/src/adapters/planAdapter.ts
 import { PlanUI } from "../types/plan";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export type PlanFromDB = {
   id: string;
-  type: string;
+  type: string;                 // "nutricion" | "entrenamiento"
   title: string;
+  image: string | null;
   description: string | null;
   shortDescription: string | null;
-    tags: string[];
-    rating: number;
-    reviewCount: number;
-    price: string;
-    discount?: number | null;
-    coverage: string[]
-    slug: string;
-    createdAt: Date;
-    updatedAt: Date;
+  tags: string[];
+  rating: number;
+  reviewCount: number;
+  price: Decimal | number | string;      // Float en Prisma → Decimal | number | string
+  currency?: string;            // Opcional (default COP)
+  discount?: number | null;
+  coverage: string[];
+  slug: string;
+  content: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
+
 export function adaptPlanToPlanUI(plan: PlanFromDB): PlanUI {
+  const price = (() => {
+    if (typeof plan.price === 'object' && 'toNumber' in plan.price) {
+      return plan.price.toNumber();
+    }
+    return Number(plan.price);
+  })();
+
   return {
     id: plan.id,
     type: plan.type,
     title: plan.title,
     shortDescription: plan.shortDescription ?? "",
     tags: plan.tags,
-    price: plan.price,
-    discount: plan.discount ?? undefined,
-    slug: plan.slug,
     coverage: plan.coverage,
+    price,
+    discount: plan.discount ?? 0,
+    currency: plan.currency ?? "COP",
+    slug: plan.slug,
   };
 }

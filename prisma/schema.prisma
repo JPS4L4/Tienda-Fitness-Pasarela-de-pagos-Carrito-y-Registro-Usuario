@@ -10,161 +10,184 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id                        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name                      String?
-  email                     String?  @unique
-  emailVerified             DateTime?
-  image                     String?
-  password                  String?  // hashed
-  passwordResetToken        String?  
-  passwordResetTokenExpiry  DateTime?           // ← y este
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                     String?
+  email                    String?   @unique
+  emailVerified            DateTime?
+  image                    String?
+  password                 String? // hashed
+  passwordResetToken       String?
+  passwordResetTokenExpiry DateTime? // ← y este
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   //Verificación de email
-  emailVerificationToken        String?  @unique
-  emailVerificationTokenExpiry  DateTime?
+  emailVerificationToken       String?   @unique
+  emailVerificationTokenExpiry DateTime?
 
   // Relaciones
-  accounts      Account[]
-  favorites     Favorite[]
-  cartItems     CartItem[]
-  reviews       Review[]
-  orders        Order[]
+  accounts  Account[]
+  favorites Favorite[]
+  carts     Cart[]
+  reviews   Review[]
+  orders    Order[]
 }
 
 model Account {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
-  provider  String   // "credentials" | "google" | "facebook" | etc.
-  password  String?  // Solo para provider = "credentials"
+  provider  String // "credentials" | "google" | "facebook" | etc.
+  password  String? // Solo para provider = "credentials"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, provider])
 }
 
 model Product {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  title           String
-  description     String?           // ← nuevo
-  shortDescription String?          // ← nuevo (opcional)
-  price           Float
-  category        String
-  originalPrice   Float?
-  discount        Int?
-  installments    Int?
-  freeShipping    Boolean? @default(false)
-  images          String[]         // ← nuevo (galería)
-  isOfferOfTheDay Boolean? @default(false)
-  specs Json?              // ← nuevo (especificaciones técnicas)
-  tags           String[]          // ← nuevo (etiquetas)
-  slug            String   @unique
-  stock           Int      @default(0)  // ← nuevo
-  rating          Float    @default(0)  // ← nuevo
-  reviewCount     Int      @default(0)  // ← nuevo
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String? // ← nuevo
+  shortDescription String? // ← nuevo (opcional)
+  price            Float
+  currency         String   @default("COP")
+  category         String
+  originalPrice    Float?
+  discount         Int?
+  installments     Int?
+  freeShipping     Boolean? @default(false)
+  images           String[] // ← nuevo (galería)
+  isOfferOfTheDay  Boolean? @default(false)
+  specs            Json? // ← nuevo (especificaciones técnicas)
+  tags             String[] // ← nuevo (etiquetas)
+  slug             String   @unique
+  stock            Int      @default(0) // ← nuevo
+  rating           Float    @default(0) // ← nuevo
+  reviewCount      Int      @default(0) // ← nuevo
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relaciones
-  favorites     Favorite[] @relation("ProductFavorites")
-  cartItems     CartItem[]
-  reviews       Review[]
+  favorites Favorite[] @relation("ProductFavorites")
+  cartItems CartItem[]
+  reviews   Review[]
 }
 
 model Plan {
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  type             String // "nutricion" | "entrenamiento"
+  title            String
+  image            String?
+  description      String? // texto largo
+  shortDescription String? // resumen
+  tags             String[] // ej: ["nutricion", "perdida-de-peso", "avanzado"]
+  rating           Float      @default(0)
+  reviewCount      Int        @default(0)
+  price            Float
+  currency         String     @default("COP")
+  discount         Int?
+  coverage         String[] // array de strings
+  slug             String     @unique
+  content          String? // texto largo / Markdown
+  resources        Resource[] // Relación a la nueva tabla de recursos
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // Relaciones
+  favorites Favorite[] @relation("PlanFavorites")
+  reviews   Review[]
+}
+
+model Cart {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  type      String   // "nutricion" | "entrenamiento"
-  title     String
-  image    String?
-  description     String?           // texto largo
-  shortDescription String?          // resumen
-  tags            String[]          // ej: ["nutricion", "perdida-de-peso", "avanzado"]
-  rating          Float    @default(0)
-  reviewCount     Int      @default(0)
-  price     String
-  discount  Int?
-  coverage  String[] // array de strings
-  slug      String   @unique
-  content   String?  // texto largo / Markdown
-  resources Resource[]  // Relación a la nueva tabla de recursos
+  userId    String?  @db.ObjectId // null = anónimo
+  status    String   @default("active") // active | converted | abandoned
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relaciones
-  favorites     Favorite[] @relation("PlanFavorites")
-  reviews       Review[]
+  user  User?      @relation(fields: [userId], references: [id])
+  items CartItem[]
 }
 
 model Resource {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  planId    String   @db.ObjectId
-  type      String   // "video" | "pdf" | "image" | "link" | etc.
-  title     String
-  url       String
-  description String?
-  thumbnail String?
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  planId         String   @db.ObjectId
+  type           String // "video" | "pdf" | "image" | "link" | etc.
+  title          String
+  url            String
+  description    String?
+  thumbnail      String?
   isDownloadable Boolean? @default(false)
-  order     Int?     @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  order          Int?     @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  plan      Plan     @relation(fields: [planId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
 }
 
 model Favorite {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  productId  String?  @db.ObjectId
-  planId     String?  @db.ObjectId
-  createdAt  DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String?  @db.ObjectId
+  planId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id])
-  product    Product? @relation("ProductFavorites", fields: [productId], references: [id])
-  plan       Plan?    @relation("PlanFavorites", fields: [planId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation("ProductFavorites", fields: [productId], references: [id])
+  plan    Plan?    @relation("PlanFavorites", fields: [planId], references: [id])
 }
 
 model CartItem {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  productId  String   @db.ObjectId
-  quantity   Int      @default(1)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  productId String   @db.ObjectId
+  quantity  Int      @default(1)
+  price     Float // precio congelado
+  createdAt DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id])
-  product    Product  @relation(fields: [productId], references: [id])
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model Review {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  productId  String?  @db.ObjectId
-  planId     String?  @db.ObjectId
-  rating     Int      // 1-5
-  comment    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String?  @db.ObjectId
+  planId    String?  @db.ObjectId
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id])
-  product    Product? @relation(fields: [productId], references: [id])
-  plan       Plan?    @relation(fields: [planId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+  plan    Plan?    @relation(fields: [planId], references: [id])
 }
 
 model Order {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  total      Float
-  status     String   // "pending" | "paid" | "shipped" | etc.
-  items      Json     // array de {productId, quantity, price}
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  user       User     @relation(fields: [userId], references: [id])
+  userId String? @db.ObjectId // null = compra anónima
+
+  email String
+  phone String?
+
+  total  Float
+  status String // pending | paid | shipped | delivered | cancelled
+
+  shippingAddress Json? // para productos físicos
+  billingAddress  Json?
+
+  items Json // snapshot del carrito
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
 }
