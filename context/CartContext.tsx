@@ -1,18 +1,18 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { ItemProps } from "@/app/data/data";
+import { ItemUI } from "@/app/src/types/item";
 
-export interface CartItem extends ItemProps {
+export interface CartItem extends ItemUI {
   quantity: number;
 }
 
 interface CartContextType {
   cart: CartItem[];
   isOpen: boolean;
-  addToCart: (item: ItemProps, quantity?: number) => void;
-  removeFromCart: (itemId: number) => void;
-  updateQuantity: (itemId: number, quantity: number) => void;
+  addToCart: (item: ItemUI, quantity?: number) => void;
+  removeFromCart: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -51,7 +51,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [cart, isHydrated]);
 
-  const addToCart = useCallback((item: ItemProps, quantity: number = 1) => {
+  const addToCart = useCallback((item: ItemUI, quantity: number = 1) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
 
@@ -70,11 +70,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setIsOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((itemId: number) => {
+  const removeFromCart = useCallback((itemId: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
   }, []);
 
-  const updateQuantity = useCallback((itemId: number, quantity: number) => {
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(itemId);
       return;

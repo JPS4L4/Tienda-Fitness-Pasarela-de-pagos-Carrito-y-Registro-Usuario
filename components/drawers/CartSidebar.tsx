@@ -2,7 +2,7 @@
 
 import { useCart } from "@/context/CartContext";
 import { X, Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
-import { SafeImage } from "./SafeImage";
+import { SafeImage } from "../others/SafeImage";
 
 export default function CartSidebar() {
   const { cart, isOpen, closeCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();

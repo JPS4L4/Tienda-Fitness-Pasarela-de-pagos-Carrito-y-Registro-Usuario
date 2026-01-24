@@ -1,10 +1,10 @@
 "use client";
 
-import { ItemProps } from "@/app/data/data";
-import AddToCartButton from "@/components/AddToCartButton";
+import { ItemUI } from "@/app/src/types/item";
+import AddToCartButton from "@/components/buttons/AddToCartButton";
 
 interface ProductoClientProps {
-  producto: ItemProps;
+  producto: ItemUI;
   precioFinal: number;
 }
 

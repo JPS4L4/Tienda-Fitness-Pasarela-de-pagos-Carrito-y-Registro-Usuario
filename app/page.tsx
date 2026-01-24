@@ -1,16 +1,41 @@
 "use client"
 
 import Link from "next/link";
-import itemCard from "@/components/cards/items";
-import { PlanCard } from "@/components/cards/plans";
-import { CommentsCard } from "@/components/cards/comments";
+import { useState, useEffect } from "react";
+import ItemCard from "@/components/cards/ItemCard";
+import {PlanCard} from "@/components/cards/PlanCard";
+import { CommentsCard } from "@/components/cards/CommentsCard";
 import {db} from "@/app/data/data";
+import { ItemUI } from "./src/types/item";
+import { PlanUI } from "./src/types/plan";
+import { ItemCardSkeleton } from "@/components/skeletons/ItemCardSkeleton";
+import { PlanCardSkeleton } from "@/components/skeletons/PlanCardSkeleton";
 
-const featuredItems = db.items;
-const featuredPlans = db.plans;
 const reviews = db.comments; 
 
 export default function Home() {
+
+  const [featuredItems, setFeaturedItems] = useState<ItemUI[]>([]);
+  const [featuredPlans, setFeaturedPlans] = useState<PlanUI[]>([]);
+  const [loadingItems, setLoadingItems] = useState(true)
+  const [loadingPlans, setLoadingPlans] = useState(true)
+
+
+   useEffect(() => {
+  fetch("/api/products")
+    .then(res => res.json())
+    .then(setFeaturedItems)
+    .finally(() => setLoadingItems(false))
+}, [])
+
+useEffect(() => {
+  fetch("/api/plans")
+    .then(res => res.json())
+    .then(setFeaturedPlans)
+    .finally(() => setLoadingPlans(false))
+}, [])
+
+
   return (
     <main className="min-h-screen bg-white text-black">
       
@@ -39,9 +64,14 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center mb-12 uppercase tracking-widest">Nuestros Planes</h2>
         {/* Mostrar algunos planes destacados */}
        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 justify-items-center">
-        {featuredPlans.slice(1,4).map((plan) => (
-          <PlanCard key={plan.id} plan={plan} />
-        ))}
+              {loadingPlans
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <PlanCardSkeleton key={i} />
+            ))
+          : featuredPlans.slice(1, 4).map(plan => (
+              <PlanCard key={plan.id} plan={plan} />
+            ))
+        }
       </div>
         
         <a href="/plans">
@@ -102,12 +132,16 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {featuredItems.slice(0,4).map((item) => (
-              <div key={item.id}>
-                {itemCard(item)}
-              </div>
-          ))}
+          {loadingItems
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ItemCardSkeleton key={i} />
+              ))
+            : featuredItems.slice(0, 4).map(item => (
+                <ItemCard key={item.id} {...item} />
+              ))
+          }
         </div>
+
       </section>
 
     </main>

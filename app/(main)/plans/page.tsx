@@ -1,12 +1,12 @@
 "use client";
 
 import { db, Plan, PlanType } from "@/app/data/data";
-import { PlanCard } from "@/components/cards/plans";
+import { PlanCard } from "@/components/cards/PlanCard";
 import { useState, useMemo } from "react";
 /* import PlanSearchAutocomplete from "@/components/PlanSearchAutocomplete";
 import { Search as SearchIcon } from "lucide-react"; */
 
-export default function PlansPage() {
+const PlansPage = () => {
   const [selectedSection, setSelectedSection] = useState<PlanType>("nutricion");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -114,3 +114,5 @@ export default function PlansPage() {
     </div>
   );
 }
+
+export default PlansPage;

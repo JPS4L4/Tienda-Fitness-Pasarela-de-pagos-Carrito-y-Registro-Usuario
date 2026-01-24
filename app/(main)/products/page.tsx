@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ItemCard from "@/components/cards/items";
-import {db} from "@/app/data/data";
-import LocalSearchAutocomplete from "@/components/LocalSearchAutocomplete";
+import { useState, useMemo, useEffect } from "react";
+import ItemCard from "@/components/cards/ItemCard";
+import LocalSearchAutocomplete from "@/components/others/LocalSearchAutocomplete";
 import { Search as SearchIcon } from "lucide-react";
-
-const featuredItems = db.items;
-
-// Obtener categorías únicas
-const allCategories = [...new Set(featuredItems.map(p => p.category))];
+import { ItemUI } from "../../src/types/item";
 
 export default function StorePage() {
+  const [featuredItems, setFeaturedItems] = useState<ItemUI[]>([]);
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
@@ -19,66 +16,68 @@ export default function StorePage() {
   const [sortBy, setSortBy] = useState("relevance");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filtrar y ordenar productos
-  const filteredItems = useMemo(() => {
-    let result = featuredItems;
+  // 🔹 Traer productos desde la API
+  useEffect(() => {
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => setFeaturedItems(data))
+      .catch(console.error);
+  }, []);
 
-    // Filtro por búsqueda
+  // 🔹 Categorías dinámicas
+  const allCategories = useMemo(
+    () => [...new Set(featuredItems.map(p => p.category))],
+    [featuredItems]
+  );
+
+  // 🔹 Filtros
+  const filteredItems = useMemo(() => {
+    let result = [...featuredItems];
+
     if (searchQuery.trim()) {
-      const searchTerm = searchQuery.toLowerCase();
+      const term = searchQuery.toLowerCase();
       result = result.filter(p =>
-        p.title.toLowerCase().includes(searchTerm) ||
-        p.category.toLowerCase().includes(searchTerm)
+        p.title.toLowerCase().includes(term) ||
+        p.category.toLowerCase().includes(term)
       );
     }
 
-    // Filtro por categoría
     if (selectedCategory) {
       result = result.filter(p => p.category === selectedCategory);
     }
 
-    // Filtro por rango de precio
-    if (minPrice !== null) {
-      result = result.filter(p => p.price >= minPrice);
-    }
-    if (maxPrice !== null) {
-      result = result.filter(p => p.price <= maxPrice);
-    }
+    if (minPrice !== null) result = result.filter(p => p.price >= minPrice);
+    if (maxPrice !== null) result = result.filter(p => p.price <= maxPrice);
 
-    // Filtro por envío gratis
     if (freeShippingOnly) {
       result = result.filter(p => p.freeShipping);
     }
 
-    // Ordenamiento
     switch (sortBy) {
       case "price-asc":
-        result = [...result].sort((a, b) => a.price - b.price);
+        result.sort((a, b) => a.price - b.price);
         break;
       case "price-desc":
-        result = [...result].sort((a, b) => b.price - a.price);
+        result.sort((a, b) => b.price - a.price);
         break;
-      case "relevance":
       default:
-        result = [...result].sort((a, b) => {
-          // Ofertas del día primero
+        result.sort((a, b) => {
           if (a.isOfferOfTheDay && !b.isOfferOfTheDay) return -1;
           if (!a.isOfferOfTheDay && b.isOfferOfTheDay) return 1;
-          // Luego por descuento
-          const discountA = a.discount || 0;
-          const discountB = b.discount || 0;
-          return discountB - discountA;
+          return (b.discount ?? 0) - (a.discount ?? 0);
         });
-        break;
     }
 
     return result;
-  }, [selectedCategory, minPrice, maxPrice, freeShippingOnly, sortBy, searchQuery]);
-
-  const handlePriceFilter = () => {
-    // Este manejador se ejecuta cuando el usuario presiona enter o hace clic en el botón
-    // Los valores ya están siendo capturados en el estado, por lo que el filtrado es automático
-  };
+  }, [
+    featuredItems,
+    selectedCategory,
+    minPrice,
+    maxPrice,
+    freeShippingOnly,
+    sortBy,
+    searchQuery,
+  ]);
 
   const clearFilters = () => {
     setSelectedCategory(null);
@@ -87,6 +86,7 @@ export default function StorePage() {
     setFreeShippingOnly(false);
     setSearchQuery("");
   };
+
   return (
     <div className="bg-gray-100 min-h-screen pb-12">
       {/* Container Principal */}

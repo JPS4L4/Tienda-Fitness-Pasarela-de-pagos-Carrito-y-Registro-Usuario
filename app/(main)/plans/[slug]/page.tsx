@@ -35,11 +35,11 @@ async function getPlanPorSlug(slug: string): Promise<Plan | null> {
   return plan ?? null;
 }
 
-interface PlanPageProps {
+interface PlanDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-const PlanPage = async ({ params }: PlanPageProps) => {
+const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   const { slug } = await params;
   const plan = await getPlanPorSlug(slug);
 
@@ -136,4 +136,4 @@ export async function generateStaticParams() {
   }));
 }
 
-export default PlanPage;
+export default PlanDetailPage;

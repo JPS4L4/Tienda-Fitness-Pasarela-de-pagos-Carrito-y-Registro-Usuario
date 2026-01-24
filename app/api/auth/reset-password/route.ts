@@ -36,14 +36,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar usuario con token
-    const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
       where: { passwordResetToken: token },
       select: {
         id: true,
         email: true,
+        passwordResetToken: true,
         passwordResetTokenExpiry: true,
       },
     });
+
 
     if (!user) {
       return NextResponse.json(
@@ -112,12 +114,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuario con token
-    const user = await prisma.user.findUnique({
-      where: { passwordResetToken: token },
-      select: {
-        passwordResetTokenExpiry: true,
-      },
-    });
+   const user = await prisma.user.findFirst({
+  where: { passwordResetToken: token },
+  select: {
+    passwordResetToken: true,
+    passwordResetTokenExpiry: true,
+  },
+});
+
 
     if (!user) {
       return NextResponse.json(

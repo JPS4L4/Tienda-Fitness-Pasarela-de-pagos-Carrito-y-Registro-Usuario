@@ -1,6 +1,9 @@
 "use client"
-import { Check, Apple, Dumbbell, ArrowRight } from "lucide-react";
-import Link from "next/link";
+
+import { Check, Apple, Dumbbell, ArrowRight, Heart } from "lucide-react"
+import Link from "next/link"
+import { useFavoritesStore } from "@/lib/stores/favoritesStore" // ajusta la ruta real
+import toast from "react-hot-toast" // asegúrate de tenerlo instalado
 
 const typeStyles = {
   nutricion: {
@@ -15,10 +18,55 @@ const typeStyles = {
     button: "bg-blue-600 hover:bg-blue-700",
     accent: "text-blue-600"
   }
-};
+}
+
+// Botón de favorito reutilizable (lo mismo que usas en productos)
+const FavoriteButton = ({ 
+  id, 
+  title, 
+  image, 
+  slug 
+}: { 
+  id: number | string
+  title: string
+  image?: string
+  slug: string 
+}) => {
+  const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
+  const favorite = isFavorite(id, "plan")
+
+  const toggle = (e: React.MouseEvent) => {
+    e.stopPropagation() // evita que haga clic en el card y vaya a detalles
+    if (favorite) {
+      removeFavorite(id, "plan")
+      toast.error("Eliminado de favoritos ❤️")
+    } else {
+      addFavorite({ id, type: "plan", title, image, slug })
+      toast.success("Agregado a favoritos ❤️", {
+        duration: 4000,
+      })
+    }
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white hover:shadow-lg transition-all duration-200"
+      aria-label={favorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+    >
+      <Heart
+        className={`w-6 h-6 transition-all duration-300 ${
+          favorite
+            ? "fill-red-500 text-red-500 scale-110 animate-heartbeat"
+            : "text-red-500 hover:text-red-600"
+        }`}
+      />
+    </button>
+  )
+}
 
 export const PlanCard = ({ plan }: { plan: any }) => {
-  const style = typeStyles[plan.type as keyof typeof typeStyles];
+  const style = typeStyles[plan.type as keyof typeof typeStyles] || typeStyles.nutricion
 
   return (
     <div className="group bg-white rounded-2xl border border-slate-200 p-8 flex flex-col justify-between h-full hover:shadow-2xl hover:border-slate-300 transition-all duration-300 relative overflow-hidden">
@@ -64,14 +112,26 @@ export const PlanCard = ({ plan }: { plan: any }) => {
         </ul>
       </div>
 
-      {/* Acción */}
-      <Link 
-        href={`/plans/${plan.slug}`} 
-        className={`flex items-center justify-center gap-2 w-full ${style.button} text-white py-4 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-current/20`}
-        prefetch>
-        Saber más
-        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-      </Link>
+      {/* Botones de acción */}
+      <div className="flex items-center gap-3 mt-6">
+        {/* Botón principal */}
+        <Link 
+          href={`/plans/${plan.slug}`} 
+          className={`flex-1 flex items-center justify-center gap-2 ${style.button} text-white py-4 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-transparent hover:shadow-current/20`}
+          prefetch
+        >
+          Saber más
+          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
+
+        {/* Botón de favorito */}
+        <FavoriteButton 
+          id={plan.id} 
+          title={plan.title} 
+          image={plan.image} // si tienes imagen en plan, sino undefined
+          slug={plan.slug} 
+        />
+      </div>
     </div>
-  );
-};
+  )
+}

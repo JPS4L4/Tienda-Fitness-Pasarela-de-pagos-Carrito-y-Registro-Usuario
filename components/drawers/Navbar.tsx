@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User as UserIcon, ShoppingCart as ShoppingCartIcon, LogOut, Heart } from "lucide-react";
+import { useFavoritesStore } from "@/lib/stores/favoritesStore" // ajusta la ruta
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/hooks/useAuthUser";
 import { signOut } from "next-auth/react";
+import FavoritesDrawer from "./FavoritesDrawer";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const favorites = useFavoritesStore(state => state.favorites)
   const { getTotalItems, openCart } = useCart();
   const { user, isAuthenticated, isLoading } = useUser();
   const totalItems = getTotalItems();
@@ -28,20 +32,6 @@ export default function Navbar() {
           <NavLink href="/plans" currentPath={pathname}>
              <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/plans" && "text-orange-500"}`}>Planes</span>
           </NavLink>
-        </div>
-
-        {/* 2. CENTRO (La Marca / Home) */}
-        <div className="shrink-0">
-          <Link 
-            href="/" 
-            className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
-          >
-            Nan Salazar
-          </Link>
-        </div>
-
-        {/* 3. SECCIÓN DERECHA (Contacto, Buscador, Usuario) */}
-        <div className="flex-1 flex items-center justify-evenly ml-10">
           {/* Enlace de Contacto y Soporte */}
           {
             pathname === "/contact" ? (
@@ -55,8 +45,39 @@ export default function Navbar() {
           </NavLink>
             )
           }          
+        
+        </div>
+    
 
-          <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+        {/* 2. CENTRO (La Marca / Home) */}
+        <div className="shrink-0">
+          <Link 
+            href="/" 
+            className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
+          >
+            Nan Salazar
+          </Link>
+        </div>
+
+        {/* 3. SECCIÓN DERECHA (Contacto, Buscador, Usuario) */}
+        <div className="flex-1 flex items-center justify-evenly ml-10">
+          {/* Lista de deseos */}
+           <button
+        onClick={() => setIsOpen(true)}
+        className="relative p-2 rounded-full hover:bg-gray-100 transition"
+      >
+        <Heart className="w-6 h-6 text-gray-700" />
+        {favorites.length > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {favorites.length}
+          </span>
+        )}
+      </button>
+
+      <FavoritesDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} />
+
+          {/* Carrito de compras */}
+            <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
             <ShoppingCartIcon className="w-5 h-5 text-black hover:text-orange-500 transition-colors" />
             {totalItems > 0 && (
               <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
@@ -65,15 +86,6 @@ export default function Navbar() {
             )}
           </button>
 
-          <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <Heart className="w-5 h-5 text-black hover:text-red-600 transition-colors" />
-            {totalItems > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </button>
-          
           {/* Gestión de usuario */}
           {!isLoading && (
             isAuthenticated && user ? (
@@ -81,7 +93,7 @@ export default function Navbar() {
               <div className="relative">
                 <button 
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`p-2  hover:text-orange-500 text-black transition-colors ${pathname == "/profile" && "bg-orange-500"}`}
+                  className={`p-2  hover:text-orange-500 text-black transition-colors ${pathname == "/profile" && "text-orange-500"}`}
                   title={user.name || "Usuario"}
                 >
                   <UserIcon className="w-5 h-5 inline-block ml-1" /> Hola!, {user.name?.split(" ")[0] || "Usuario"} 
@@ -105,12 +117,13 @@ export default function Navbar() {
                       👤 Mi Perfil
                     </Link>
                     <Link 
-                      href="/purchase" 
+                      href="/orders" 
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
                       📦 Mis Compras
                     </Link>
+                    
 
                     {/* Separator */}
                     <div className="border-t border-gray-100 my-2"></div>
@@ -132,7 +145,7 @@ export default function Navbar() {
             ) : (
               // Usuario no autenticado: mostrar enlace de login
               <Link href="/login" className={`text-black text-lg hover:text-orange-400 ${pathname == "/login" && "text-orange-500"}`}>
-                <span>Ingresa</span>
+                <span>Iniciar Sesión</span>
               </Link>
             )
           )}

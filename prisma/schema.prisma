@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,17 +14,20 @@ datasource db {
 }
 
 model User {
-  id                           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name                         String?
-  email                        String?  @unique
-  emailVerified                DateTime?
-  emailVerificationToken       String?
-  emailVerificationTokenExpiry DateTime?
-  passwordResetToken           String?
-  passwordResetTokenExpiry     DateTime?
-  image                        String?
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
+  id                        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                      String?
+  email                     String?  @unique
+  emailVerified             DateTime?
+  image                     String?
+  password                  String?  // hashed
+  passwordResetToken        String?  
+  passwordResetTokenExpiry  DateTime?           // ← y este
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  //Verificación de email
+  emailVerificationToken        String?  @unique
+  emailVerificationTokenExpiry  DateTime?
 
   // Relaciones
   accounts      Account[]
@@ -51,19 +53,22 @@ model Account {
 model Product {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   title           String
-  description     String?  // Detalles adicionales
+  description     String?           // ← nuevo
+  shortDescription String?          // ← nuevo (opcional)
   price           Float
   category        String
   originalPrice   Float?
   discount        Int?
   installments    Int?
   freeShipping    Boolean? @default(false)
-  image           String?
-  //images          String[]?  // Array de URLs para galería de imágenes adicional
+  images          String[]         // ← nuevo (galería)
   isOfferOfTheDay Boolean? @default(false)
+  specs Json?              // ← nuevo (especificaciones técnicas)
+  tags           String[]          // ← nuevo (etiquetas)
   slug            String   @unique
-  stock           Int?     @default(0)  // Stock disponible
-  specs           Json?    // Especificaciones detalladas (ej: { "talla": ["S", "M"], "color": "rojo" })
+  stock           Int      @default(0)  // ← nuevo
+  rating          Float    @default(0)  // ← nuevo
+  reviewCount     Int      @default(0)  // ← nuevo
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -77,7 +82,14 @@ model Plan {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   type      String   // "nutricion" | "entrenamiento"
   title     String
+  image    String?
+  description     String?           // texto largo
+  shortDescription String?          // resumen
+  tags            String[]          // ej: ["nutricion", "perdida-de-peso", "avanzado"]
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
   price     String
+  discount  Int?
   coverage  String[] // array de strings
   slug      String   @unique
   content   String?  // texto largo / Markdown

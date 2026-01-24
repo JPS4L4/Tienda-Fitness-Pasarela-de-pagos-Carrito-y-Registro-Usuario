@@ -2,7 +2,7 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
-import { LogoutButton } from "@/components/LogoutButton"
+import { LogoutButton } from "@/components/buttons/LogoutButton"
 
 // Esta página es dinámica porque depende de la sesión
 export const dynamic = 'force-dynamic'
@@ -96,14 +96,18 @@ export default async function ProfilePage() {
 
                 <div className="space-y-3">
                   <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
+                    📋 Mis Compras
+                  </button>
+                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
+                    🏋️ Mis Planes
+                  </button>
+                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
                     ⚙️ Editar Perfil
                   </button>
                   <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
                     🔐 Cambiar Contraseña
                   </button>
-                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
-                    📋 Mis Compras
-                  </button>
+                  
                 </div>
               </div>
             </div>

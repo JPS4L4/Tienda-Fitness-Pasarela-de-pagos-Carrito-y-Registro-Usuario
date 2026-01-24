@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ItemProps } from "@/app/data/data";
+import { ItemUI } from "@/app/src/types/item";
 
 interface LocalSearchAutocompleteProps {
   query: string;
-  items?: ItemProps[];
+  items?: ItemUI[];
   onResultClick?: (title: string) => void;
 }
 
@@ -14,7 +14,7 @@ export default function LocalSearchAutocomplete({
   items = [],
   onResultClick,
 }: LocalSearchAutocompleteProps) {
-  const [results, setResults] = useState<ItemProps[]>([]);
+  const [results, setResults] = useState<ItemUI[]>([]);
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
