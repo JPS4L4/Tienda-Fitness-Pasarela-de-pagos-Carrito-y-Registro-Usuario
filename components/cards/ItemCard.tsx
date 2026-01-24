@@ -58,7 +58,8 @@ const ItemCard = ({
   installments,
   image,
   isOfferOfTheDay,
-  slug
+  slug,
+  currency
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item: any) => item.id === id)
@@ -69,7 +70,7 @@ const ItemCard = ({
       removeFromCart(id)
       toast.success("Eliminado del carrito 🛒")
     } else {
-      addToCart({ id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay, slug })
+      addToCart({ id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay, slug, currency })
       toast.success("Agregado al carrito 🛒")
     }
   }
