@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/generated/prisma/client';
-import { generateToken, getTokenExpiry, sendPasswordResetEmail, isTokenExpired } from '@/lib/emailService';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client'
+import { generateToken, getTokenExpiry, sendPasswordResetEmail } from '@/lib/emailService';
 
 const prisma = new PrismaClient();
 

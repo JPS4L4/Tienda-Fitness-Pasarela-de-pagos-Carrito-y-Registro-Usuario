@@ -18,7 +18,7 @@ export default function StorePage() {
 
   // 🔹 Traer productos desde la API
   useEffect(() => {
-    fetch("/api/products")
+    fetch("/api/items")
       .then(res => res.json())
       .then(data => setFeaturedItems(data))
       .catch(console.error);

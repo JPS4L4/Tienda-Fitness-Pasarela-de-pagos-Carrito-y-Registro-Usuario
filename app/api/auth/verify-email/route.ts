@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '@prisma/client'
 import { generateToken, getTokenExpiry, sendVerificationEmail, isTokenExpired } from '@/lib/emailService';
 
 const prisma = new PrismaClient();

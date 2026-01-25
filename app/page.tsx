@@ -8,21 +8,22 @@ import { CommentsCard } from "@/components/cards/CommentsCard";
 import {db} from "@/app/data/data";
 import { ItemUI } from "./src/types/item";
 import { PlanUI } from "./src/types/plan";
+import { CommentsUI } from "./src/types/comments";
 import { ItemCardSkeleton } from "@/components/skeletons/ItemCardSkeleton";
 import { PlanCardSkeleton } from "@/components/skeletons/PlanCardSkeleton";
-
-const reviews = db.comments; 
 
 export default function Home() {
 
   const [featuredItems, setFeaturedItems] = useState<ItemUI[]>([]);
   const [featuredPlans, setFeaturedPlans] = useState<PlanUI[]>([]);
+  const [comments, setComments] = useState<CommentsUI[]>([]);
   const [loadingItems, setLoadingItems] = useState(true)
   const [loadingPlans, setLoadingPlans] = useState(true)
+  const [loadingComments, setLoadingComments] = useState(true)
 
 
    useEffect(() => {
-  fetch("/api/products")
+  fetch("/api/items")
     .then(res => res.json())
     .then(setFeaturedItems)
     .finally(() => setLoadingItems(false))
@@ -33,6 +34,13 @@ useEffect(() => {
     .then(res => res.json())
     .then(setFeaturedPlans)
     .finally(() => setLoadingPlans(false))
+}, [])
+
+useEffect(() => {
+  fetch("/api/comments")
+    .then(res => res.json())
+    .then(setComments)
+    .finally(() => setLoadingComments(false))
 }, [])
 
 
@@ -116,9 +124,19 @@ useEffect(() => {
     </div>
     
     <div className="flex overflow-x-auto gap-8 pb-10 snap-x snap-mandatory scrollbar-hide">
-      {reviews.map((review, index) => (
-        <CommentsCard key={index} {...review} />
-      ))}
+      {loadingComments ? (
+        <div className="text-slate-400 text-center w-full py-8">
+          Cargando comentarios...
+        </div>
+      ) : comments.length > 0 ? (
+        comments.map((review) => (
+          <CommentsCard key={review.id} {...review} />
+        ))
+      ) : (
+        <div className="text-slate-400 text-center w-full py-8">
+          No hay comentarios disponibles
+        </div>
+      )}
     </div>
   </div>
 </section>
@@ -128,7 +146,7 @@ useEffect(() => {
       <section className="py-20 container mx-auto px-4">
         <div className="flex justify-between items-end mb-10">
           <h2 className="text-3xl font-bold uppercase tracking-widest">Tienda</h2>
-          <a href="/products" className="text-indigo-600 hover:underline text-sm font-medium">Ver todo →</a>
+          <a href="/items" className="text-indigo-600 hover:underline text-sm font-medium">Ver todo →</a>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

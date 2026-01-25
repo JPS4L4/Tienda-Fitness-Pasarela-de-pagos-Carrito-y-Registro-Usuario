@@ -2,17 +2,53 @@
 
 import { useState } from "react";
 import { MapPin, Mail, Phone, Send, Instagram, Facebook, Twitter, ArrowRight } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    lastName: "",
+    email: "",
+    message: ""
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simula envío
-    setLoading(false);
-    setSuccess(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al enviar el mensaje");
+      }
+
+      setSuccess(true);
+      setFormData({ name: "", lastName: "", email: "", message: "" });
+      toast.success("¡Mensaje enviado! Te responderemos pronto.", { duration: 5000 });
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast.error(error.message || "Error al enviar el mensaje. Por favor intenta de nuevo.", { duration: 4000 });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,8 +83,8 @@ export default function ContactPage() {
         {/* Datos de Contacto (Abajo) */}
         <div className="relative z-20 space-y-8 mb-10 md:mb-0">
           <ContactItem icon={<Phone className="w-6 h-6"/>} title="Llámanos" detail="+57 (300) 123-4567" />
-          <ContactItem icon={<Mail className="w-6 h-6"/>} title="Escríbenos" detail="contacto@mimarca.com" />
-          <ContactItem icon={<MapPin className="w-6 h-6"/>} title="Visítanos" detail="Calle 100 # 15-20, Bogotá" />
+          <ContactItem icon={<Mail className="w-6 h-6"/>} title="Escríbenos" detail="contacto@nansalazar.com" />
+          {/* <ContactItem icon={<MapPin className="w-6 h-6"/>} title="Visítanos" detail="Calle 100 # 15-20, Bogotá" /> */}
           
           {/* Redes Sociales */}
           <div className="flex gap-4 pt-6 border-t border-white/20">
@@ -94,19 +130,43 @@ export default function ContactPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <InputClean label="Nombre" placeholder="Tu nombre" type="text" />
-                  <InputClean label="Apellido" placeholder="Tu apellido" type="text" />
+                  <InputClean 
+                    label="Nombre" 
+                    placeholder="Tu nombre" 
+                    type="text" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                  <InputClean 
+                    label="Apellido" 
+                    placeholder="Tu apellido" 
+                    type="text" 
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
                 </div>
 
-                <InputClean label="Correo Electrónico" placeholder="ejemplo@email.com" type="email" />
+                <InputClean 
+                  label="Correo Electrónico" 
+                  placeholder="ejemplo@email.com" 
+                  type="email" 
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">¿Cómo podemos ayudarte?</label>
                   <textarea 
                     required
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     rows={5}
                     placeholder="Cuéntanos más..."
-                    className="w-full bg-gray-50 border-b-2 border-gray-200 focus:border-indigo-600 px-4 py-3 outline-none transition-colors resize-none placeholder:text-gray-400"
+                    className="w-full bg-gray-50 border-b-2 border-gray-200 text-gray-700 focus:border-indigo-600 px-4 py-3 outline-none transition-colors resize-none placeholder:text-gray-400"
                   ></textarea>
                 </div>
 
@@ -146,15 +206,32 @@ function ContactItem({ icon, title, detail }: { icon: any, title: string, detail
 }
 
 // 2. Input Minimalista (Solo borde inferior)
-function InputClean({ label, placeholder, type }: { label: string, placeholder: string, type: string }) {
+function InputClean({ 
+  label, 
+  placeholder, 
+  type, 
+  name, 
+  value, 
+  onChange 
+}: { 
+  label: string;
+  placeholder: string;
+  type: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
       <input 
         required
         type={type} 
+        name={name}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
-        className="w-full bg-gray-50 border-b-2 border-gray-200 focus:border-indigo-600 px-4 py-3 outline-none transition-colors placeholder:text-gray-400"
+        className="w-full bg-gray-50 border-b-2 text-gray-700 border-gray-200 focus:border-indigo-600 px-4 py-3 outline-none transition-colors placeholder:text-gray-400"
       />
     </div>
   );

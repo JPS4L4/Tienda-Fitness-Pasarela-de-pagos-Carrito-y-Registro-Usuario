@@ -94,7 +94,7 @@ echo "────────────────────────�
 echo ""
 echo "Copy and paste this into your .env.local:"
 echo ""
-echo "DATABASE_URL=\"mongodb+srv://username:password@host/nanPageDatabase\""
+echo "DATABASE_URL=\"postgresql://postgres:Juan1025@localhost:5432/nan_salazar_db\""
 echo "NEXTAUTH_SECRET=\"your-secret-from-openssl-command\""
 echo "NEXTAUTH_URL=\"http://localhost:3000\""
 echo "EMAIL_USER=\"your-email@gmail.com\""

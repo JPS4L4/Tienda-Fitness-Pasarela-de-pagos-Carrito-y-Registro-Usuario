@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Validar contra MongoDB usando Prisma
+        // Validar contra PostgreSQL usando Prisma
         const result = await validateCredentials(credentials.email, credentials.password)
         
         if (result.success && result.user && result.user.email) {

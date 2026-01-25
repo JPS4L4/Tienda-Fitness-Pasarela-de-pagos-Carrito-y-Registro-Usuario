@@ -26,7 +26,7 @@ export default function Navbar() {
         {/* 1. SECCIÓN IZQUIERDA (Productos y Planes) */}
         {/* Usamos flex-1 para que ocupe el mismo espacio que la derecha */}
         <div className="flex-1 flex items-center justify-evenly mr-10">
-          <NavLink href="/products" currentPath={pathname}>
+          <NavLink href="/items" currentPath={pathname}>
             <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/products" && "text-orange-500"}`}>Tienda</span>
           </NavLink>
           <NavLink href="/plans" currentPath={pathname}>

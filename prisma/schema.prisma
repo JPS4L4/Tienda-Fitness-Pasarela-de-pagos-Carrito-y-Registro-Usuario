@@ -9,19 +9,19 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                       Int       @id @default(autoincrement())
   name                     String?
   email                    String?   @unique
   emailVerified            DateTime?
   image                    String?
   password                 String? // hashed
   passwordResetToken       String?
-  passwordResetTokenExpiry DateTime? // ← y este
+  passwordResetTokenExpiry DateTime?
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
@@ -38,23 +38,23 @@ model User {
 }
 
 model Account {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
+  id        Int      @id @default(autoincrement())
+  userId    Int
   provider  String // "credentials" | "google" | "facebook" | etc.
   password  String? // Solo para provider = "credentials"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
 }
 
-model Product {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+model Item {
+  id               Int      @id @default(autoincrement())
   title            String
-  description      String? // ← nuevo
-  shortDescription String? // ← nuevo (opcional)
+  description      String?
+  shortDescription String?
   price            Float
   currency         String   @default("COP")
   category         String
@@ -62,14 +62,14 @@ model Product {
   discount         Int?
   installments     Int?
   freeShipping     Boolean? @default(false)
-  images           String[] // ← nuevo (galería)
+  images           String[]
   isOfferOfTheDay  Boolean? @default(false)
-  specs            Json? // ← nuevo (especificaciones técnicas)
-  tags             String[] // ← nuevo (etiquetas)
+  specs            Json?
+  tags             String[]
   slug             String   @unique
-  stock            Int      @default(0) // ← nuevo
-  rating           Float    @default(0) // ← nuevo
-  reviewCount      Int      @default(0) // ← nuevo
+  stock            Int      @default(0)
+  rating           Float    @default(0)
+  reviewCount      Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -80,22 +80,22 @@ model Product {
 }
 
 model Plan {
-  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  id               Int        @id @default(autoincrement())
   type             String // "nutricion" | "entrenamiento"
   title            String
   image            String?
-  description      String? // texto largo
-  shortDescription String? // resumen
-  tags             String[] // ej: ["nutricion", "perdida-de-peso", "avanzado"]
+  description      String?
+  shortDescription String?
+  tags             String[]
   rating           Float      @default(0)
   reviewCount      Int        @default(0)
   price            Float
   currency         String     @default("COP")
   discount         Int?
-  coverage         String[] // array de strings
+  coverage         String[]
   slug             String     @unique
-  content          String? // texto largo / Markdown
-  resources        Resource[] // Relación a la nueva tabla de recursos
+  content          String?
+  resources        Resource[]
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
@@ -105,19 +105,19 @@ model Plan {
 }
 
 model Cart {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String?  @db.ObjectId // null = anónimo
+  id        Int      @id @default(autoincrement())
+  userId    Int? // null = anónimo
   status    String   @default("active") // active | converted | abandoned
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user  User?      @relation(fields: [userId], references: [id])
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   items CartItem[]
 }
 
 model Resource {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  planId         String   @db.ObjectId
+  id             Int      @id @default(autoincrement())
+  planId         Int
   type           String // "video" | "pdf" | "image" | "link" | etc.
   title          String
   url            String
@@ -128,52 +128,52 @@ model Resource {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  plan Plan @relation(fields: [planId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  productId String?  @db.ObjectId
-  planId    String?  @db.ObjectId
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int?
+  planId    Int?
   createdAt DateTime @default(now())
 
-  user    User     @relation(fields: [userId], references: [id])
-  product Product? @relation("ProductFavorites", fields: [productId], references: [id])
-  plan    Plan?    @relation("PlanFavorites", fields: [planId], references: [id])
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation("ProductFavorites", fields: [productId], references: [id], onDelete: Cascade)
+  plan Plan? @relation("PlanFavorites", fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model CartItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  cartId    String   @db.ObjectId
-  productId String   @db.ObjectId
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
   quantity  Int      @default(1)
   price     Float // precio congelado
   createdAt DateTime @default(now())
 
-  cart    Cart    @relation(fields: [cartId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Review {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  productId String?  @db.ObjectId
-  planId    String?  @db.ObjectId
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int?
+  planId    Int?
   rating    Int // 1-5
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User     @relation(fields: [userId], references: [id])
-  product Product? @relation(fields: [productId], references: [id])
-  plan    Plan?    @relation(fields: [planId], references: [id])
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  plan Plan? @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model Order {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id Int @id @default(autoincrement())
 
-  userId String? @db.ObjectId // null = compra anónima
+  userId Int? // null = compra anónima
 
   email String
   phone String?
@@ -181,7 +181,7 @@ model Order {
   total  Float
   status String // pending | paid | shipped | delivered | cancelled
 
-  shippingAddress Json? // para productos físicos
+  shippingAddress Json?
   billingAddress  Json?
 
   items Json // snapshot del carrito
@@ -189,5 +189,5 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

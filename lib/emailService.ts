@@ -191,3 +191,221 @@ export function isTokenExpired(expiryDate: Date | null): boolean {
   if (!expiryDate) return true;
   return new Date() > expiryDate;
 }
+
+/**
+ * Enviar email de contacto
+ */
+export async function sendContactEmail(
+  name: string,
+  lastName: string,
+  email: string,
+  message: string
+): Promise<boolean> {
+  try {
+    const adminEmail = process.env.EMAIL_USER || 'admin@nansalazar.com';
+    
+    // Email para el admin
+    const mailOptionsAdmin = {
+      from: process.env.EMAIL_FROM || `NanSalazar <${process.env.EMAIL_USER}>`,
+      to: adminEmail,
+      replyTo: email,
+      subject: `Nuevo mensaje de contacto - ${name} ${lastName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">Nuevo Mensaje de Contacto</h1>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">NOMBRE COMPLETO</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0;">${name} ${lastName}</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">EMAIL</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0;">
+                <a href="mailto:${email}" style="color: #3b82f6; text-decoration: none;">${email}</a>
+              </p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 10px 0;">MENSAJE</p>
+              <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+          </div>
+          
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
+            <p style="margin: 0;">© 2026 NanSalazar. Sistema de Contacto.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    // Email de confirmación para el usuario
+    const mailOptionsUser = {
+      from: process.env.EMAIL_FROM || `NanSalazar <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Recibimos tu mensaje - NanSalazar',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">Mensaje Recibido</h1>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+            <p style="color: #475569; font-size: 16px; margin: 0 0 20px 0;">
+              ¡Hola <strong>${name}</strong>!
+            </p>
+            
+            <p style="color: #475569; font-size: 16px; margin: 0 0 30px 0;">
+              Hemos recibido tu mensaje y nuestro equipo lo revisará pronto. Te responderemos en menos de 24 horas.
+            </p>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #14b8a6;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 10px 0;">TU MENSAJE:</p>
+              <p style="color: #1e293b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+            
+            <p style="color: #94a3b8; font-size: 12px; margin: 30px 0 0 0;">
+              Gracias por contactarnos. Estamos aquí para ayudarte.
+            </p>
+          </div>
+          
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
+            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptionsAdmin);
+    await transporter.sendMail(mailOptionsUser);
+    console.log(`Email de contacto enviado desde ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Error enviando email de contacto:', error);
+    return false;
+  }
+}
+
+/**
+ * Enviar email de soporte
+ */
+export async function sendSupportEmail(
+  name: string,
+  email: string,
+  subject: string,
+  message: string,
+  orderNumber?: string
+): Promise<boolean> {
+  try {
+    const adminEmail = process.env.EMAIL_USER || 'soporte@nansalazar.com';
+    
+    // Email para el admin/soporte
+    const mailOptionsAdmin = {
+      from: process.env.EMAIL_FROM || `NanSalazar Soporte <${process.env.EMAIL_USER}>`,
+      to: adminEmail,
+      replyTo: email,
+      subject: `[SOPORTE] ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">🆘 Ticket de Soporte</h1>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+            <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+              <p style="color: #991b1b; font-size: 14px; font-weight: bold; margin: 0;">
+                ASUNTO: ${subject}
+              </p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">USUARIO</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0;">${name}</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">EMAIL</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0;">
+                <a href="mailto:${email}" style="color: #3b82f6; text-decoration: none;">${email}</a>
+              </p>
+            </div>
+            
+            ${orderNumber ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">NÚMERO DE ORDEN</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0;">${orderNumber}</p>
+            </div>
+            ` : ''}
+            
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 10px 0;">DESCRIPCIÓN DEL PROBLEMA</p>
+              <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+          </div>
+          
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
+            <p style="margin: 0;">© 2026 NanSalazar. Sistema de Soporte.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    // Email de confirmación para el usuario
+    const mailOptionsUser = {
+      from: process.env.EMAIL_FROM || `NanSalazar Soporte <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Ticket de soporte recibido: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">Ticket Recibido</h1>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
+            <p style="color: #475569; font-size: 16px; margin: 0 0 20px 0;">
+              ¡Hola <strong>${name}</strong>!
+            </p>
+            
+            <p style="color: #475569; font-size: 16px; margin: 0 0 30px 0;">
+              Hemos recibido tu solicitud de soporte. Nuestro equipo técnico la está revisando y te responderemos lo antes posible.
+            </p>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #14b8a6; margin-bottom: 20px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 5px 0;">ASUNTO</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0 0 15px 0;">${subject}</p>
+              
+              ${orderNumber ? `
+              <p style="color: #64748b; font-size: 12px; margin: 15px 0 5px 0;">ORDEN</p>
+              <p style="color: #1e293b; font-size: 16px; font-weight: bold; margin: 0 0 15px 0;">${orderNumber}</p>
+              ` : ''}
+              
+              <p style="color: #64748b; font-size: 12px; margin: 15px 0 5px 0;">MENSAJE</p>
+              <p style="color: #1e293b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
+            </div>
+            
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 15px; border-radius: 8px;">
+              <p style="color: #065f46; font-size: 14px; margin: 0;">
+                ✅ <strong>Tiempo estimado de respuesta:</strong> 24-48 horas
+              </p>
+            </div>
+          </div>
+          
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
+            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptionsAdmin);
+    await transporter.sendMail(mailOptionsUser);
+    console.log(`Email de soporte enviado desde ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Error enviando email de soporte:', error);
+    return false;
+  }
+}

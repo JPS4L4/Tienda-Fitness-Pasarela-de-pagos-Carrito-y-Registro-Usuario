@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sendSupportEmail } from '@/lib/emailService'
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,15 @@ export async function POST(request: Request) {
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json({ ok: false, message: 'Faltan campos obligatorios' }, { status: 400 })
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { ok: false, message: 'Email inválido' },
+        { status: 400 }
+      );
     }
 
     const images: Array<{ name: string; size: number; type: string }> = []
@@ -30,15 +40,31 @@ export async function POST(request: Request) {
       // ignore if no files
     }
 
-    // If you want to integrate real email sending, add SMTP config and a mailer here.
-    // For now we simulate the send and return the received payload metadata.
+    // Enviar email de soporte
+    const emailSent = await sendSupportEmail(
+      name, 
+      email, 
+      subject, 
+      message, 
+      order || undefined
+    );
+
+    if (!emailSent) {
+      return NextResponse.json(
+        { ok: false, message: 'Error al enviar el ticket de soporte. Por favor intenta de nuevo.' },
+        { status: 500 }
+      );
+    }
 
     const payload = { name, email, subject, order, message, images }
 
-    // TODO: integrate nodemailer or an email service with SMTP/API keys
-
-    return NextResponse.json({ ok: true, message: 'Correo recibido (simulado)', data: payload })
+    return NextResponse.json({ 
+      ok: true, 
+      message: 'Ticket de soporte enviado correctamente. Te responderemos pronto.', 
+      data: payload 
+    })
   } catch (err: any) {
+    console.error('Error en /api/support:', err);
     return NextResponse.json({ ok: false, message: err?.message || 'Error interno' }, { status: 500 })
   }
 }

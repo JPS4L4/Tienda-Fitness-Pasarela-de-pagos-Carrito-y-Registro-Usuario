@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     console.log("🔍 [DEBUG] Validaciones iniciales pasadas")
 
-    // Registrar usuario en MongoDB
+    // Registrar usuario en PostgreSQL
     console.log("🔍 [DEBUG] Llamando a registerUser...")
     const result = await registerUser({ name, email, password })
     console.log("🔍 [DEBUG] Resultado de registerUser:", result)

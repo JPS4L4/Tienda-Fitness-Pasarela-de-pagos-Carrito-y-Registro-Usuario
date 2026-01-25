@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import toast from "react-hot-toast"
 
 const Support = () => {
   const [name, setName] = useState("")
@@ -29,6 +30,7 @@ const Support = () => {
 
     if (!name || !email || !subject || !message) {
       setStatus("Por favor completa los campos obligatorios.")
+      toast.error("Por favor completa los campos obligatorios.", { duration: 4000 })
       return
     }
 
@@ -42,12 +44,13 @@ const Support = () => {
       form.append("message", message)
       files.forEach((f) => form.append("images", f))
 
-      // Nota: Asegúrate de tener este endpoint creado o comenta el fetch para probar visualmente
       const res = await fetch("/api/support", { method: "POST", body: form })
       const json = await res.json()
       if (!res.ok) throw new Error(json?.message || "Error al enviar")
       
       setStatus("Mensaje enviado correctamente. Gracias.")
+      toast.success("¡Ticket de soporte enviado! Te responderemos en 24-48 horas.", { duration: 5000 })
+      
       // Reset form
       setName("")
       setEmail("")
@@ -57,7 +60,9 @@ const Support = () => {
       setFiles([])
       setPreviews([])
     } catch (err: any) {
-      setStatus(err?.message || "Error en el envío")
+      const errorMsg = err?.message || "Error en el envío"
+      setStatus(errorMsg)
+      toast.error(errorMsg, { duration: 4000 })
     } finally {
       setLoading(false)
     }

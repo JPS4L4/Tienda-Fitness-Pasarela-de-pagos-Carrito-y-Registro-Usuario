@@ -3,7 +3,7 @@ import { PlanUI } from "../types/plan";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export type PlanFromDB = {
-  id: string;
+  id: number;
   type: string;                 // "nutricion" | "entrenamiento"
   title: string;
   image: string | null;
@@ -35,6 +35,8 @@ export function adaptPlanToPlanUI(plan: PlanFromDB): PlanUI {
     id: plan.id,
     type: plan.type,
     title: plan.title,
+    image: plan.image ?? undefined,
+    description: plan.description ?? undefined,
     shortDescription: plan.shortDescription ?? "",
     tags: plan.tags,
     coverage: plan.coverage,
@@ -42,5 +44,8 @@ export function adaptPlanToPlanUI(plan: PlanFromDB): PlanUI {
     discount: plan.discount ?? 0,
     currency: plan.currency ?? "COP",
     slug: plan.slug,
+    content: plan.content ?? undefined,
+    rating: plan.rating,
+    reviewCount: plan.reviewCount,
   };
 }

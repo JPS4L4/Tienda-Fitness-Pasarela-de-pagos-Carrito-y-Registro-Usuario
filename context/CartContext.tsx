@@ -11,8 +11,8 @@ interface CartContextType {
   cart: CartItem[];
   isOpen: boolean;
   addToCart: (item: ItemUI, quantity?: number) => void;
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  removeFromCart: (itemId: number) => void;
+  updateQuantity: (itemId: number, quantity: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -70,11 +70,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setIsOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((itemId: string) => {
+  const removeFromCart = useCallback((itemId: number) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
   }, []);
 
-  const updateQuantity = useCallback((itemId: string, quantity: number) => {
+  const updateQuantity = useCallback((itemId: number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(itemId);
       return;

@@ -3,12 +3,12 @@
 import { ItemUI } from "@/app/src/types/item";
 import AddToCartButton from "@/components/buttons/AddToCartButton";
 
-interface ProductoClientProps {
+interface ItemClientProps {
   producto: ItemUI;
   precioFinal: number;
 }
 
-export default function ProductoClient({ producto }: ProductoClientProps) {
+export default function ItemClient({ producto }: ItemClientProps) {
   return (
     <>
       {/* Botones principales */}

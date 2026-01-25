@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -17,7 +17,7 @@ interface RegisterPayload {
 interface AuthResult {
   success: boolean;
   user?: {
-    id: string;
+    id: number;
     email: string | null;
     name: string | null;
   };
@@ -157,7 +157,7 @@ export async function getAllUsers() {
 /**
  * Obtener usuario por ID
  */
-export async function getUserById(userId: string) {
+export async function getUserById(userId: number) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -180,7 +180,7 @@ export async function getUserById(userId: string) {
  * Actualizar usuario
  */
 export async function updateUser(
-  userId: string,
+  userId: number,
   data: { name?: string; image?: string }
 ) {
   try {

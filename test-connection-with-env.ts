@@ -1,12 +1,12 @@
 import 'dotenv/config';
-import { PrismaClient } from './generated/prisma/client';
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient();
 
 async function testConnection() {
   try {
     await prisma.$connect();
-    console.log('✅ Conexión a MongoDB exitosa');
+    console.log('✅ Conexión a PostgreSQL exitosa');
     
     // Intenta una consulta simple
     const userCount = await prisma.user.count();

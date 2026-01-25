@@ -3,50 +3,10 @@
 import { Heart, ShoppingCart, Check } from "lucide-react"
 import { SafeImage } from "../others/SafeImage"
 import { useCart } from "@/context/CartContext"
-import { useFavoritesStore } from "@/lib/stores/favoritesStore" // ajusta la ruta
-import toast from "react-hot-toast" 
+import { useFavoritesStore } from "@/lib/stores/favoritesStore"
+import toast from "react-hot-toast"
 import { ItemUI } from "@/app/src/types/item"
-
-// Componente separado para el botón de favorito (más limpio)
-const FavoriteButton = ({ id, title, image, slug }: { 
-  id: number | string
-  title: string
-  image?: string
-  slug: string 
-}) => {
-  const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
-  const favorite = isFavorite(id, "product")
-
-  const toggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (favorite) {
-      removeFavorite(id, "product")
-      toast.success("Eliminado de favoritos ❤️")
-    } else {
-      addFavorite({ id, type: "product", title, image, slug })
-      toast.success("Agregado a favoritos ❤️", {
-        duration: 4000,
-        }
-      )
-    }
-  }
-
-  return (
-    <button
-      onClick={toggle}
-      className="absolute top-3 left-3 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white hover:shadow-lg transition-all duration-200"
-      aria-label={favorite ? "Quitar de favoritos" : "Añadir a favoritos"}
-    >
-      <Heart
-        className={`w-6 h-6 transition-all duration-300 ${
-          favorite
-            ? "fill-red-500 text-red-500 scale-110 animate-heartbeat"
-            : "text-red-500 hover:text-red-600"
-        }`}
-      />
-    </button>
-  )
-}
+import { cn } from "@/lib/utils" // si tienes una función cn de clsx/tailwind-merge
 
 const ItemCard = ({
   id,
@@ -59,96 +19,146 @@ const ItemCard = ({
   image,
   isOfferOfTheDay,
   slug,
-  currency
+  currency = "COP" // por defecto COP, pero ya viene de DB
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item: any) => item.id === id)
+
+  const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
+  const isFav = isFavorite(id, "product")
 
   const handleToggleCart = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isInCart) {
       removeFromCart(id)
-      toast.success("Eliminado del carrito 🛒")
+      toast.success("Eliminado del carrito 🛒", { duration: 3000 })
     } else {
       addToCart({ id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay, slug, currency })
-      toast.success("Agregado al carrito 🛒")
+      toast.success("Agregado al carrito 🛒", { duration: 3000 })
+    }
+  }
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isFav) {
+      removeFavorite(id, "product")
+      toast.success("Eliminado de favoritos ❤️", { duration: 3000 })
+    } else {
+      addFavorite({ id, type: "product", title, image, slug })
+      toast.success("Agregado a favoritos ❤️", {
+        duration: 4000,
+      })
     }
   }
 
   const handleMoreDetails = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const slug = title
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-    window.location.href = `/products/${slug}`
+    window.location.href = `/items/${slug}`
   }
 
   return (
-    <div className="flex flex-col bg-white rounded-xl border border-gray-200 hover:shadow-2xl hover:border-gray-300 transition-all duration-300 cursor-pointer w-full max-w-[350px] overflow-hidden group relative">
-      
+    <div 
+      className={cn(
+        "group relative flex flex-col bg-white rounded-2xl border border-gray-200",
+        "overflow-hidden hover:shadow-2xl hover:border-gray-300",
+        "transition-all duration-300 cursor-pointer h-full max-w-[350px]"
+      )}
+    >
       {/* Contenedor de imagen */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50" onClick={handleMoreDetails}>
-        <FavoriteButton id={id} title={title} image={image} slug={/* genera slug aquí si no lo tienes */ title.toLowerCase().replace(/\s+/g, '-')} />
-
-        {/* Ícono de carrito / check */}
+      <div 
+        className="relative aspect-square overflow-hidden bg-gray-50"
+        onClick={handleMoreDetails}
+      >
+        {/* Corazón favorito */}
         <button
-          onClick={handleToggleCart}
-          className={`absolute bottom-3 right-3 z-30 p-2.5 rounded-full transition-all duration-300 shadow-md group-hover:opacity-100 opacity-90 ${
-            isInCart
-              ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-              : "bg-white/80 backdrop-blur-sm hover:bg-indigo-50 text-indigo-600 hover:text-indigo-700"
-          }`}
-          aria-label={isInCart ? "Quitar del carrito" : "Añadir al carrito"}
+          onClick={handleToggleFavorite}
+          className="absolute top-3 left-3 z-30 p-2.5 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white hover:shadow-lg transition-all duration-300"
+          aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
         >
-          {isInCart ? <Check className="w-6 h-6" /> : <ShoppingCart className="w-6 h-6" />}
+          <Heart
+            className={cn(
+              "w-6 h-6 transition-all duration-300",
+              isFav
+                ? "fill-red-500 text-red-500 scale-110 animate-heartbeat"
+                : "text-red-500 hover:text-red-600 hover:scale-110"
+            )}
+          />
         </button>
 
         {/* Badge oferta */}
         {isOfferOfTheDay && (
-          <span className="absolute top-3 right-3 z-20 bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-md">
+          <span className="absolute top-3 right-3 z-20 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
             Oferta del día
           </span>
         )}
 
+        {/* Imagen */}
         <SafeImage 
-          src={image} 
+          src={image || "/placeholder-product.jpg"} 
           alt={title} 
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           containerClassName="w-full h-full"
         />
       </div>
 
       {/* Contenido inferior */}
-      <div className="p-4 flex flex-col gap-2 flex-1" onClick={handleMoreDetails}>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-slate-900">
-            ${price.toLocaleString()}
+      <div className="p-5 flex flex-col flex-1 space-y-3" onClick={handleMoreDetails}>
+        {/* Precio principal */}
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-extrabold text-slate-900">
+            {currency} {price.toLocaleString()}
           </span>
-          {discount && <span className="text-emerald-600 text-sm font-medium">{discount}% OFF</span>}
+          {discount && discount > 0 && (
+            <span className="text-emerald-600 text-sm font-semibold">
+              {discount}% OFF
+            </span>
+          )}
         </div>
 
+        {/* Precio original y cuotas */}
         {originalPrice && originalPrice > price && (
           <span className="text-sm text-gray-400 line-through">
-            ${originalPrice.toLocaleString()}
+            {currency} {originalPrice.toLocaleString()}
           </span>
         )}
 
-        {installments && (
+        {installments && installments > 1 && (
           <p className="text-sm text-slate-600">
-            en <span className="text-emerald-600 font-medium">{installments}x</span> sin interés
+            en <span className="font-medium text-emerald-600">{installments}x</span> sin interés
           </p>
         )}
 
-        <h3 className="text-base font-medium text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition-colors mt-1">
+        {/* Título */}
+        <h3 className="text-lg font-semibold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition-colors">
           {title}
         </h3>
 
-        <p className="text-sm text-slate-500">{category}</p>
+        {/* Categoría */}
+        <p className="text-sm text-slate-500 capitalize">{category}</p>
       </div>
+
+      {/* Botón de carrito */}
+      <button
+        onClick={handleToggleCart}
+        className={cn(
+          "mt-auto py-4 px-6 font-medium text-white transition-all duration-300 flex items-center justify-center gap-2",
+          isInCart
+            ? "bg-emerald-600 hover:bg-emerald-700"
+            : "bg-indigo-600 hover:bg-indigo-700"
+        )}
+      >
+        {isInCart ? (
+          <>
+            <Check className="w-5 h-5" />
+            En carrito
+          </>
+        ) : (
+          <>
+            <ShoppingCart className="w-5 h-5" />
+            Añadir al carrito
+          </>
+        )}
+      </button>
     </div>
   )
 }

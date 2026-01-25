@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Validaciones iniciales pasadas para:", email)
 
-    // Registrar usuario en MongoDB
+    // Registrar usuario en PostgreSQL
     console.log("📝 Llamando a registerUser...")
     const result = await registerUser({ name, email, password })
 

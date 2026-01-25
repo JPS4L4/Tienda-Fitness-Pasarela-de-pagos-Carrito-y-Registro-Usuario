@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
-import { db, type Plan } from "@/app/data/data";
-import { CheckCircle, Sparkles, Apple, Dumbbell } from 'lucide-react';
+import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag, Heart } from 'lucide-react';
+import { getPlanBySlug } from '@/app/src/lib/plans';
+import { PlanUI } from '@/app/src/types/plan';
+import { SafeImage } from '@/components/others/SafeImage';
+import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
 
 // Definimos los estilos por tipo
 const planStyles = {
@@ -30,60 +33,142 @@ const planStyles = {
   },
 };
 
-async function getPlanPorSlug(slug: string): Promise<Plan | null> {
-  const plan = db.plans.find((p) => p.slug === slug);
-  return plan ?? null;
-}
-
 interface PlanDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
 const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   const { slug } = await params;
-  const plan = await getPlanPorSlug(slug);
+  const plan: PlanUI | null = await getPlanBySlug(slug);
 
   if (!plan) {
     notFound();
   }
 
   // Seleccionamos los estilos según el tipo
-  const style = planStyles[plan.type] || planStyles.nutricion; // fallback a nutricion
+  const style = planStyles[plan.type as keyof typeof planStyles] || planStyles.nutricion;
+
+  const precioFinal = plan.discount && plan.discount > 0
+    ? Math.round(plan.price * (1 - plan.discount / 100))
+    : plan.price;
+
+  console.log('Plan cargado:', { title: plan.title, slug: plan.slug, price: plan.price });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
-      <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 max-w-6xl">
+      <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {/* Lado izquierdo: Imagen + overlay */}
+          {/* Lado izquierdo: Imagen */}
           <div className={`relative w-full h-full grid items-center rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gradient-to-br ${style.bgGradient}`}>
-            <div className="aspect-[4/3] relative">
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/30 to-transparent">
-                <div className="text-center p-8">
-                  {style.icon}
-                  <p className={`text-xl font-medium ${style.text} mt-4`}>
-                    Imagen Representativa
-                  </p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    (Placeholder – pronto tu foto real)
-                  </p>
+            {plan.image ? (
+              <SafeImage
+                src={plan.image}
+                alt={plan.title}
+                className="object-cover w-full h-full"
+                containerClassName="aspect-[4/3]"
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            ) : (
+              <div className="aspect-[4/3] relative">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/30 to-transparent">
+                  <div className="text-center p-8">
+                    {style.icon}
+                    <p className={`text-xl font-medium ${style.text} mt-4`}>
+                      {style.typeLabel}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Badge de descuento */}
+            {plan.discount && plan.discount > 0 && (
+              <div className="absolute top-4 right-4 z-10">
+                <span className="bg-red-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                  -{plan.discount}% OFF
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Lado derecho: Contenido */}
           <div className="flex flex-col">
             <div className="mb-8">
-              <span className={`inline-block px-4 py-1.5 ${style.badge} rounded-full text-sm font-semibold uppercase tracking-wide mb-4`}>
-                {style.typeLabel}
-              </span>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <span className={`inline-block px-4 py-1.5 ${style.badge} rounded-full text-sm font-semibold uppercase tracking-wide`}>
+                  {style.typeLabel}
+                </span>
+                <FavoritePlanButton 
+                  id={plan.id} 
+                  title={plan.title} 
+                  image={plan.image} 
+                  slug={plan.slug} 
+                />
+              </div>
+              
               <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
                 {plan.title}
               </h1>
-              <p className={`text-4xl md:text-5xl font-black ${style.accent} tracking-tight`}>
-                {plan.price}
-              </p>
+
+              {/* Rating */}
+              {plan.rating !== undefined && plan.reviewCount !== undefined && (
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < Math.floor(plan.rating!)
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-gray-600 font-medium">
+                    {plan.rating.toFixed(1)} ({plan.reviewCount} reseñas)
+                  </span>
+                </div>
+              )}
+
+              {/* Short Description */}
+              {plan.shortDescription && (
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                  {plan.shortDescription}
+                </p>
+              )}
+
+              {/* Precio */}
+              <div className="flex items-baseline gap-4">
+                <p className={`text-4xl md:text-5xl font-black ${style.accent} tracking-tight`}>
+                  ${precioFinal.toLocaleString('es-CO')}
+                  <span className="text-xl font-medium text-gray-500 ml-2">
+                    {plan.currency}
+                  </span>
+                </p>
+                {plan.discount && plan.discount > 0 && (
+                  <p className="text-2xl text-gray-500 line-through">
+                    ${plan.price.toLocaleString('es-CO')}
+                  </p>
+                )}
+              </div>
             </div>
+
+            {/* Tags */}
+            {plan.tags && plan.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {plan.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className={`inline-flex items-center gap-1 px-3 py-1 ${style.badge} rounded-full text-sm font-medium`}
+                  >
+                    <Tag className="w-3 h-3" />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Beneficios */}
             <div className="mb-10">
@@ -95,7 +180,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
                 {plan.coverage.map((item, index) => (
                   <li
                     key={index}
-                    className={`flex items-start gap-4 bg-white/70 backdrop-blur-sm p-5 rounded-xl border ${style.badge.replace('text-', 'border-')} hover:border-opacity-50 transition-all group`}
+                    className={`flex items-start gap-4 bg-white/70 backdrop-blur-sm p-5 rounded-xl border ${style.badge.split(' ')[0]} hover:border-opacity-50 transition-all group`}
                   >
                     <div className="mt-1 flex-shrink-0">
                       <CheckCircle className={`w-6 h-6 ${style.accent}`} />
@@ -117,23 +202,36 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
                 Contratar Plan Ahora
                 <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
               </span>
-              <div className={`absolute inset-0 bg-gradient-to-r ${style.buttonHoverFrom}/20 ${style.buttonHoverTo}/20 transition-opacity`} />
             </button>
 
             <p className="mt-6 text-center sm:text-left text-gray-500 text-sm">
               Comienza tu transformación hoy • Soporte personalizado incluido
             </p>
+
+            {/* Description completa */}
+            {plan.description && (
+              <div className="mt-12 pt-12 border-t border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Descripción Completa</h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {plan.description}
+                </p>
+              </div>
+            )}
+
+            {/* Content adicional */}
+            {plan.content && (
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Contenido del Plan</h2>
+                <div className="prose prose-lg max-w-none text-gray-700">
+                  {plan.content}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  return db.plans.map((plan) => ({
-    slug: plan.slug!,
-  }));
 }
 
 export default PlanDetailPage;
