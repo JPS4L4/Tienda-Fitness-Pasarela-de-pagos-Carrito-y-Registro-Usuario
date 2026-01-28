@@ -108,11 +108,11 @@ const ItemCard = ({
           <span className="text-3xl font-extrabold text-slate-900">
             {currency} {price.toLocaleString()}
           </span>
-          {discount && discount > 0 && (
+          {discount && discount >  0 ? (
             <span className="text-emerald-600 text-sm font-semibold">
               {discount}% OFF
             </span>
-          )}
+          ) : null}
         </div>
 
         {/* Precio original y cuotas */}

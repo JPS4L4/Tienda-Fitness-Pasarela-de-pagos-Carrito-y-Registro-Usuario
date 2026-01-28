@@ -3,6 +3,7 @@
 import { useCart } from "@/context/CartContext";
 import { X, Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import { SafeImage } from "../others/SafeImage";
+import Link from "next/link";
 
 export default function CartSidebar() {
   const { cart, isOpen, closeCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
@@ -126,11 +127,12 @@ export default function CartSidebar() {
               <span>Total:</span>
               <span className="text-2xl text-green-600">${totalPrice}</span>
             </div>
-            <button
-              className="w-full py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
+            <Link
+              href="/checkout?type=cart"
+              className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 text-center block"
             >
               Proceder al Pago
-            </button>
+            </Link>
             <button
               onClick={closeCart}
               className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"

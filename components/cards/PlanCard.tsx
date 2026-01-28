@@ -27,7 +27,7 @@ const FavoriteButton = ({
   id, 
   title, 
   image, 
-  slug 
+  slug,
 }: { 
   id: number | string
   title: string
@@ -72,6 +72,11 @@ const FavoriteButton = ({
 export const PlanCard = ({ plan }: { plan: any }) => {
   const style = typeStyles[plan.type as keyof typeof typeStyles] || typeStyles.nutricion
 
+
+  const actualPrice = plan.discount && plan.discount > 0
+    ? `$${Math.round(plan.price * (1 - plan.discount / 100)).toLocaleString()}`
+    : `$${plan.price.toLocaleString()}`
+
   return (
     <div className={cn(
       "group relative bg-white rounded-3xl border border-slate-200 overflow-hidden",
@@ -105,11 +110,30 @@ export const PlanCard = ({ plan }: { plan: any }) => {
         </h3>
 
         {/* Precio */}
-        <div className="flex items-baseline gap-2 mb-6">
+        <div className="flex items-baseline gap-2 mb-2">
           <span className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            {plan.price}
+            {actualPrice}
           </span>
-          <span className="text-slate-500 text-lg">/ total</span>
+          <span className="text-md font-light text-gray-600">{plan.currency}</span>
+          <span className="text-slate-500 text-lg font-light">/ total</span>
+          
+        </div>
+        <div className="flex justify-around items-center mb-6">
+          {
+            plan.discount ? (
+              <span className="text-gray-500 text-sm font-medium">
+                Antes 
+              <span className="text-gray-500 text-lg line-through mx-2">
+                ${plan.price.toLocaleString()}
+              </span>
+              </span>
+            ) : null
+          }
+          {plan.discount && plan.discount >  0 ? (
+            <span className="text-emerald-600 text-sm font-semibold">
+              {plan.discount}% OFF
+            </span>
+          ) : null}
         </div>
 
         {/* Beneficios */}

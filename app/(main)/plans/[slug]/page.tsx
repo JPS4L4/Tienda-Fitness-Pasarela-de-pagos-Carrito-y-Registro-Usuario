@@ -4,6 +4,7 @@ import { getPlanBySlug } from '@/app/src/lib/plans';
 import { PlanUI } from '@/app/src/types/plan';
 import { SafeImage } from '@/components/others/SafeImage';
 import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
+import Link from 'next/link';
 
 // Definimos los estilos por tipo
 const planStyles = {
@@ -194,15 +195,16 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
             </div>
 
             {/* Botón principal */}
-            <button
+            <Link
               type="button"
               className={`group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r ${style.buttonFrom} ${style.buttonTo} text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95`}
+              href={`/checkout?type=plan&planId=${plan.id}`}
             >
               <span className="relative z-10 flex items-center justify-center gap-3">
                 Contratar Plan Ahora
                 <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
               </span>
-            </button>
+            </Link>
 
             <p className="mt-6 text-center sm:text-left text-gray-500 text-sm">
               Comienza tu transformación hoy • Soporte personalizado incluido

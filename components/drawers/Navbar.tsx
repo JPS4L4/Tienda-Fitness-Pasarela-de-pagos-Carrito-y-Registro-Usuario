@@ -33,7 +33,7 @@ export default function Navbar() {
              <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/plans" && "text-orange-500"}`}>Planes</span>
           </NavLink>
           {/* Enlace de Contacto y Soporte */}
-          {
+         {/*  {
             pathname === "/contact" ? (
                 <NavLink href="/support" currentPath={pathname}>
             <span className="text-black text-lg hover:text-orange-400">Soporte</span>
@@ -44,7 +44,7 @@ export default function Navbar() {
             <span className="text-black text-lg hover:text-orange-400">Contacto</span>
           </NavLink>
             )
-          }          
+          }           */}
         
         </div>
     

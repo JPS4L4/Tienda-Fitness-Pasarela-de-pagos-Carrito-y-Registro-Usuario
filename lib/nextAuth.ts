@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { validateCredentials } from "@/lib/authService"
+import { validateCredentials, registerOAuthUser } from "@/lib/authService"
 
 export const authOptions: NextAuthOptions = {
   // Proveedores de autenticación
@@ -96,14 +96,43 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback sign-in: se ejecuta cuando alguien intenta iniciar sesión
-    async signIn({ user, account }: any) {
-      // Para OAuth (Google, Facebook), verificar o crear usuario en BD
+    async signIn({ user, account, profile }: any) {
+      // Para OAuth (Google, Facebook), crear o actualizar usuario en BD
       if (account?.provider === "google" || account?.provider === "facebook") {
-        console.log(`[${account.provider}] Login:`, user.email)
-        // Aquí podrías crear el usuario si no existe
+        console.log(`[${account.provider}] Login:`, user.email);
+        
+        if (!user.email) {
+          console.error(`❌ No email provided by ${account.provider}`);
+          return false;
+        }
+
+        try {
+          const result = await registerOAuthUser({
+            email: user.email,
+            name: user.name || profile?.name || null,
+            image: user.image || profile?.picture || null,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId || user.id,
+          });
+
+          if (!result.success) {
+            console.error(`❌ Error registering OAuth user:`, result.error);
+            return false;
+          }
+
+          // Actualizar el user.id con el ID de la BD
+          if (result.user) {
+            user.id = result.user.id.toString();
+          }
+
+          console.log(`✅ OAuth user processed successfully`);
+        } catch (error) {
+          console.error(`❌ Exception in signIn callback:`, error);
+          return false;
+        }
       }
       
-      return true // Permitir login
+      return true; // Permitir login
     },
 
     // Callback redirect: después de login exitoso

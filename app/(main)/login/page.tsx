@@ -226,7 +226,7 @@ export default function UserPage() {
               </button>
             </form>
 
-           {/*  <div className="relative my-8">
+            <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200"></div>
               </div>
@@ -245,15 +245,15 @@ export default function UserPage() {
                 <span className="font-medium text-slate-700">Google</span>
               </button>
 
-              <button
+              {/* <button
                 onClick={() => handleSocial("facebook")}
                 disabled={loading}
                 className="flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166fe5] text-white transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50"
               >
                 <Image src={facebookIcon} alt="Facebook" width={24} height={24} />
                 <span className="font-medium">Facebook</span>
-              </button>
-            </div> */}
+              </button> */}
+            </div>
           </div>
 
           <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 text-center">

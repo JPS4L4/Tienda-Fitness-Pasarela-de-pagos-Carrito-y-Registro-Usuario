@@ -1,4 +1,3 @@
-import { PlanCard } from "@/components/cards/PlanCard";
 import { getPlansForUI } from "@/app/src/lib/plans";
 import PlansPageClient from "./PlansPageClient";
 

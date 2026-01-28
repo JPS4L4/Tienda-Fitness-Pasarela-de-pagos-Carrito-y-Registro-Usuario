@@ -35,19 +35,22 @@ model User {
   carts     Cart[]
   reviews   Review[]
   orders    Order[]
+  subscriptions UserSubscription[]
 }
 
 model Account {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  provider  String // "credentials" | "google" | "facebook" | etc.
-  password  String? // Solo para provider = "credentials"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  provider          String // "credentials" | "google" | "facebook" | etc.
+  providerAccountId String? // ID único del usuario en el proveedor OAuth
+  password          String? // Solo para provider = "credentials"
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
+  @@index([providerAccountId])
 }
 
 model Item {
@@ -174,6 +177,7 @@ model Order {
   id Int @id @default(autoincrement())
 
   userId Int? // null = compra anónima
+  planId Int? // ID del plan comprado (si es suscripción)
 
   email String
   phone String?
@@ -186,8 +190,33 @@ model Order {
 
   items Json // snapshot del carrito
 
+  // Para planes/suscripciones
+  accessToken     String?   @unique // Token único para acceder al plan
+  tokenExpiresAt  DateTime? // Fecha de expiración del token
+  subscriptionType String?  // "monthly" | "quarterly" | "yearly" | "lifetime"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model UserSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  planId    Int
+  orderId   Int
+  
+  status    String   @default("active") // active | expired | cancelled
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  
+  accessToken String   @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, planId, orderId])
 }

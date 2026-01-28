@@ -7,6 +7,7 @@
 export {
   validateCredentials,
   registerUser,
+  registerOAuthUser,
   getAllUsers,
   getUserById,
   updateUser,

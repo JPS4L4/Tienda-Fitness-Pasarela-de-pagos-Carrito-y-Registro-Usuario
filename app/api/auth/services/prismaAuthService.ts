@@ -200,3 +200,96 @@ export async function updateUser(
     return { success: false, error: 'Error al actualizar usuario' };
   }
 }
+
+/**
+ * Registrar o actualizar usuario OAuth (Google/Facebook)
+ */
+export async function registerOAuthUser(payload: {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  provider: string;
+  providerAccountId: string;
+}): Promise<AuthResult> {
+  try {
+    console.log(`🔐 Procesando login OAuth [${payload.provider}]:`, payload.email);
+
+    // Buscar usuario existente por email
+    let user = await prisma.user.findUnique({
+      where: { email: payload.email },
+      include: {
+        accounts: true,
+      },
+    });
+
+    if (user) {
+      console.log('✅ Usuario existente encontrado:', user.id);
+      
+      // Verificar si ya tiene una cuenta con este proveedor
+      const hasProviderAccount = user.accounts.some(
+        acc => acc.provider === payload.provider && acc.providerAccountId === payload.providerAccountId
+      );
+
+      if (!hasProviderAccount) {
+        console.log(`🔗 Vinculando cuenta de ${payload.provider} al usuario existente`);
+        await prisma.account.create({
+          data: {
+            userId: user.id,
+            provider: payload.provider,
+            providerAccountId: payload.providerAccountId,
+          },
+        });
+      }
+
+      // Actualizar imagen si viene del proveedor y el usuario no tiene una
+      if (payload.image && !user.image) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { image: payload.image },
+        });
+      }
+
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      };
+    }
+
+    // Crear nuevo usuario con cuenta OAuth
+    console.log(`✨ Creando nuevo usuario desde ${payload.provider}`);
+    const newUser = await prisma.user.create({
+      data: {
+        email: payload.email,
+        name: payload.name || null,
+        image: payload.image || null,
+        emailVerified: new Date(), // OAuth users are pre-verified
+        accounts: {
+          create: {
+            provider: payload.provider,
+            providerAccountId: payload.providerAccountId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    console.log('✅ Usuario OAuth creado exitosamente:', newUser.id);
+
+    return {
+      success: true,
+      user: newUser,
+    };
+  } catch (error) {
+    console.error(`❌ Error registrando usuario OAuth [${payload.provider}]:`, error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMsg || 'Error al registrar usuario OAuth' };
+  }
+}
