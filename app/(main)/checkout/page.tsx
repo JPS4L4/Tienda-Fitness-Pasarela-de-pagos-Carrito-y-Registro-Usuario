@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/context/CartContext';
+import CheckoutSummary from './components/CheckoutSummary';
+import CheckoutPaymentForm from './components/CheckoutPaymentForm';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -37,10 +39,10 @@ interface ShippingInfo {
   state: string;
 }
 
-const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
+const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string }) => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { cart: contextCart, clearCart } = useCart();
+  const { cart: contextCart, clearCart, removeFromCart } = useCart();
   const stripe = useStripe();
   const elements = useElements();
 
@@ -48,9 +50,9 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'mercadopago'>('stripe');
-  
+
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
-    email: '',
+    email: session?.user?.email || '',
     phone: '',
     address: '',
     postalCode: '',
@@ -58,7 +60,7 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     state: '',
   });
 
-  // Verificar autenticación para planes
+  // Verificar autenticación solo para planes
   useEffect(() => {
     if (type === 'plan' && status === 'unauthenticated') {
       toast.error('Debes iniciar sesión para suscribirte a un plan');
@@ -66,15 +68,13 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     }
   }, [type, status, router, planId]);
 
-  // Cargar datos según el tipo
+  // Cargar datos según tipo
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (type === 'cart') {
-          // Obtener items del carrito desde el contexto
           setCartItems(contextCart);
         } else if (type === 'plan' && planId) {
-          // Obtener datos del plan
           const response = await fetch(`/api/plans/${planId}`);
           if (!response.ok) throw new Error('Plan no encontrado');
           const data = await response.json();
@@ -102,7 +102,9 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     return plan?.price || 0;
   };
 
-  // Manejar cambios en formulario de envío
+  // Variable para moneda
+  const currency = '$';
+
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShippingInfo({
       ...shippingInfo,
@@ -110,7 +112,10 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     });
   };
 
-  // Validar formulario de envío
+  const handlePaymentMethodChange = (method: 'stripe' | 'mercadopago') => {
+    setPaymentMethod(method);
+  };
+
   const validateShippingInfo = () => {
     const { email, phone, address, postalCode, city, state } = shippingInfo;
     if (!email || !phone || !address || !postalCode || !city || !state) {
@@ -124,17 +129,14 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     return true;
   };
 
-  // Procesar pago
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validar Stripe solo si el método de pago es stripe
+
     if (paymentMethod === 'stripe' && (!stripe || !elements)) {
       toast.error('Stripe no está cargado correctamente');
       return;
     }
 
-    // Validar datos para carrito
     if (type === 'cart' && !validateShippingInfo()) {
       return;
     }
@@ -143,44 +145,51 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
 
     try {
       if (paymentMethod === 'stripe') {
-        // Verificación de tipo segura para stripe y elements
-        if (!stripe || !elements) {
-          throw new Error('Stripe no está cargado correctamente');
-        }
+        // ========== PAGO CON STRIPE ==========
+        const { CardElement } = await import('@stripe/react-stripe-js');
+        const cardElement = elements?.getElement(CardElement);
 
-        const cardElement = elements.getElement(CardElement);
         if (!cardElement) {
           throw new Error('Elemento de tarjeta no encontrado');
         }
 
-        // Crear orden en backend
-        const orderResponse = await fetch('/api/orders', {
+        // 1. Crear Payment Intent
+        const intentResponse = await fetch('/api/payments/stripe/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            amount: calculateTotal(),
             type,
-            planId,
             items: type === 'cart' ? cartItems : undefined,
+            planId: type === 'plan' ? planId : undefined,
             shippingInfo: type === 'cart' ? shippingInfo : undefined,
-            total: calculateTotal(),
           }),
         });
 
-        if (!orderResponse.ok) {
-          const error = await orderResponse.json();
-          throw new Error(error.message || 'Error al crear la orden');
+        if (!intentResponse.ok) {
+          const error = await intentResponse.json();
+          throw new Error(error.error || 'Error al crear el pago');
         }
 
-        const { orderId, clientSecret } = await orderResponse.json();
+        const { clientSecret, paymentIntentId } = await intentResponse.json();
 
-        // Confirmar pago con Stripe
-        const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+        // 2. Confirmar el pago con Stripe
+        const { error: stripeError, paymentIntent } = await stripe!.confirmCardPayment(
           clientSecret,
           {
             payment_method: {
               card: cardElement,
               billing_details: {
-                email: type === 'cart' ? shippingInfo.email : session?.user?.email,
+                email: type === 'cart' ? shippingInfo.email : session?.user?.email || '',
+                ...(type === 'cart' && {
+                  phone: shippingInfo.phone,
+                  address: {
+                    line1: shippingInfo.address,
+                    city: shippingInfo.city,
+                    state: shippingInfo.state,
+                    postal_code: shippingInfo.postalCode,
+                  },
+                }),
               },
             },
           }
@@ -190,41 +199,64 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
           throw new Error(stripeError.message);
         }
 
-        if (paymentIntent?.status === 'succeeded') {
-          // Confirmar orden en backend
-          await fetch(`/api/orders/${orderId}/confirm`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentIntentId: paymentIntent.id }),
-          });
-
-          toast.success('¡Pago procesado exitosamente!');
-          
-          if (type === 'cart') {
-            clearCart(); // Limpiar carrito del contexto
-            router.push(`/orders/${orderId}`);
-          } else {
-            router.push('/profile?tab=subscriptions');
-          }
+        if (paymentIntent?.status !== 'succeeded') {
+          throw new Error('El pago no se completó correctamente');
         }
-      } else {
-        // Integración con Mercado Pago
-        const response = await fetch('/api/mercadopago/create-preference', {
+
+        // 3. Confirmar en el servidor y crear orden
+        const confirmResponse = await fetch('/api/payments/stripe/confirm-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            paymentIntentId,
             type,
-            planId,
             items: type === 'cart' ? cartItems : undefined,
+            planId: type === 'plan' ? planId : undefined,
             shippingInfo: type === 'cart' ? shippingInfo : undefined,
-            total: calculateTotal(),
           }),
         });
 
-        const { preferenceId } = await response.json();
+        if (!confirmResponse.ok) {
+          throw new Error('Error al confirmar la orden');
+        }
+
+        const result = await confirmResponse.json();
+
+        // Éxito
+        toast.success(result.message);
         
-        // Redirigir a Mercado Pago
-        window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${preferenceId}`;
+        if (type === 'cart') {
+          clearCart();
+        }
+
+        // Redirigir a página de éxito
+        setTimeout(() => {
+          router.push(`/checkout/success?orderId=${result.orderId}`);
+        }, 1500);
+
+      } else if (paymentMethod === 'mercadopago') {
+        // ========== PAGO CON MERCADOPAGO ==========
+        const preferenceResponse = await fetch('/api/payments/mercadopago/create-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: calculateTotal(),
+            type,
+            items: type === 'cart' ? cartItems : undefined,
+            planId: type === 'plan' ? planId : undefined,
+            shippingInfo: type === 'cart' ? shippingInfo : undefined,
+          }),
+        });
+
+        if (!preferenceResponse.ok) {
+          const error = await preferenceResponse.json();
+          throw new Error(error.error || 'Error al crear la preferencia de pago');
+        }
+
+        const { initPoint } = await preferenceResponse.json();
+
+        // Redirigir a MercadoPago
+        window.location.href = initPoint;
       }
     } catch (error: any) {
       toast.error(error.message || 'Error al procesar el pago');
@@ -234,233 +266,59 @@ const CheckoutForm = ({ type, planId }: { type: string; planId?: string }) => {
     }
   };
 
-  if (type === 'plan' && status === 'loading') {
-    return <div className="text-center py-8">Cargando...</div>;
-  }
-
   return (
-    <div className="flex flex-col lg:flex-row gap-8 min-h-screen p-4 lg:p-8">
-      {/* Columna izquierda - Resumen */}
-      <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-lg p-6 lg:p-8 h-fit">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Resumen de Compra</h2>
-        
-        {type === 'cart' ? (
-          <div className="space-y-4">
-            {cartItems.length === 0 ? (
-              <p className="text-gray-500">Tu carrito está vacío</p>
-            ) : (
-              <>
-                {cartItems.map((item) => {
-                  const itemPrice = item.discount
-                    ? Math.round(item.price * (1 - item.discount / 100))
-                    : item.price;
-                  const subtotal = itemPrice * item.quantity;
-                  
-                  return (
-                    <div key={item.id} className="flex justify-between items-center border-b pb-4">
-                      <div className="flex items-center gap-4">
-                        {item.image && (
-                          <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
-                        )}
-                        <div>
-                          <h3 className="font-semibold">{item.title}</h3>
-                          <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
-                          {item.discount && (
-                            <p className="text-xs text-green-600">-{item.discount}% descuento</p>
-                          )}
-                        </div>
-                      </div>
-                      <p className="font-bold">${subtotal.toFixed(2)}</p>
-                    </div>
-                  );
-                })}
-                <div className="flex justify-between items-center pt-4 border-t-2">
-                  <span className="text-xl font-bold">Total:</span>
-                  <span className="text-2xl font-bold text-blue-600">${calculateTotal().toFixed(2)}</span>
-                </div>
-              </>
-            )}
-          </div>
-        ) : plan ? (
-          <div className="space-y-4">
-            <div className="border-b pb-4">
-              <h3 className="text-xl font-bold mb-2">{plan.title}</h3>
-              {plan.description && <p className="text-gray-600 mb-4">{plan.description}</p>}
-              <ul className="space-y-2">
-                {plan.coverage.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex justify-between items-center pt-4">
-              <span className="text-xl font-bold">Total:</span>
-              <span className="text-2xl font-bold text-blue-600">${plan.price.toFixed(2)}</span>
-            </div>
-          </div>
-        ) : (
-          <p className="text-gray-500">Cargando...</p>
-        )}
-      </div>
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3">
+            Finalizar Compra
+          </h1>
+          <p className="text-slate-600 text-lg">
+            Completa tu pedido de forma segura y rápida
+          </p>
+          <div className="w-24 h-1 bg-linear-to-r from-indigo-600 to-blue-600 mx-auto mt-4 rounded-full"></div>
+        </div>
 
-      {/* Columna derecha - Formulario y pago */}
-      <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-lg p-6 lg:p-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          {type === 'cart' ? 'Información de Envío' : 'Información de Pago'}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Formulario de envío solo para carrito */}
-          {type === 'cart' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Email *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={shippingInfo.email}
-                  onChange={handleShippingChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Teléfono *</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={shippingInfo.phone}
-                  onChange={handleShippingChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Dirección *</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={shippingInfo.address}
-                  onChange={handleShippingChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Código Postal *</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    value={shippingInfo.postalCode}
-                    onChange={handleShippingChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Municipio *</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={shippingInfo.city}
-                    onChange={handleShippingChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Departamento *</label>
-                <input
-                  type="text"
-                  name="state"
-                  value={shippingInfo.state}
-                  onChange={handleShippingChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Método de pago */}
-          <div>
-            <label className="block text-sm font-medium mb-4">Método de Pago</label>
-            <div className="flex gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('stripe')}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 transition-colors ${
-                  paymentMethod === 'stripe'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                Tarjeta (Stripe)
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('mercadopago')}
-                className={`flex-1 py-3 px-4 rounded-lg border-2 transition-colors ${
-                  paymentMethod === 'mercadopago'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                Mercado Pago
-              </button>
-            </div>
-
-            {paymentMethod === 'stripe' && (
-              <div className="p-4 border rounded-lg">
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#424770',
-                        '::placeholder': {
-                          color: '#aab7c4',
-                        },
-                      },
-                      invalid: {
-                        color: '#9e2146',
-                      },
-                    },
-                  }}
-                />
-              </div>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+          {/* Componente de Resumen */}
+          <div className="order-2 lg:order-1">
+            <CheckoutSummary
+              type={type}
+              cartItems={cartItems}
+              plan={plan}
+              onRemoveItem={removeFromCart}
+              calculateTotal={calculateTotal}
+            />
           </div>
 
-          <button
-            type="submit"
-            disabled={
-              loading || 
-              (paymentMethod === 'stripe' && (!stripe || !elements)) ||
-              (type === 'cart' && cartItems.length === 0) || 
-              (type === 'plan' && !plan)
-            }
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Procesando...' : 
-             (paymentMethod === 'stripe' && (!stripe || !elements)) ? 'Cargando Stripe...' :
-             `Pagar $${calculateTotal().toFixed(2)}`}
-          </button>
-        </form>
+          {/* Componente de Formulario de Pago */}
+          <div className="order-1 lg:order-2">
+            <CheckoutPaymentForm
+              type={type}
+              shippingInfo={shippingInfo}
+              paymentMethod={paymentMethod}
+              loading={loading}
+              cartItemsCount={cartItems.length}
+              hasPlan={!!plan}
+              totalAmount={calculateTotal()}
+              currency={currency}
+              hasStripeElements={!!(stripe && elements)}
+              onShippingChange={handleShippingChange}
+              onPaymentMethodChange={handlePaymentMethodChange}
+              onSubmit={handleSubmit}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
+// Wrapper con Suspense y Elements
 const CheckoutPage = () => {
   const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'cart';
+  const type = (searchParams.get('type') || 'cart') as 'cart' | 'plan';
   const planId = searchParams.get('planId') || undefined;
 
   return (
@@ -475,7 +333,7 @@ export default function Page() {
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando checkout...</p>
         </div>
       </div>

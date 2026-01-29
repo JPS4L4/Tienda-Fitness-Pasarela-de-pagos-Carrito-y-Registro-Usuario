@@ -19,16 +19,19 @@ const ItemCard = ({
   image,
   isOfferOfTheDay,
   slug,
-  currency = "COP" // por defecto COP, pero ya viene de DB
+  currency = "COP", // por defecto COP, pero ya viene de DB
+  stock
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item: any) => item.id === id)
+  const isOutOfStock = (stock ?? 0) <= 0
 
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
   const isFav = isFavorite(id, "product")
 
   const handleToggleCart = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isOutOfStock) return
     if (isInCart) {
       removeFromCart(id)
       toast.success("Eliminado del carrito 🛒", { duration: 3000 })
@@ -61,7 +64,7 @@ const ItemCard = ({
       className={cn(
         "group relative flex flex-col bg-white rounded-2xl border border-gray-200",
         "overflow-hidden hover:shadow-2xl hover:border-gray-300",
-        "transition-all duration-300 cursor-pointer h-full max-w-[350px]"
+        "transition-all duration-300 cursor-pointer h-full max-w-87.5"
       )}
     >
       {/* Contenedor de imagen */}
@@ -87,8 +90,15 @@ const ItemCard = ({
 
         {/* Badge oferta */}
         {isOfferOfTheDay && (
-          <span className="absolute top-3 right-3 z-20 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+          <span className="absolute top-3 right-3 z-20 bg-linear-to-r from-red-500 to-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
             Oferta del día
+          </span>
+        )}
+
+        {/* Badge agotado */}
+        {isOutOfStock && (
+          <span className="absolute bottom-3 left-3 z-20 bg-black/80 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+            Agotado
           </span>
         )}
 
@@ -140,14 +150,19 @@ const ItemCard = ({
       {/* Botón de carrito */}
       <button
         onClick={handleToggleCart}
+        disabled={isOutOfStock}
         className={cn(
           "mt-auto py-4 px-6 font-medium text-white transition-all duration-300 flex items-center justify-center gap-2",
-          isInCart
-            ? "bg-emerald-600 hover:bg-emerald-700"
-            : "bg-indigo-600 hover:bg-indigo-700"
+          isOutOfStock
+            ? "bg-gray-400 cursor-not-allowed"
+            : isInCart
+              ? "bg-emerald-600 hover:bg-emerald-700"
+              : "bg-indigo-600 hover:bg-indigo-700"
         )}
       >
-        {isInCart ? (
+        {isOutOfStock ? (
+          <>Agotado</>
+        ) : isInCart ? (
           <>
             <Check className="w-5 h-5" />
             En carrito

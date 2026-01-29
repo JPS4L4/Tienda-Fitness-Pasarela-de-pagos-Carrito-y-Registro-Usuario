@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { validateCredentials, registerOAuthUser } from "@/lib/authService"
+import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 
 export const authOptions: NextAuthOptions = {
   // Proveedores de autenticación
@@ -35,8 +36,19 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        // Sanitizar y validar inputs
+        const sanitizedEmail = sanitizeInput(credentials.email).toLowerCase();
+        const sanitizedPassword = credentials.password;
+
+        // Validar formato y detectar ataques
+        const validation = validateLoginForm(sanitizedEmail, sanitizedPassword);
+        if (!validation.valid) {
+          console.log("❌ Validación fallida en login:", validation.error);
+          return null;
+        }
+
         // Validar contra PostgreSQL usando Prisma
-        const result = await validateCredentials(credentials.email, credentials.password)
+        const result = await validateCredentials(sanitizedEmail, sanitizedPassword)
         
         if (result.success && result.user && result.user.email) {
           return {

@@ -4,10 +4,19 @@ import { registerUser } from "../services/prismaAuthService"
 import { sendVerificationEmail, generateToken, getTokenExpiry } from "@/lib/emailService"
 import { prisma } from "@/lib/prisma"
 import type { RegisterPayload } from "@/types/auth"
+import { registerLimiter, applyRateLimit } from "@/lib/rateLimit"
+import { validateRegisterForm, sanitizeInput, detectSQLInjection, detectXSS } from "@/lib/validation"
 
 export async function POST(request: NextRequest) {
   try {
     console.log("📝 Iniciando registro...")
+    
+    // Aplicar rate limiting
+    const rateLimitResult = await applyRateLimit(request, registerLimiter, 'register');
+    if (!rateLimitResult.allowed) {
+      return rateLimitResult.response!;
+    }
+    
     let body: RegisterPayload
 
     try {
@@ -31,28 +40,47 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validaciones básicas
-    if (email.length < 5 || !email.includes("@")) {
-      console.log("❌ Email inválido:", email)
+    // Sanitizar inputs
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email).toLowerCase();
+    const sanitizedPassword = password; // No sanitizar password para preservar caracteres especiales
+
+    // Detectar intentos de SQL Injection o XSS
+    if (detectSQLInjection(sanitizedName) || detectSQLInjection(sanitizedEmail)) {
+      console.log("⚠️ Intento de SQL Injection detectado");
       return NextResponse.json(
-        { success: false, message: "Email inválido" },
+        { success: false, message: "Entrada sospechosa detectada" },
         { status: 400 }
-      )
+      );
     }
 
-    if (password.length < 6) {
-      console.log("❌ Contraseña muy corta")
+    if (detectXSS(sanitizedName) || detectXSS(sanitizedEmail)) {
+      console.log("⚠️ Intento de XSS detectado");
       return NextResponse.json(
-        { success: false, message: "La contraseña debe tener al menos 6 caracteres" },
+        { success: false, message: "Entrada sospechosa detectada" },
         { status: 400 }
-      )
+      );
     }
 
-    console.log("✅ Validaciones iniciales pasadas para:", email)
+    // Validaciones completas con la función de validación
+    const validation = validateRegisterForm(sanitizedName, sanitizedEmail, sanitizedPassword, sanitizedPassword);
+    if (!validation.valid) {
+      console.log("❌ Validación fallida:", validation.error);
+      return NextResponse.json(
+        { success: false, message: validation.error },
+        { status: 400 }
+      );
+    }
 
-    // Registrar usuario en PostgreSQL
+    console.log("✅ Validaciones iniciales pasadas para:", sanitizedEmail)
+
+    // Registrar usuario en PostgreSQL con datos sanitizados
     console.log("📝 Llamando a registerUser...")
-    const result = await registerUser({ name, email, password })
+    const result = await registerUser({ 
+      name: sanitizedName, 
+      email: sanitizedEmail, 
+      password: sanitizedPassword 
+    })
 
     if (!result.success) {
       console.log("❌ Error en registerUser:", result.error)
@@ -72,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Guardar token en la base de datos
     try {
       const updated = await prisma.user.update({
-        where: { email },
+        where: { email: sanitizedEmail },
         data: {
           emailVerificationToken: verificationToken,
           emailVerificationTokenExpiry: tokenExpiry,
@@ -83,8 +111,8 @@ export async function POST(request: NextRequest) {
       // Enviar email de verificación
       try {
         console.log("📧 Enviando email de verificación...")
-        await sendVerificationEmail(email, name, verificationToken)
-        console.log("✅ Email de verificación enviado a:", email)
+        await sendVerificationEmail(sanitizedEmail, sanitizedName, verificationToken)
+        console.log("✅ Email de verificación enviado a:", sanitizedEmail)
       } catch (emailError) {
         console.error("⚠️  Error enviando email de verificación:", emailError)
         // No fallar el registro si el email no se envía, solo loguear el error
@@ -95,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Respuesta exitosa
-    console.log("✅ Registro completado exitosamente para:", email)
+    console.log("✅ Registro completado exitosamente para:", sanitizedEmail)
     return NextResponse.json(
       {
         success: true,

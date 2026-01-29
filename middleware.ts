@@ -40,8 +40,55 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Continuar normalmente (permitir acceso a login siempre)
-  return NextResponse.next()
+  // Continuar con la respuesta
+  const response = NextResponse.next()
+
+  // Agregar headers de seguridad HTTP
+  const securityHeaders = {
+    // Prevenir clickjacking
+    'X-Frame-Options': 'DENY',
+    
+    // Prevenir MIME type sniffing
+    'X-Content-Type-Options': 'nosniff',
+    
+    // Habilitar protección XSS del navegador
+    'X-XSS-Protection': '1; mode=block',
+    
+    // Política de referrer (no enviar información sensible)
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    
+    // Política de permisos (Feature Policy)
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    
+    // Content Security Policy (CSP) - Ajustar según necesidades
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' https://fonts.gstatic.com",
+      "connect-src 'self' https://accounts.google.com",
+      "frame-src 'self' https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '),
+    
+    // Forzar HTTPS en producción (HSTS)
+    ...(process.env.NODE_ENV === 'production' && {
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
+    })
+  };
+
+  // Aplicar headers de seguridad
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    if (value) {
+      response.headers.set(key, value);
+    }
+  });
+
+  return response
 }
 
 // Configurar qué rutas usan el middleware

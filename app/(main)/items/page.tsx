@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import ItemCard from "@/components/cards/ItemCard";
 import LocalSearchAutocomplete from "@/components/others/LocalSearchAutocomplete";
 import { Search as SearchIcon } from "lucide-react";
 import { ItemUI } from "../../src/types/item";
 
-export default function StorePage() {
+function StorePageContent() {
+  const searchParams = useSearchParams();
   const [featuredItems, setFeaturedItems] = useState<ItemUI[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [discountOnly, setDiscountOnly] = useState(false);
   const [sortBy, setSortBy] = useState("relevance");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -23,6 +26,14 @@ export default function StorePage() {
       .then(data => setFeaturedItems(data))
       .catch(console.error);
   }, []);
+
+  // 🔹 Aplicar filtro de descuento desde URL
+  useEffect(() => {
+    const discountParam = searchParams.get('discount');
+    if (discountParam === 'true') {
+      setDiscountOnly(true);
+    }
+  }, [searchParams]);
 
   // 🔹 Categorías dinámicas
   const allCategories = useMemo(
@@ -53,6 +64,11 @@ export default function StorePage() {
       result = result.filter(p => p.freeShipping);
     }
 
+    // 🔹 Filtro de descuentos
+    if (discountOnly) {
+      result = result.filter(p => p.discount && p.discount > 0);
+    }
+
     switch (sortBy) {
       case "price-asc":
         result.sort((a, b) => a.price - b.price);
@@ -75,6 +91,7 @@ export default function StorePage() {
     minPrice,
     maxPrice,
     freeShippingOnly,
+    discountOnly,
     sortBy,
     searchQuery,
   ]);
@@ -84,6 +101,7 @@ export default function StorePage() {
     setMinPrice(null);
     setMaxPrice(null);
     setFreeShippingOnly(false);
+    setDiscountOnly(false);
     setSearchQuery("");
   };
 
@@ -198,6 +216,20 @@ export default function StorePage() {
                 <span className="text-sm text-green-600 font-semibold">Solo envío gratis</span>
               </label>
             </div>
+
+            {/* Filtro de Descuentos */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3">Ofertas</h3>
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  checked={discountOnly}
+                  onChange={(e) => setDiscountOnly(e.target.checked)}
+                  className="w-4 h-4 accent-red-600 cursor-pointer"
+                />
+                <span className="text-sm text-red-600 font-semibold">Solo con descuento</span>
+              </label>
+            </div>
           </aside>
 
 
@@ -253,3 +285,17 @@ export default function StorePage() {
   );
 }
 
+export default function StorePage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-gray-100 min-h-screen pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando tienda...</p>
+        </div>
+      </div>
+    }>
+      <StorePageContent />
+    </Suspense>
+  );
+}

@@ -1,11 +1,16 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import googleIcon from '../../../images/icons/google_icon.webp'
 import facebookIcon from '../../../images/icons/facebook_icon.webp'
+import { 
+  validateLoginForm, 
+  validateRegisterForm, 
+  ClientRateLimiter 
+} from "@/lib/validation"
 
 export default function UserPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
@@ -16,20 +21,52 @@ export default function UserPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false)
+  const [rateLimitWait, setRateLimitWait] = useState(0)
 
   const router = useRouter()
+  const rateLimiter = new ClientRateLimiter()
+
+  // Countdown para rate limit
+  useEffect(() => {
+    if (rateLimitWait > 0) {
+      const timer = setInterval(() => {
+        setRateLimitWait(prev => Math.max(0, prev - 1))
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+  }, [rateLimitWait])
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   setError(null)
   setSuccess(null)
-  setLoading(true)
 
-  if (mode === "register" && password !== confirmPassword) {
-    setError("Las contraseñas no coinciden")
-    setLoading(false)
-    return
+  // Verificar rate limit del cliente
+  const limitKey = mode === "login" ? "login" : "register";
+  if (!rateLimiter.checkLimit(limitKey, 5, 60000)) {
+    const waitTime = rateLimiter.getWaitTime(limitKey, 5, 60000);
+    setRateLimitWait(waitTime);
+    setError(`Demasiados intentos. Por favor espera ${waitTime} segundos.`);
+    return;
   }
+
+  // Validación del lado del cliente
+  if (mode === "login") {
+    const validation = validateLoginForm(email, password);
+    if (!validation.valid) {
+      setError(validation.error || "Datos inválidos");
+      return;
+    }
+  } else {
+    const validation = validateRegisterForm(userName, email, password, confirmPassword);
+    if (!validation.valid) {
+      setError(validation.error || "Datos inválidos");
+      return;
+    }
+  }
+
+  setLoading(true)
 
   try {
     if (mode === "login") {
@@ -42,6 +79,7 @@ export default function UserPage() {
 
       if (result?.ok) {
         setSuccess("¡Login exitoso! Redirigiendo...")
+        rateLimiter.reset("login"); // Resetear contador en éxito
         setTimeout(() => {
           router.push("/")
         }, 1000)
@@ -67,8 +105,17 @@ export default function UserPage() {
       const data = await res.json()
       console.log("📝 Datos de respuesta:", data);
 
+      // Manejar rate limiting del servidor
+      if (res.status === 429) {
+        const retryAfter = data.retryAfter || 60;
+        setRateLimitWait(retryAfter);
+        setError(`Demasiados intentos. Por favor espera ${retryAfter} segundos.`);
+        return;
+      }
+
       if (res.ok && data.success) {
         setSuccess("¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.")
+        rateLimiter.reset("register"); // Resetear contador en éxito
         setTimeout(() => {
           setMode("login")
           setEmail("")
@@ -104,7 +151,7 @@ export default function UserPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4 sm:px-6 lg:px-8 py-12">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-white to-slate-50 px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all duration-500">
           <div className="px-8 pt-10 pb-6 text-center">
@@ -169,10 +216,36 @@ export default function UserPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => mode === "register" && setShowPasswordRequirements(true)}
+                    onBlur={() => setShowPasswordRequirements(false)}
                     placeholder="••••••••"
                     className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
                     required
                   />
+                  
+                  {/* Requisitos de contraseña */}
+                  {mode === "register" && showPasswordRequirements && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+                      <p className="font-medium text-blue-900 mb-1">La contraseña debe tener:</p>
+                      <ul className="space-y-1 text-blue-700">
+                        <li className={password.length >= 8 ? "text-green-600" : ""}>
+                          • Mínimo 8 caracteres {password.length >= 8 && "✓"}
+                        </li>
+                        <li className={/[A-Z]/.test(password) ? "text-green-600" : ""}>
+                          • Una letra mayúscula {/[A-Z]/.test(password) && "✓"}
+                        </li>
+                        <li className={/[a-z]/.test(password) ? "text-green-600" : ""}>
+                          • Una letra minúscula {/[a-z]/.test(password) && "✓"}
+                        </li>
+                        <li className={/\d/.test(password) ? "text-green-600" : ""}>
+                          • Un número {/\d/.test(password) && "✓"}
+                        </li>
+                        <li className={/[@$!%*?&]/.test(password) ? "text-green-600" : ""}>
+                          • Un carácter especial (@$!%*?&) {/[@$!%*?&]/.test(password) && "✓"}
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {mode === "register" && (
@@ -193,6 +266,14 @@ export default function UserPage() {
                 )}
               </div>
 
+              {rateLimitWait > 0 && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                  <p className="text-yellow-700 text-sm font-medium">
+                    ⏳ Espera {rateLimitWait} segundos antes de intentar nuevamente
+                  </p>
+                </div>
+              )}
+
               {error && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                   <p className="text-red-700 text-sm">{error}</p>
@@ -207,11 +288,11 @@ export default function UserPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || rateLimitWait > 0}
                 className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 shadow-lg ${
-                  loading
+                  loading || rateLimitWait > 0
                     ? "bg-teal-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02] active:scale-95"
+                    : "bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02] active:scale-95"
                 }`}
               >
                 {loading ? (
@@ -235,7 +316,7 @@ export default function UserPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex justify-center items-center gap-4">
               <button
                 onClick={() => handleSocial("google")}
                 disabled={loading}

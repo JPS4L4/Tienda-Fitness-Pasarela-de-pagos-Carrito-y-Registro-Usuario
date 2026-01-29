@@ -44,6 +44,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (type === 'cart' && (!shippingInfo || !items)) {
+      return NextResponse.json(
+        { error: 'Datos de envío o items faltantes' },
+        { status: 400 }
+      );
+    }
+
     // Generar token de acceso si es un plan
     const accessToken = type === 'plan' ? generateAccessToken() : null;
     const tokenExpiresAt = type === 'plan' ? calculateExpirationDate(subscriptionType) : null;
@@ -53,12 +60,17 @@ export async function POST(request: Request) {
       data: {
         userId: session?.user ? parseInt(session.user.id as string) : null,
         planId: type === 'plan' ? parseInt(planId) : null,
-        email: type === 'cart' ? shippingInfo.email : session?.user?.email || '',
-        phone: type === 'cart' ? shippingInfo.phone : null,
-        total,
-        status: 'pending',
-        shippingAddress: type === 'cart' ? shippingInfo : null,
-        items: type === 'cart' ? items : { planId, subscriptionType },
+        customerEmail: type === 'cart' ? shippingInfo.email : session?.user?.email || '',
+        customerPhone: type === 'cart' ? shippingInfo.phone : null,
+        totalAmount: total,
+        status: 'PENDING',
+        shippingAddress: type === 'cart' ? shippingInfo.address : null,
+        shippingCity: type === 'cart' ? shippingInfo.city : null,
+        shippingState: type === 'cart' ? shippingInfo.state : null,
+        shippingPostalCode: type === 'cart' ? shippingInfo.postalCode : null,
+        items: type === 'cart'
+          ? items
+          : [{ planId: parseInt(planId), subscriptionType }],
         accessToken,
         tokenExpiresAt,
         subscriptionType: type === 'plan' ? subscriptionType : null,

@@ -42,3 +42,132 @@ body {
 .animate-heartbeat {
   animation: heartbeat 0.5s ease-in-out;
 }
+/* ============================================ */
+/* Efectos de gradiente animado para botones */
+/* ============================================ */
+
+.bg-size-200 {
+  background-size: 200%;
+}
+
+.bg-pos-0 {
+  background-position: 0%;
+}
+
+.bg-pos-100 {
+  background-position: 100%;
+}
+
+/* ============================================ */
+/* Estilos para HeroCarousel - Swiper */
+/* ============================================ */
+
+/* Dots de paginación personalizados */
+.swiper-pagination-bullet-custom {
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.swiper-pagination-bullet-custom:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.2);
+}
+
+.swiper-pagination-bullet-active-custom {
+  width: 32px;
+  border-radius: 6px;
+  background: white;
+}
+
+/* Responsive dots para mobile */
+@media (min-width: 640px) {
+  .swiper-pagination-bullet-custom {
+    width: 12px;
+    height: 12px;
+  }
+
+  .swiper-pagination-bullet-active-custom {
+    width: 40px;
+  }
+}
+
+/* Animaciones fade-in-up para contenido del carousel */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+/* Ocultar scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================ */
+/* Estilos para OffersCarousel */
+/* ============================================ */
+
+/* Dots de paginación para ofertas */
+.offers-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 1;
+  display: inline-block;
+  margin: 0 4px;
+}
+
+.offers-pagination-bullet:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1.2);
+}
+
+.offers-pagination-bullet-active {
+  width: 24px;
+  border-radius: 4px;
+  background: white;
+}
+
+@media (min-width: 640px) {
+  .offers-pagination-bullet {
+    width: 10px;
+    height: 10px;
+  }
+
+  .offers-pagination-bullet-active {
+    width: 32px;
+  }
+}

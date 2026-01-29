@@ -179,26 +179,41 @@ model Order {
   userId Int? // null = compra anónima
   planId Int? // ID del plan comprado (si es suscripción)
 
-  email String
-  phone String?
+  // Información de contacto
+  customerEmail String
+  customerPhone String?
 
-  total  Float
-  status String // pending | paid | shipped | delivered | cancelled
+  // Montos
+  totalAmount Float
+  status      String @default("PENDING") // PENDING | COMPLETED | CANCELLED | REFUNDED
 
-  shippingAddress Json?
-  billingAddress  Json?
+  // Información de pago
+  paymentMethod String? // STRIPE | MERCADOPAGO
+  paymentId     String? // ID del pago en la pasarela
 
-  items Json // snapshot del carrito
+  // Dirección de envío (para productos físicos)
+  shippingAddress    String?
+  shippingCity       String?
+  shippingState      String?
+  shippingPostalCode String?
+
+  // Snapshot del pedido
+  items Json // Array de items comprados
 
   // Para planes/suscripciones
-  accessToken     String?   @unique // Token único para acceder al plan
-  tokenExpiresAt  DateTime? // Fecha de expiración del token
-  subscriptionType String?  // "monthly" | "quarterly" | "yearly" | "lifetime"
+  accessToken        String?   @unique // Token único para acceder al plan
+  tokenExpiresAt     DateTime? // Fecha de expiración del token
+  subscriptionType   String? // "monthly" | "quarterly" | "yearly" | "lifetime"
+  subscriptionStatus String?   @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([paymentId])
+  @@index([status])
 }
 
 model UserSubscription {

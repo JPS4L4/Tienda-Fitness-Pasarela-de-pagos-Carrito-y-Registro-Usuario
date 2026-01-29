@@ -3,7 +3,10 @@
 
 // Para servidor: auth() y getServerSession
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/nextAuth";
+import { authOptions as nextAuthOptions } from "@/lib/nextAuth";
+
+// Re-exportar authOptions para uso en API routes
+export const authOptions = nextAuthOptions;
 
 export async function auth() {
   return getServerSession(authOptions);
