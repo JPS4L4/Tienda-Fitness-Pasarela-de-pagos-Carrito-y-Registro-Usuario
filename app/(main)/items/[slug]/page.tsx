@@ -4,7 +4,7 @@ import { SafeImage } from '@/components/others/SafeImage';
 import ItemClient from '@/components/others/ItemClient';
 import { ItemUI } from '@/app/src/types/item';
 import { getItemBySlug } from '../../../src/lib/items';
-import { cn } from '@/lib/utils'; // agrega esto si no lo tienes (ver nota al final)
+import { cn } from '@/lib/utils';
 import FavoriteItemButton from '../../../../components/buttons/FavoriteItemButton';
 
 const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
@@ -26,44 +26,43 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
 
           {/* Columna izquierda - Imagen y badges */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10 group bg-white">
-            <SafeImage
-              src={item.image || '/placeholder-product.jpg'}
-              alt={item.title}
-              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-              containerClassName="aspect-[4/3] lg:aspect-square"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+          <div className="space-y-4">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10 group bg-white">
+              <SafeImage
+                src={item.image || '/placeholder-product.jpg'}
+                alt={item.title}
+                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                containerClassName="aspect-[4/3] lg:aspect-square"
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
 
-            {/* Badges flotantes */}
-            <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+            {/* Badges debajo de la imagen */}
+            <div className="flex flex-wrap gap-3">
               {item.isOfferOfTheDay && (
-                <span className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-orange-500 to-rose-500 text-white text-sm font-bold rounded-full shadow-lg">
+                <span className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-orange-500 to-rose-500 text-white text-sm font-bold rounded-full shadow-sm">
                   <Star className="w-5 h-5 fill-white" />
                   Oferta del día
                 </span>
               )}
 
               {item.discount && item.discount > 0 && (
-                <span className="inline-flex items-center gap-2 px-5 py-2 bg-red-500 text-white text-sm font-bold rounded-full shadow-lg">
+                <span className="inline-flex items-center gap-2 px-5 py-2 bg-red-500 text-white text-sm font-bold rounded-full shadow-sm">
                   -{item.discount}% OFF
                 </span>
               )}
 
               {item.freeShipping && (
-                <span className="inline-flex items-center gap-2 px-5 py-2 bg-green-500 text-white text-sm font-bold rounded-full shadow-lg">
+                <span className="inline-flex items-center gap-2 px-5 py-2 bg-green-500 text-white text-sm font-bold rounded-full shadow-sm">
                   <Truck className="w-5 h-5" />
                   Envío Gratis
                 </span>
               )}
-            </div>
 
-            {/* Stock */}
-            {item.stock !== undefined && (
-              <div className="absolute bottom-6 right-6 z-10">
+              {item.stock !== undefined && (
                 <span className={cn(
-                  "inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold shadow-lg",
+                  "inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold shadow-sm",
                   item.stock > 10 ? 'bg-green-100 text-green-800' :
                   item.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
                   'bg-red-100 text-red-800'
@@ -71,8 +70,8 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
                   <Package className="w-5 h-5" />
                   {item.stock > 0 ? `${item.stock} disponibles` : 'Agotado'}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Columna derecha - Contenido */}

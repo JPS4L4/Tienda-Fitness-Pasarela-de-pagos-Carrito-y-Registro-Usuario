@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
     const body: RegisterPayload = await request.json()
     console.log("🔍 [DEBUG] Body recibido:", { ...body, password: "***" })
 
-    const { name, email, password } = body
+    const { name, email, password, phone } = body
+    const normalizedPhone = phone ? phone.replace(/[\s-]/g, "") : undefined
 
     // Validar que todos los campos estén presentes
     if (!name || !email || !password) {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Registrar usuario en PostgreSQL
     console.log("🔍 [DEBUG] Llamando a registerUser...")
-    const result = await registerUser({ name, email, password })
+    const result = await registerUser({ name, email, password, phone: normalizedPhone })
     console.log("🔍 [DEBUG] Resultado de registerUser:", result)
 
     if (!result.success) {

@@ -1,15 +1,14 @@
 
 import type { Metadata } from "next";
 import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "@/components/drawers/Navbar";
-import Footer from "@/components/drawers/Footer";
-import RootLayoutClient from "./RootLayoutClient";
-import { Toaster } from "react-hot-toast"
+import SessionProviderClient from "./SessionProviderClient";
+import CartProviderClient from "./CartProviderClient";
+import FavoritesHydrator from "./FavoritesHydrator";
 
 
 const geistSans = Geist({
@@ -36,13 +35,13 @@ const RootLayout = ({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      > 
-        <RootLayoutClient>
-          <Navbar/>
-          {children}
-          <Toaster position="top-center" />
-          <Footer/>
-        </RootLayoutClient>
+      >
+        <SessionProviderClient>
+          <CartProviderClient>
+            <FavoritesHydrator />
+            {children}
+          </CartProviderClient>
+        </SessionProviderClient>
       </body>
     </html>
   );

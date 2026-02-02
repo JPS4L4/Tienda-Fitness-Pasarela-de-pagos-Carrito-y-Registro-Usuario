@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server"
 const publicRoutes = [
   "/",
   "/login",
-  "/products",
+  "/items",
   "/plans",
   "/contact",
   "/support",
@@ -63,12 +63,12 @@ export function middleware(request: NextRequest) {
     // Content Security Policy (CSP) - Ajustar según necesidades
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://js.stripe.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: https: blob:",
+      "img-src 'self' data: https: blob: https://q.stripe.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://accounts.google.com",
-      "frame-src 'self' https://accounts.google.com",
+      "connect-src 'self' https://accounts.google.com https://api.stripe.com https://m.stripe.com https://r.stripe.com",
+      "frame-src 'self' https://accounts.google.com https://js.stripe.com https://hooks.stripe.com https://m.stripe.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

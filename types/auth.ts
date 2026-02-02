@@ -7,6 +7,7 @@ declare module "next-auth" {
     name: string
     role?: string
     image?: string | null
+    phone?: string | null
   }
 
   interface Session extends DefaultSession {
@@ -18,6 +19,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string 
     role?: string
+    phone?: string | null
   }
 }
 
@@ -26,6 +28,7 @@ export interface RegisterPayload {
   name: string
   email: string
   password: string
+  phone?: string
 }
 
 export interface LoginPayload {

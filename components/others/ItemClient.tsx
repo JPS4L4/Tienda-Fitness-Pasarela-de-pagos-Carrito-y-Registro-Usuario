@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { ItemUI } from "@/app/src/types/item";
 import AddToCartButton from "@/components/buttons/AddToCartButton";
+import { useState } from "react";
 
 interface ItemClientProps {
   producto: ItemUI;
@@ -10,14 +12,27 @@ interface ItemClientProps {
 
 export default function ItemClient({ producto }: ItemClientProps) {
   const isOutOfStock = (producto.stock ?? 0) <= 0;
+  const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
+
+  const handleBuyNow = () => {
+    if (isOutOfStock) return;
+    const safeQuantity = Math.max(1, quantity);
+    router.push(`/checkout?type=cart&buyNowId=${producto.id}&qty=${safeQuantity}`);
+  };
   return (
     <div className="w-full space-y-4">
       {/* Botones principales */}
-      <AddToCartButton product={producto} />
+      <AddToCartButton
+        product={producto}
+        quantity={quantity}
+        onQuantityChange={setQuantity}
+      />
 
       <button
         type="button"
         disabled={isOutOfStock}
+        onClick={handleBuyNow}
         className={`group relative w-full py-6 text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 ${
           isOutOfStock
             ? "bg-gray-400 cursor-not-allowed"

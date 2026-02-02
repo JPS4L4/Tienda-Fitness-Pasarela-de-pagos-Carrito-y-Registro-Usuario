@@ -4,17 +4,31 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-01-28.clover',
-});
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecret
+  ? new Stripe(stripeSecret, { apiVersion: '2026-01-28.clover' })
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'STRIPE_SECRET_KEY no está configurado' },
+        { status: 500 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
-    const { paymentIntentId, type, items, planId, shippingInfo } = await request.json();
+    const {
+      paymentIntentId,
+      type,
+      items,
+      planId,
+      shippingInfo,
+      checkoutSessionId,
+    } = await request.json();
     const parsedUserId = session?.user?.id ? parseInt(session.user.id, 10) : null;
 
-    // Verificar el Payment Intent
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status !== 'succeeded') {
@@ -24,33 +38,148 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Crear orden en la base de datos
-    if (type === 'cart') {
-      // Orden de carrito
-      const order = await prisma.order.create({
-        data: {
-          userId: Number.isFinite(parsedUserId) ? parsedUserId : null,
-          totalAmount: paymentIntent.amount / 100,
-          status: 'COMPLETED',
-          paymentMethod: 'STRIPE',
-          paymentId: paymentIntentId,
-          shippingAddress: shippingInfo.address,
-          shippingCity: shippingInfo.city,
-          shippingState: shippingInfo.state,
-          shippingPostalCode: shippingInfo.postalCode,
-          customerEmail: shippingInfo.email,
-          customerPhone: shippingInfo.phone,
-          items: items,
-        },
-      });
+    const existingOrder = await prisma.order.findFirst({
+      where: { paymentId: paymentIntentId },
+    });
 
+    if (existingOrder) {
       return NextResponse.json({
         success: true,
-        orderId: order.id,
+        orderId: existingOrder.id,
         message: '¡Pago exitoso! Tu pedido ha sido confirmado.',
       });
-    } else if (type === 'plan' && planId) {
-      // Suscripción a plan
+    }
+
+    if (type === 'cart') {
+      let resolvedItems = items;
+      let resolvedShippingInfo = shippingInfo;
+
+      if (
+        (!Array.isArray(resolvedItems) || resolvedItems.length === 0) &&
+        checkoutSessionId
+      ) {
+        const checkoutSession = await prisma.checkoutSession.findUnique({
+          where: { id: checkoutSessionId },
+        });
+
+        if (!checkoutSession || checkoutSession.expiresAt < new Date()) {
+          return NextResponse.json(
+            { error: 'La sesión de checkout expiró. Intenta de nuevo.' },
+            { status: 400 }
+          );
+        }
+
+        resolvedItems = checkoutSession.items || [];
+        resolvedShippingInfo = checkoutSession.shippingInfo || null;
+      }
+
+      const stockItems = Array.isArray(resolvedItems) ? resolvedItems : [];
+
+      try {
+        const order = await prisma.$transaction(async (tx) => {
+          for (const item of stockItems) {
+            const productId = item.productId ?? item.id;
+            const quantity = Number(item.quantity || 0);
+
+            if (!productId || quantity <= 0) continue;
+
+            const updated = await tx.item.updateMany({
+              where: {
+                id: Number(productId),
+                stock: { gte: quantity },
+              },
+              data: {
+                stock: { decrement: quantity },
+              },
+            });
+
+            if (updated.count === 0) {
+              const err = new Error('STOCK_INSUFFICIENT');
+              (err as any).productId = Number(productId);
+              (err as any).quantity = quantity;
+              throw err;
+            }
+          }
+
+          const createdOrder = await tx.order.create({
+            data: {
+              userId: Number.isFinite(parsedUserId) ? parsedUserId : null,
+              customerFirstName: resolvedShippingInfo?.firstName || null,
+              customerLastName: resolvedShippingInfo?.lastName || null,
+              totalAmount: paymentIntent.amount / 100,
+              status: 'COMPLETED',
+              paymentMethod: 'STRIPE',
+              paymentId: paymentIntentId,
+              shippingAddress: resolvedShippingInfo?.address || '',
+              shippingCity: resolvedShippingInfo?.city || '',
+              shippingState: resolvedShippingInfo?.state || '',
+              shippingPostalCode: resolvedShippingInfo?.postalCode || '',
+              customerEmail:
+                resolvedShippingInfo?.email || paymentIntent.receipt_email || '',
+              customerPhone: resolvedShippingInfo?.phone || '',
+              items: resolvedItems,
+            },
+          });
+
+          if (checkoutSessionId) {
+            await tx.checkoutSession.update({
+              where: { id: checkoutSessionId },
+              data: { status: 'COMPLETED' },
+            });
+          }
+
+          return createdOrder;
+        });
+
+        return NextResponse.json({
+          success: true,
+          orderId: order.id,
+          message: '¡Pago exitoso! Tu pedido ha sido confirmado.',
+        });
+      } catch (error: any) {
+        if (error?.message === 'STOCK_INSUFFICIENT') {
+          const productId = Number(error.productId);
+          const quantity = Number(error.quantity || 0);
+          const itemRecord = Number.isFinite(productId)
+            ? await prisma.item.findUnique({
+                where: { id: productId },
+                select: { stock: true },
+              })
+            : null;
+
+          await prisma.stockAlert.create({
+            data: {
+              productId: Number.isFinite(productId) ? productId : null,
+              requestedQuantity: quantity || 0,
+              availableStock: itemRecord?.stock ?? null,
+              paymentProvider: 'STRIPE',
+              paymentId: paymentIntentId,
+              context: 'stripe-confirm',
+            },
+          });
+
+          await prisma.retryEvent.create({
+            data: {
+              paymentProvider: 'STRIPE',
+              paymentId: paymentIntentId,
+              reason: 'STOCK_INSUFFICIENT',
+              context: Number.isFinite(productId)
+                ? `productId:${productId}`
+                : null,
+            },
+          });
+
+          return NextResponse.json(
+            { error: 'Stock insuficiente para uno o más productos' },
+            { status: 409 }
+          );
+        }
+
+        throw error;
+      }
+    }
+
+    if (type === 'plan' && planId) {
       if (!session?.user?.id || !Number.isFinite(parsedUserId)) {
         return NextResponse.json(
           { error: 'Debes iniciar sesión para suscribirte' },
@@ -58,9 +187,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Obtener datos del plan
       const plan = await prisma.plan.findUnique({
-        where: { id: parseInt(planId) },
+        where: { id: parseInt(planId, 10) },
       });
 
       if (!plan) {
@@ -70,7 +198,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Crear orden con suscripción
       const order = await prisma.order.create({
         data: {
           userId: parsedUserId!,
@@ -78,7 +205,7 @@ export async function POST(request: NextRequest) {
           status: 'COMPLETED',
           paymentMethod: 'STRIPE',
           paymentId: paymentIntentId,
-          planId: parseInt(planId),
+          planId: parseInt(planId, 10),
           customerEmail: session.user.email || '',
           items: [
             {

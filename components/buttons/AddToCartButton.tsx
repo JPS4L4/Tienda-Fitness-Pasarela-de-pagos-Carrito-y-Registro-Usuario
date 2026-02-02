@@ -7,11 +7,12 @@ import { ItemUI } from "@/app/src/types/item";
 
 interface AddToCartButtonProps {
   product: ItemUI;
+  quantity: number;
+  onQuantityChange: (value: number) => void;
 }
 
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, quantity, onQuantityChange }: AddToCartButtonProps) {
   const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const isOutOfStock = (product.stock ?? 0) <= 0;
 
@@ -23,7 +24,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
     // Resetear el estado después de 2 segundos
     setTimeout(() => {
       setIsAdded(false);
-      setQuantity(1);
+      onQuantityChange(1);
     }, 2000);
   };
 
@@ -32,7 +33,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
       {/* Selector de cantidad */}
       <div className="flex items-center gap-4 bg-gray-100 rounded-lg p-2 w-fit">
         <button
-          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+          onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
           disabled={isOutOfStock}
           className={`px-3 py-2 rounded transition-colors font-semibold text-lg ${
             isOutOfStock ? "cursor-not-allowed text-gray-400" : "hover:bg-gray-200"
@@ -42,7 +43,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
         </button>
         <span className="w-8 text-center font-bold text-lg">{quantity}</span>
         <button
-          onClick={() => setQuantity(quantity + 1)}
+          onClick={() => onQuantityChange(quantity + 1)}
           disabled={isOutOfStock}
           className={`px-3 py-2 rounded transition-colors font-semibold text-lg ${
             isOutOfStock ? "cursor-not-allowed text-gray-400" : "hover:bg-gray-200"

@@ -14,12 +14,12 @@ const Footer = () => {
 
     // Renderizar el footer en otras páginas
     return(
-       <footer className="footer">
-    {/* Cambiamos flex por grid y definimos 3 columnas iguales */}
-    <div className="grid grid-cols-3 items-center p-4 bg-gray-800 text-white">
+         <footer className="footer">
+     {/* Cambiamos flex por grid y definimos 3 columnas iguales */}
+     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 items-center p-4 bg-gray-800 text-white">
         
         {/* 1. Sección izquierda: Redes sociales */}
-        <div className="flex justify-start">
+        <div className="flex justify-center md:justify-start">
             <div className="flex items-center gap-2 rounded-2xl p-2 bg-gray-900 w-fit">
                 <a href="https://facebook.com" target="_blank">
                     <div className="text-white rounded-full p-1 hover:bg-blue-600 hover:text-white transition-colors duration-300">
@@ -46,7 +46,7 @@ const Footer = () => {
         </div>
 
         {/* 3. Sección derecha: Enlaces */}
-        <div className="flex justify-end gap-2 font-mono text-md">
+        <div className="flex justify-center md:justify-end gap-2 font-mono text-md">
             <a className="hover:text-orange-500 transition-colors duration-300" href="/contact">Contacto</a>
             <span>|</span>
             <a className="hover:text-orange-500 transition-colors duration-300" href="/support">Soporte</a>

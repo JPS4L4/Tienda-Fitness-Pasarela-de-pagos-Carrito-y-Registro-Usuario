@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { name, email, password } = body
+    const { name, email, password, phone } = body
 
     // Validar que todos los campos estén presentes
     if (!name || !email || !password) {
@@ -44,9 +44,11 @@ export async function POST(request: NextRequest) {
     const sanitizedName = sanitizeInput(name);
     const sanitizedEmail = sanitizeInput(email).toLowerCase();
     const sanitizedPassword = password; // No sanitizar password para preservar caracteres especiales
+    const sanitizedPhone = phone ? sanitizeInput(phone) : undefined;
+    const normalizedPhone = sanitizedPhone ? sanitizedPhone.replace(/[\s-]/g, "") : undefined;
 
     // Detectar intentos de SQL Injection o XSS
-    if (detectSQLInjection(sanitizedName) || detectSQLInjection(sanitizedEmail)) {
+    if (detectSQLInjection(sanitizedName) || detectSQLInjection(sanitizedEmail) || (normalizedPhone && detectSQLInjection(normalizedPhone))) {
       console.log("⚠️ Intento de SQL Injection detectado");
       return NextResponse.json(
         { success: false, message: "Entrada sospechosa detectada" },
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (detectXSS(sanitizedName) || detectXSS(sanitizedEmail)) {
+    if (detectXSS(sanitizedName) || detectXSS(sanitizedEmail) || (normalizedPhone && detectXSS(normalizedPhone))) {
       console.log("⚠️ Intento de XSS detectado");
       return NextResponse.json(
         { success: false, message: "Entrada sospechosa detectada" },
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validaciones completas con la función de validación
-    const validation = validateRegisterForm(sanitizedName, sanitizedEmail, sanitizedPassword, sanitizedPassword);
+    const validation = validateRegisterForm(sanitizedName, sanitizedEmail, sanitizedPassword, sanitizedPassword, normalizedPhone);
     if (!validation.valid) {
       console.log("❌ Validación fallida:", validation.error);
       return NextResponse.json(
@@ -79,7 +81,8 @@ export async function POST(request: NextRequest) {
     const result = await registerUser({ 
       name: sanitizedName, 
       email: sanitizedEmail, 
-      password: sanitizedPassword 
+      password: sanitizedPassword,
+      phone: normalizedPhone,
     })
 
     if (!result.success) {

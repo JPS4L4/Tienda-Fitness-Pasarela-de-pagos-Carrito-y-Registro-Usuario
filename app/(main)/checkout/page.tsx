@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
@@ -9,8 +9,10 @@ import { Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/context/CartContext';
 import CheckoutSummary from './components/CheckoutSummary';
 import CheckoutPaymentForm from './components/CheckoutPaymentForm';
+import { ItemUI } from '@/app/src/types/item';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 interface CartItem {
   id: number;
@@ -31,6 +33,8 @@ interface Plan {
 }
 
 interface ShippingInfo {
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   address: string;
@@ -39,7 +43,36 @@ interface ShippingInfo {
   state: string;
 }
 
-const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string }) => {
+const CheckoutForm = ({
+  type,
+  planId,
+  buyNowItemId,
+  buyNowQuantity,
+  stripeClientSecret,
+  stripePaymentIntentId,
+  stripeIntentAmount,
+  stripeCheckoutSessionId,
+  stripeIntentLoading,
+  onStripeIntentChange,
+  onStripeIntentLoadingChange,
+}: {
+  type: 'cart' | 'plan';
+  planId?: string;
+  buyNowItemId?: string;
+  buyNowQuantity?: number;
+  stripeClientSecret: string | null;
+  stripePaymentIntentId: string | null;
+  stripeIntentAmount: number | null;
+  stripeCheckoutSessionId: string | null;
+  stripeIntentLoading: boolean;
+  onStripeIntentChange: (payload: {
+    clientSecret: string | null;
+    paymentIntentId: string | null;
+    amount: number | null;
+    checkoutSessionId: string | null;
+  }) => void;
+  onStripeIntentLoadingChange: (isLoading: boolean) => void;
+}) => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { cart: contextCart, clearCart, removeFromCart } = useCart();
@@ -50,15 +83,29 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'mercadopago'>('stripe');
+  const isBuyNow = Boolean(buyNowItemId);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
+    firstName: '',
+    lastName: '',
     email: session?.user?.email || '',
-    phone: '',
+    phone: session?.user?.phone || '',
     address: '',
     postalCode: '',
     city: '',
     state: '',
   });
+
+  useEffect(() => {
+    if (!session?.user) return;
+    setShippingInfo(prev => ({
+      ...prev,
+      email: prev.email || session.user.email || '',
+      phone: prev.phone || session.user.phone || '',
+      firstName: prev.firstName || session.user.name?.split(' ')[0] || '',
+      lastName: prev.lastName || session.user.name?.split(' ').slice(1).join(' ') || '',
+    }));
+  }, [session]);
 
   // Verificar autenticación solo para planes
   useEffect(() => {
@@ -68,12 +115,42 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
     }
   }, [type, status, router, planId]);
 
+  useEffect(() => {
+    if (!stripeKey && paymentMethod === 'stripe') {
+      toast.error('Stripe no está configurado. Usa MercadoPago o agrega la clave pública.');
+      setPaymentMethod('mercadopago');
+    }
+  }, [paymentMethod]);
+
   // Cargar datos según tipo
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (type === 'cart') {
-          setCartItems(contextCart);
+          if (buyNowItemId) {
+            const itemsResponse = await fetch('/api/items');
+            if (!itemsResponse.ok) {
+              throw new Error('Error al cargar productos');
+            }
+            const items: ItemUI[] = await itemsResponse.json();
+            const selected = items.find(current => String(current.id) === String(buyNowItemId));
+            if (!selected) {
+              throw new Error('Producto no encontrado');
+            }
+            setCartItems([
+              {
+                id: selected.id,
+                title: selected.title,
+                price: selected.price,
+                quantity: Math.max(1, buyNowQuantity ?? 1),
+                image: selected.image,
+                category: selected.category,
+                discount: selected.discount,
+              },
+            ]);
+          } else {
+            setCartItems(contextCart);
+          }
         } else if (type === 'plan' && planId) {
           const response = await fetch(`/api/plans/${planId}`);
           if (!response.ok) throw new Error('Plan no encontrado');
@@ -87,10 +164,10 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
     };
 
     fetchData();
-  }, [type, planId, contextCart]);
+  }, [type, planId, contextCart, buyNowItemId, buyNowQuantity]);
 
   // Calcular total
-  const calculateTotal = () => {
+  const totalAmount = useMemo(() => {
     if (type === 'cart') {
       return cartItems.reduce((sum, item) => {
         const itemPrice = item.discount
@@ -100,7 +177,7 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
       }, 0);
     }
     return plan?.price || 0;
-  };
+  }, [type, cartItems, plan]);
 
   // Variable para moneda
   const currency = '$';
@@ -117,8 +194,8 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
   };
 
   const validateShippingInfo = () => {
-    const { email, phone, address, postalCode, city, state } = shippingInfo;
-    if (!email || !phone || !address || !postalCode || !city || !state) {
+    const { firstName, lastName, email, phone, address, postalCode, city, state } = shippingInfo;
+    if (!firstName || !lastName || !email || !phone || !address || !postalCode || !city || !state) {
       toast.error('Por favor completa todos los campos de envío');
       return false;
     }
@@ -128,6 +205,95 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
     }
     return true;
   };
+
+  useEffect(() => {
+    const createStripeIntent = async () => {
+      if (paymentMethod !== 'stripe') {
+        if (stripeIntentLoading) {
+          onStripeIntentLoadingChange(false);
+        }
+        return;
+      }
+
+      if (!stripeKey || totalAmount <= 0) {
+        return;
+      }
+
+      if (stripeIntentLoading) {
+        return;
+      }
+
+      if (
+        stripeClientSecret &&
+        stripePaymentIntentId &&
+        stripeIntentAmount === totalAmount
+      ) {
+        return;
+      }
+
+      try {
+        onStripeIntentLoadingChange(true);
+        onStripeIntentChange({
+          clientSecret: null,
+          paymentIntentId: null,
+          amount: totalAmount,
+          checkoutSessionId: null,
+        });
+
+        const intentResponse = await fetch('/api/payments/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: totalAmount,
+            type,
+            items: type === 'cart' ? cartItems : undefined,
+            planId: type === 'plan' ? planId : undefined,
+            shippingInfo: type === 'cart' ? shippingInfo : undefined,
+          }),
+        });
+
+        if (!intentResponse.ok) {
+          const error = await intentResponse.json();
+          throw new Error(error.error || 'Error al crear el pago');
+        }
+
+        const { clientSecret, paymentIntentId, checkoutSessionId } = await intentResponse.json();
+        onStripeIntentChange({
+          clientSecret,
+          paymentIntentId,
+          amount: totalAmount,
+          checkoutSessionId: checkoutSessionId || null,
+        });
+      } catch (error) {
+        console.error(error);
+        toast.error('No se pudo iniciar el pago con Stripe');
+        onStripeIntentChange({
+          clientSecret: null,
+          paymentIntentId: null,
+          amount: null,
+          checkoutSessionId: null,
+        });
+      } finally {
+        onStripeIntentLoadingChange(false);
+      }
+    };
+
+    createStripeIntent();
+  }, [
+    paymentMethod,
+    stripeKey,
+    totalAmount,
+    type,
+    planId,
+    cartItems,
+    shippingInfo,
+    stripeClientSecret,
+    stripePaymentIntentId,
+    stripeIntentLoading,
+    stripeIntentAmount,
+    onStripeIntentChange,
+    onStripeIntentLoadingChange,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,39 +312,25 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
     try {
       if (paymentMethod === 'stripe') {
         // ========== PAGO CON STRIPE ==========
-        const { CardElement } = await import('@stripe/react-stripe-js');
-        const cardElement = elements?.getElement(CardElement);
-
-        if (!cardElement) {
-          throw new Error('Elemento de tarjeta no encontrado');
+        if (!stripeKey || !stripe || !elements) {
+          throw new Error('Stripe no está listo. Verifica la clave pública y la carga de Stripe.js');
+        }
+        if (!stripeClientSecret || !stripePaymentIntentId) {
+          throw new Error('Stripe no está listo. Intenta de nuevo en unos segundos.');
         }
 
-        // 1. Crear Payment Intent
-        const intentResponse = await fetch('/api/payments/stripe/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: calculateTotal(),
-            type,
-            items: type === 'cart' ? cartItems : undefined,
-            planId: type === 'plan' ? planId : undefined,
-            shippingInfo: type === 'cart' ? shippingInfo : undefined,
-          }),
-        });
-
-        if (!intentResponse.ok) {
-          const error = await intentResponse.json();
-          throw new Error(error.error || 'Error al crear el pago');
+        const { error: submitError } = await elements.submit();
+        if (submitError) {
+          throw new Error(submitError.message || 'Completa los datos del pago');
         }
 
-        const { clientSecret, paymentIntentId } = await intentResponse.json();
-
-        // 2. Confirmar el pago con Stripe
-        const { error: stripeError, paymentIntent } = await stripe!.confirmCardPayment(
-          clientSecret,
-          {
-            payment_method: {
-              card: cardElement,
+        // 1. Confirmar el pago con Stripe
+        const { error: stripeError, paymentIntent } = await stripe!.confirmPayment({
+          elements: elements!,
+          clientSecret: stripeClientSecret,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout/success`,
+            payment_method_data: {
               billing_details: {
                 email: type === 'cart' ? shippingInfo.email : session?.user?.email || '',
                 ...(type === 'cart' && {
@@ -192,8 +344,9 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
                 }),
               },
             },
-          }
-        );
+          },
+          redirect: 'if_required',
+        });
 
         if (stripeError) {
           throw new Error(stripeError.message);
@@ -208,11 +361,12 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            paymentIntentId,
+            paymentIntentId: stripePaymentIntentId,
             type,
             items: type === 'cart' ? cartItems : undefined,
             planId: type === 'plan' ? planId : undefined,
             shippingInfo: type === 'cart' ? shippingInfo : undefined,
+            checkoutSessionId: stripeCheckoutSessionId,
           }),
         });
 
@@ -240,7 +394,7 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: calculateTotal(),
+            amount: totalAmount,
             type,
             items: type === 'cart' ? cartItems : undefined,
             planId: type === 'plan' ? planId : undefined,
@@ -253,10 +407,15 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
           throw new Error(error.error || 'Error al crear la preferencia de pago');
         }
 
-        const { initPoint } = await preferenceResponse.json();
+        const { initPoint, sandboxInitPoint } = await preferenceResponse.json();
+        const redirectUrl = initPoint || sandboxInitPoint;
+
+        if (!redirectUrl) {
+          throw new Error('No se recibió la URL de redirección de MercadoPago');
+        }
 
         // Redirigir a MercadoPago
-        window.location.href = initPoint;
+        window.location.href = redirectUrl;
       }
     } catch (error: any) {
       toast.error(error.message || 'Error al procesar el pago');
@@ -282,18 +441,18 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
           {/* Componente de Resumen */}
-          <div className="order-2 lg:order-1">
+          <div className="order-1">
             <CheckoutSummary
               type={type}
               cartItems={cartItems}
               plan={plan}
-              onRemoveItem={removeFromCart}
-              calculateTotal={calculateTotal}
+              onRemoveItem={isBuyNow ? () => undefined : removeFromCart}
+              calculateTotal={() => totalAmount}
             />
           </div>
 
           {/* Componente de Formulario de Pago */}
-          <div className="order-1 lg:order-2">
+          <div className="order-2">
             <CheckoutPaymentForm
               type={type}
               shippingInfo={shippingInfo}
@@ -301,9 +460,12 @@ const CheckoutForm = ({ type, planId }: { type: 'cart' | 'plan'; planId?: string
               loading={loading}
               cartItemsCount={cartItems.length}
               hasPlan={!!plan}
-              totalAmount={calculateTotal()}
+              totalAmount={totalAmount}
               currency={currency}
               hasStripeElements={!!(stripe && elements)}
+              stripeAvailable={!!stripeKey}
+              stripeClientSecret={stripeClientSecret}
+              stripeIntentLoading={stripeIntentLoading}
               onShippingChange={handleShippingChange}
               onPaymentMethodChange={handlePaymentMethodChange}
               onSubmit={handleSubmit}
@@ -320,10 +482,54 @@ const CheckoutPage = () => {
   const searchParams = useSearchParams();
   const type = (searchParams.get('type') || 'cart') as 'cart' | 'plan';
   const planId = searchParams.get('planId') || undefined;
+  const buyNowItemId = searchParams.get('buyNowId') || undefined;
+  const buyNowQuantityParam = searchParams.get('qty');
+  const buyNowQuantity = buyNowQuantityParam ? Number(buyNowQuantityParam) : undefined;
+
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+  const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
+  const [stripeIntentAmount, setStripeIntentAmount] = useState<number | null>(null);
+  const [stripeCheckoutSessionId, setStripeCheckoutSessionId] = useState<string | null>(null);
+  const [stripeIntentLoading, setStripeIntentLoading] = useState(false);
+
+  const handleStripeIntentChange = (payload: {
+    clientSecret: string | null;
+    paymentIntentId: string | null;
+    amount: number | null;
+    checkoutSessionId: string | null;
+  }) => {
+    setStripeClientSecret(payload.clientSecret);
+    setStripePaymentIntentId(payload.paymentIntentId);
+    setStripeIntentAmount(payload.amount);
+    setStripeCheckoutSessionId(payload.checkoutSessionId);
+  };
+
+  const stripeElementsOptions = stripeClientSecret
+    ? {
+        clientSecret: stripeClientSecret,
+        appearance: {
+          theme: 'stripe' as const,
+        },
+      }
+    : undefined;
+
+  const elementsKey = stripeClientSecret ? `stripe-${stripeClientSecret}` : 'stripe-empty';
 
   return (
-    <Elements stripe={stripePromise}>
-      <CheckoutForm type={type} planId={planId} />
+    <Elements key={elementsKey} stripe={stripePromise} options={stripeElementsOptions}>
+      <CheckoutForm
+        type={type}
+        planId={planId}
+        buyNowItemId={buyNowItemId}
+        buyNowQuantity={Number.isFinite(buyNowQuantity) ? buyNowQuantity : undefined}
+        stripeClientSecret={stripeClientSecret}
+        stripePaymentIntentId={stripePaymentIntentId}
+        stripeIntentAmount={stripeIntentAmount}
+        stripeCheckoutSessionId={stripeCheckoutSessionId}
+        stripeIntentLoading={stripeIntentLoading}
+        onStripeIntentChange={handleStripeIntentChange}
+        onStripeIntentLoadingChange={setStripeIntentLoading}
+      />
     </Elements>
   );
 };

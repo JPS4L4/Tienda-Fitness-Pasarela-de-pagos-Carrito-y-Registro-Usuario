@@ -5,6 +5,7 @@ import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { validateCredentials, registerOAuthUser } from "@/lib/authService"
 import { validateLoginForm, sanitizeInput } from "@/lib/validation"
+import { prisma } from "@/lib/prisma"
 
 export const authOptions: NextAuthOptions = {
   // Proveedores de autenticación
@@ -27,7 +28,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Correo y Contraseña",
       credentials: {
-        email: { label: "Correo electrónico", type: "email", placeholder: "tu@correo.com" },
+        email: { label: "Correo o teléfono", type: "text", placeholder: "tu@correo.com / +57 300 123 4567" },
         password: { label: "Contraseña", type: "password" }
       },
       // Esta función se ejecuta cuando alguien intenta loguearse con credenciales
@@ -37,24 +38,29 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Sanitizar y validar inputs
-        const sanitizedEmail = sanitizeInput(credentials.email).toLowerCase();
+        const sanitizedIdentifier = sanitizeInput(credentials.email);
+        const isEmail = sanitizedIdentifier.includes("@");
+        const normalizedIdentifier = isEmail
+          ? sanitizedIdentifier.toLowerCase()
+          : sanitizedIdentifier.replace(/[\s-]/g, "");
         const sanitizedPassword = credentials.password;
 
         // Validar formato y detectar ataques
-        const validation = validateLoginForm(sanitizedEmail, sanitizedPassword);
+        const validation = validateLoginForm(normalizedIdentifier, sanitizedPassword);
         if (!validation.valid) {
           console.log("❌ Validación fallida en login:", validation.error);
           return null;
         }
 
         // Validar contra PostgreSQL usando Prisma
-        const result = await validateCredentials(sanitizedEmail, sanitizedPassword)
+        const result = await validateCredentials(normalizedIdentifier, sanitizedPassword)
         
         if (result.success && result.user && result.user.email) {
           return {
             id: result.user.id,
             email: result.user.email,
             name: result.user.name || "",
+            phone: result.user.phone || null,
           } as any
         }
         
@@ -87,6 +93,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.email = user.email
         token.name = user.name
+        token.phone = user.phone
       }
       
       // Para OAuth (Google, Facebook)
@@ -103,6 +110,17 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string
+        session.user.phone = token.phone as string | undefined
+
+        if (session.user.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: Number(session.user.id) },
+            select: { phone: true },
+          });
+          if (dbUser?.phone) {
+            session.user.phone = dbUser.phone;
+          }
+        }
       }
       return session
     },

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
 import { LogoutButton } from "@/components/buttons/LogoutButton"
+import Link from "next/link"
 
 // Esta página es dinámica porque depende de la sesión
 export const dynamic = 'force-dynamic'
@@ -21,12 +22,12 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Card Principal */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-teal-500 to-emerald-600 px-8 pt-12 pb-20 relative">
+          <div className="bg-linear-to-r from-teal-500 to-emerald-600 px-8 pt-12 pb-20 relative">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-grid-pattern"></div>
             </div>
@@ -40,7 +41,7 @@ export default async function ProfilePage() {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
+                  <div className="w-full h-full rounded-full bg-linear-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">
                       {session.user.name?.charAt(0)?.toUpperCase() || "U"}
                     </span>
@@ -70,7 +71,14 @@ export default async function ProfilePage() {
 
                   <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
                     <p className="text-sm font-medium text-slate-600 mb-1">Correo Electrónico</p>
-                    <p className="text-lg font-semibold text-slate-900 break-words">{session.user.email}</p>
+                    <p className="text-lg font-semibold text-slate-900 wrap-break-word">{session.user.email}</p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                    <p className="text-sm font-medium text-slate-600 mb-1">Teléfono</p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {session.user.phone || "No agregado"}
+                    </p>
                   </div>
 
                   <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
@@ -95,19 +103,25 @@ export default async function ProfilePage() {
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Opciones de Cuenta</h2>
 
                 <div className="space-y-3">
-                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
+                  <Link
+                    href="/profile/orders"
+                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
+                  >
                     📋 Mis Compras
-                  </button>
-                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
+                  </Link>
+                  <Link
+                    href="/profile/plans"
+                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
+                  >
                     🏋️ Mis Planes
-                  </button>
-                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
+                  </Link>
+                  <Link
+                    href="/profile/edit"
+                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
+                  >
                     ⚙️ Editar Perfil
-                  </button>
-                  <button className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left">
-                    🔐 Cambiar Contraseña
-                  </button>
-                  
+                  </Link>
+                
                 </div>
               </div>
             </div>

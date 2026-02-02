@@ -1,9 +1,9 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { createJSONStorage, persist } from "zustand/middleware"
 
 interface Favorite {
   id: number | string
-  type: "product" | "plan"
+  type: "item" | "plan"
   title: string
   image?: string
   slug: string
@@ -11,16 +11,40 @@ interface Favorite {
 
 interface FavoritesState {
   favorites: Favorite[]
+  setFavorites: (favorites: Favorite[]) => void
   addFavorite: (item: Favorite) => void
-  removeFavorite: (id: number | string, type: "product" | "plan") => void
-  isFavorite: (id: number | string, type: "product" | "plan") => boolean
+  removeFavorite: (id: number | string, type: "item" | "plan") => void
+  isFavorite: (id: number | string, type: "item" | "plan") => boolean
   clearFavorites: () => void
+}
+
+const USER_KEY_STORAGE = "nan-salazar-user-email"
+
+const getUserKey = () => {
+  if (typeof window === "undefined") return "guest"
+  return localStorage.getItem(USER_KEY_STORAGE) || "guest"
+}
+
+const favoritesStorage = {
+  getItem: (name: string) => {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem(`${name}:${getUserKey()}`)
+  },
+  setItem: (name: string, value: string) => {
+    if (typeof window === "undefined") return
+    localStorage.setItem(`${name}:${getUserKey()}`, value)
+  },
+  removeItem: (name: string) => {
+    if (typeof window === "undefined") return
+    localStorage.removeItem(`${name}:${getUserKey()}`)
+  },
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
     (set, get) => ({
       favorites: [],
+      setFavorites: (favorites) => set({ favorites }),
       addFavorite: (item) => {
         const exists = get().favorites.some(
           fav => fav.id === item.id && fav.type === item.type
@@ -45,7 +69,19 @@ export const useFavoritesStore = create<FavoritesState>()(
     }),
     {
       name: "favorites-storage", // nombre en localStorage
-      partialize: state => ({ favorites: state.favorites }) // solo guarda favorites
+      storage: createJSONStorage(() => favoritesStorage),
+      version: 1,
+      partialize: state => ({ favorites: state.favorites }),
+      migrate: (persistedState) => {
+        const state = persistedState as FavoritesState & { favorites?: any[] }
+        const favorites = Array.isArray(state.favorites)
+          ? state.favorites.map((fav) => ({
+              ...fav,
+              type: fav.type === "plan" ? "item" : fav.type,
+            }))
+          : []
+        return { ...state, favorites }
+      }
     }
   )
 )

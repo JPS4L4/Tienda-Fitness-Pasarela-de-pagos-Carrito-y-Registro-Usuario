@@ -7,6 +7,7 @@
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 export const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]{2,50}$/;
+export const PHONE_REGEX = /^\+?[0-9\s-]{7,18}$/;
 
 interface ValidationResult {
   valid: boolean;
@@ -94,6 +95,27 @@ export function validatePassword(password: string): ValidationResult {
   const commonPasswords = ['Password1!', 'Admin123!', 'Welcome1!', 'Qwerty123!'];
   if (commonPasswords.includes(password)) {
     return { valid: false, error: 'Esta contraseña es muy común, elige otra' };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validar teléfono
+ */
+export function validatePhone(phone: string): ValidationResult {
+  const sanitized = sanitizeInput(phone);
+
+  if (!sanitized) {
+    return { valid: false, error: 'El teléfono es requerido' };
+  }
+
+  if (sanitized.length < 7 || sanitized.length > 18) {
+    return { valid: false, error: 'El teléfono es inválido' };
+  }
+
+  if (!PHONE_REGEX.test(sanitized)) {
+    return { valid: false, error: 'El teléfono tiene un formato inválido' };
   }
 
   return { valid: true };
@@ -220,20 +242,28 @@ export function detectXSS(input: string): boolean {
 /**
  * Validar y sanitizar todos los campos del formulario
  */
-export function validateLoginForm(email: string, password: string): ValidationResult {
+export function validateLoginForm(identifier: string, password: string): ValidationResult {
   // Detectar ataques
-  if (detectSQLInjection(email) || detectSQLInjection(password)) {
+  if (detectSQLInjection(identifier) || detectSQLInjection(password)) {
     return { valid: false, error: 'Entrada sospechosa detectada' };
   }
 
-  if (detectXSS(email) || detectXSS(password)) {
+  if (detectXSS(identifier) || detectXSS(password)) {
     return { valid: false, error: 'Entrada sospechosa detectada' };
   }
 
-  // Validar email
-  const emailValidation = validateEmail(email);
-  if (!emailValidation.valid) {
-    return emailValidation;
+  // Validar email o teléfono
+  const sanitized = sanitizeInput(identifier);
+  if (EMAIL_REGEX.test(sanitized)) {
+    const emailValidation = validateEmail(sanitized);
+    if (!emailValidation.valid) {
+      return emailValidation;
+    }
+  } else {
+    const phoneValidation = validatePhone(sanitized);
+    if (!phoneValidation.valid) {
+      return phoneValidation;
+    }
   }
 
   // Para login, validación de contraseña es más simple
@@ -251,14 +281,25 @@ export function validateRegisterForm(
   name: string,
   email: string,
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
+  phone?: string
 ): ValidationResult {
   // Detectar ataques
-  if (detectSQLInjection(name) || detectSQLInjection(email) || detectSQLInjection(password)) {
+  if (
+    detectSQLInjection(name) ||
+    detectSQLInjection(email) ||
+    detectSQLInjection(password) ||
+    (phone && detectSQLInjection(phone))
+  ) {
     return { valid: false, error: 'Entrada sospechosa detectada' };
   }
 
-  if (detectXSS(name) || detectXSS(email) || detectXSS(password)) {
+  if (
+    detectXSS(name) ||
+    detectXSS(email) ||
+    detectXSS(password) ||
+    (phone && detectXSS(phone))
+  ) {
     return { valid: false, error: 'Entrada sospechosa detectada' };
   }
 
@@ -278,6 +319,14 @@ export function validateRegisterForm(
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.valid) {
     return passwordValidation;
+  }
+
+  // Validar teléfono opcional
+  if (phone) {
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.valid) {
+      return phoneValidation;
+    }
   }
 
   // Confirmar contraseña

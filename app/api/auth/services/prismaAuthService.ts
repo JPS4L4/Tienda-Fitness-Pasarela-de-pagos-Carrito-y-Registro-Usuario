@@ -12,6 +12,7 @@ interface RegisterPayload {
   name: string;
   email: string;
   password: string;
+  phone?: string | null;
 }
 
 interface AuthResult {
@@ -20,6 +21,7 @@ interface AuthResult {
     id: number;
     email: string | null;
     name: string | null;
+    phone?: string | null;
   };
   error?: string;
 }
@@ -33,23 +35,37 @@ export async function validateCredentials(
   password: string
 ): Promise<AuthResult> {
   try {
+    const identifier = email;
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: identifier },
       select: {
         id: true,
         email: true,
         name: true,
+        phone: true,
       },
     });
 
-    if (!user) {
+    const resolvedUser = user || await prisma.user.findFirst({
+      where: {
+        phone: identifier,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+      },
+    });
+
+    if (!resolvedUser) {
       return { success: false, error: 'Usuario no encontrado' };
     }
 
     // Buscar la cuenta con credenciales
     const account = await prisma.account.findFirst({
       where: {
-        userId: user.id,
+        userId: resolvedUser.id,
         provider: 'credentials',
       },
     });
@@ -67,7 +83,12 @@ export async function validateCredentials(
 
     return {
       success: true,
-      user,
+      user: {
+        id: resolvedUser.id,
+        email: resolvedUser.email,
+        name: resolvedUser.name,
+        phone: resolvedUser.phone || null,
+      },
     };
   } catch (error) {
     console.error('Error validando credenciales:', error);
@@ -84,13 +105,25 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
 
     // Verificar si el email ya existe
     console.log('🔐 Verificando si el email ya existe...');
-    const existingUser = await prisma.user.findUnique({
-      where: { email: payload.email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: payload.email },
+          ...(payload.phone ? [{ phone: payload.phone }] : []),
+        ],
+      },
     });
 
     if (existingUser) {
-      console.log('❌ El email ya está registrado:', payload.email);
-      return { success: false, error: 'El email ya está registrado' };
+      if (existingUser.email === payload.email) {
+        console.log('❌ El email ya está registrado:', payload.email);
+        return { success: false, error: 'El email ya está registrado' };
+      }
+      if (payload.phone && existingUser.phone === payload.phone) {
+        console.log('❌ El teléfono ya está registrado:', payload.phone);
+        return { success: false, error: 'El teléfono ya está registrado' };
+      }
+      return { success: false, error: 'El usuario ya está registrado' };
     }
 
     console.log('✅ Email disponible');
@@ -106,6 +139,7 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
       data: {
         name: payload.name,
         email: payload.email,
+        phone: payload.phone || null,
         accounts: {
           create: {
             provider: 'credentials',
@@ -117,6 +151,7 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
         id: true,
         email: true,
         name: true,
+        phone: true,
       },
     });
 
@@ -166,6 +201,7 @@ export async function getUserById(userId: number) {
         email: true,
         name: true,
         image: true,
+        phone: true,
         createdAt: true,
       },
     });
@@ -181,7 +217,7 @@ export async function getUserById(userId: number) {
  */
 export async function updateUser(
   userId: number,
-  data: { name?: string; image?: string }
+  data: { name?: string; image?: string; phone?: string | null }
 ) {
   try {
     const updatedUser = await prisma.user.update({
@@ -192,6 +228,7 @@ export async function updateUser(
         email: true,
         name: true,
         image: true,
+        phone: true,
       },
     });
     return { success: true, user: updatedUser };

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { ItemUI } from "@/app/src/types/item";
 
 export interface CartItem extends ItemUI {
@@ -26,30 +27,104 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [storageKey, setStorageKey] = useState("nan-salazar-cart:guest");
+  const { data: session, status } = useSession();
+  const initializedRef = useRef(false);
+  const syncingRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Cargar carrito desde localStorage al montar el componente
+  // Cargar carrito (local o servidor) según el usuario
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("nan-salazar-cart");
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
+    if (status === "loading") return;
+
+    const userKey = session?.user?.email
+      ? `nan-salazar-cart:${session.user.email}`
+      : "nan-salazar-cart:guest";
+
+    const loadCart = async () => {
+      setIsHydrated(false);
+      setStorageKey(userKey);
+
+      try {
+        if (status === "authenticated" && session?.user?.email) {
+          const guestKey = "nan-salazar-cart:guest";
+          const guestRaw = localStorage.getItem(guestKey);
+          const guestItems: CartItem[] = guestRaw ? JSON.parse(guestRaw) : [];
+
+          if (guestItems.length > 0) {
+            syncingRef.current = true;
+            await fetch("/api/cart?merge=true", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                items: guestItems.map((item) => ({ id: item.id, quantity: item.quantity })),
+              }),
+            });
+            localStorage.removeItem(guestKey);
+          }
+
+          const response = await fetch("/api/cart");
+          const data = await response.json();
+          if (response.ok && Array.isArray(data.items)) {
+            setCart(data.items);
+          } else {
+            setCart([]);
+          }
+        } else {
+          const savedCart = localStorage.getItem(userKey);
+          if (savedCart) {
+            setCart(JSON.parse(savedCart));
+          } else {
+            setCart([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading cart:", error);
+        setCart([]);
+      } finally {
+        syncingRef.current = false;
+        setIsHydrated(true);
+        initializedRef.current = true;
       }
-    } catch (error) {
-      console.error("Error loading cart from localStorage:", error);
-    }
-    setIsHydrated(true);
-  }, []);
+    };
+
+    loadCart();
+  }, [session?.user?.email, status]);
 
   // Guardar carrito en localStorage cada vez que cambia
   useEffect(() => {
     if (isHydrated) {
       try {
-        localStorage.setItem("nan-salazar-cart", JSON.stringify(cart));
+        localStorage.setItem(storageKey, JSON.stringify(cart));
       } catch (error) {
         console.error("Error saving cart to localStorage:", error);
       }
     }
-  }, [cart, isHydrated]);
+  }, [cart, isHydrated, storageKey]);
+
+  // Sincronizar carrito con servidor cuando está autenticado
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (!isHydrated || !initializedRef.current || syncingRef.current) return;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart.map((item) => ({ id: item.id, quantity: item.quantity })),
+          }),
+        });
+      } catch (error) {
+        console.error("Error syncing cart:", error);
+      }
+    }, 400);
+  }, [cart, isHydrated, status]);
 
   const addToCart = useCallback((item: ItemUI, quantity: number = 1) => {
     setCart((prevCart) => {

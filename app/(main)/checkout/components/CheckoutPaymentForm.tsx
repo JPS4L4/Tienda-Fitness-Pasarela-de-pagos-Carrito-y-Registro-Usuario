@@ -1,9 +1,14 @@
 'use client';
 
-import { CardElement } from '@stripe/react-stripe-js';
+import { PaymentElement } from '@stripe/react-stripe-js';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import stripeLogo from '@/images/Logos/stripe-logo-black-transparent.png';
+import mercadopagoLogo from '@/images/Logos/mercadopago_sin_letras.png';
 
 interface ShippingInfo {
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   address: string;
@@ -22,6 +27,9 @@ interface CheckoutPaymentFormProps {
   totalAmount: number;
   currency: string;
   hasStripeElements: boolean;
+  stripeAvailable: boolean;
+  stripeClientSecret: string | null;
+  stripeIntentLoading: boolean;
   onShippingChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPaymentMethodChange: (method: 'stripe' | 'mercadopago') => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -37,6 +45,9 @@ export default function CheckoutPaymentForm({
   totalAmount,
   currency,
   hasStripeElements,
+  stripeAvailable,
+  stripeClientSecret,
+  stripeIntentLoading,
   onShippingChange,
   onPaymentMethodChange,
   onSubmit,
@@ -57,6 +68,40 @@ export default function CheckoutPaymentForm({
           {/* Formulario de envío solo para carrito */}
           {type === 'cart' && (
             <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="group">
+                  <label htmlFor="firstName" className="block text-sm font-bold text-slate-700 mb-2">
+                    Nombre <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={shippingInfo.firstName}
+                    onChange={onShippingChange}
+                    className="block w-full rounded-xl border-2 border-slate-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all py-3 px-4 text-slate-900 font-medium placeholder:text-slate-400"
+                    placeholder="Tu nombre"
+                    required
+                  />
+                </div>
+
+                <div className="group">
+                  <label htmlFor="lastName" className="block text-sm font-bold text-slate-700 mb-2">
+                    Apellidos <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={shippingInfo.lastName}
+                    onChange={onShippingChange}
+                    className="block w-full rounded-xl border-2 border-slate-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all py-3 px-4 text-slate-900 font-medium placeholder:text-slate-400"
+                    placeholder="Tus apellidos"
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="group">
                   <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-2">
@@ -185,6 +230,7 @@ export default function CheckoutPaymentForm({
               <button
                 type="button"
                 onClick={() => onPaymentMethodChange('stripe')}
+                disabled={!stripeAvailable}
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-3 py-6 px-6 rounded-2xl border-3 font-bold transition-all duration-300 group",
                   paymentMethod === 'stripe'
@@ -192,6 +238,9 @@ export default function CheckoutPaymentForm({
                     : "border-slate-300 hover:border-indigo-400 text-slate-700 hover:shadow-lg"
                 )}
               >
+                {!stripeAvailable && (
+                  <span className="absolute bottom-2 text-xs text-red-500">No configurado</span>
+                )}
                 {paymentMethod === 'stripe' && (
                   <div className="absolute top-2 right-2">
                     <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
@@ -199,12 +248,7 @@ export default function CheckoutPaymentForm({
                     </svg>
                   </div>
                 )}
-                <svg className={cn("w-12 h-12 transition-colors", paymentMethod === 'stripe' ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500")} viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 13H5V7h14v10z" />
-                  <circle cx="8" cy="13" r="1" />
-                  <circle cx="12" cy="13" r="1" />
-                  <circle cx="16" cy="13" r="1" />
-                </svg>
+                <Image src={stripeLogo} alt="Stripe Logo" width={48} height={48} />
                 <span className="text-base">Tarjeta (Stripe)</span>
               </button>
 
@@ -225,15 +269,18 @@ export default function CheckoutPaymentForm({
                     </svg>
                   </div>
                 )}
-                <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black transition-colors", paymentMethod === 'mercadopago' ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600")}>
-                  MP
-                </div>
+                <Image
+                  src={mercadopagoLogo}
+                  alt="Mercado Pago Logo"
+                  width={48}
+                  height={48}
+                />
                 <span className="text-base">Mercado Pago</span>
               </button>
             </div>
           </div>
 
-          {/* Elemento de tarjeta Stripe */}
+          {/* Elemento de pago Stripe */}
           {paymentMethod === 'stripe' && (
             <div className="p-6 border-2 border-indigo-200 rounded-2xl bg-linear-to-br from-indigo-50/50 to-blue-50/50 shadow-inner">
               <div className="mb-3 flex items-center gap-2">
@@ -242,19 +289,41 @@ export default function CheckoutPaymentForm({
                 </svg>
                 <span className="text-sm font-bold text-slate-700">Información de la tarjeta</span>
               </div>
-              <CardElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#1e293b',
-                      fontFamily: 'system-ui, -apple-system, sans-serif',
-                      '::placeholder': { color: '#94a3b8' },
+
+              {!stripeAvailable && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+                  Stripe no está configurado. Agrega la clave pública y reinicia la app.
+                </div>
+              )}
+
+              {stripeAvailable && stripeIntentLoading && (
+                <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  Preparando el pago con Stripe...
+                </div>
+              )}
+
+              {stripeAvailable && !stripeIntentLoading && !stripeClientSecret && (
+                <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  Stripe no está listo todavía. Intenta de nuevo en unos segundos.
+                </div>
+              )}
+
+              {stripeAvailable && !stripeIntentLoading && !hasStripeElements && (
+                <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  Cargando Stripe... Si no aparece el campo, revisa bloqueadores o conexión.
+                </div>
+              )}
+
+              {stripeAvailable && hasStripeElements && stripeClientSecret && (
+                <PaymentElement
+                  options={{
+                    layout: {
+                      type: 'tabs',
+                      defaultCollapsed: false,
                     },
-                    invalid: { color: '#ef4444' },
-                  },
-                }}
-              />
+                  }}
+                />
+              )}
             </div>
           )}
 
@@ -264,7 +333,7 @@ export default function CheckoutPaymentForm({
               type="submit"
               disabled={
                 loading ||
-                (paymentMethod === 'stripe' && !hasStripeElements) ||
+                (paymentMethod === 'stripe' && (!hasStripeElements || stripeIntentLoading || !stripeClientSecret)) ||
                 (type === 'cart' && cartItemsCount === 0) ||
                 (type === 'plan' && !hasPlan)
               }

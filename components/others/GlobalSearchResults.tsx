@@ -8,7 +8,7 @@ import { X } from "lucide-react";
 export interface GlobalSearchResult {
   id: number;
   title: string;
-  type: "product" | "plan";
+  type: "item" | "plan";
   price?: string | number;
   category?: string;
 }
@@ -23,7 +23,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
   const pathname = usePathname();
 
   // No mostrar resultados en páginas de búsqueda local
-  const isLocalSearchPage = pathname === "/products" || pathname === "/plans";
+  const isLocalSearchPage = pathname === "/items" || pathname === "/plans";
 
   useEffect(() => {
     if (isLocalSearchPage || !query.trim()) {
@@ -41,7 +41,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
       .map((item) => ({
         id: item.id,
         title: item.title,
-        type: "product" as const,
+        type: "item" as const,
         price: item.price,
         category: item.category,
       }))
@@ -81,7 +81,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
         {results.map((result) => (
           <a
             key={`${result.type}-${result.id}`}
-            href={result.type === "product" ? "/products" : "/plans"}
+            href={result.type === "item" ? "/items" : "/plans"}
             className="block px-4 py-3 hover:bg-orange-50 transition-colors"
           >
             <div className="flex items-start justify-between">
@@ -90,7 +90,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
                   {result.title}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {result.type === "product" ? "Producto" : "Plan"} •{" "}
+                  {result.type === "item" ? "Producto" : "Plan"} •{" "}
                   {result.category}
                 </p>
               </div>
@@ -108,7 +108,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
 
       <div className="px-4 py-3 bg-orange-50 border-t border-orange-200 text-center">
         <a
-          href={results.some((r) => r.type === "product") ? "/products" : "/plans"}
+          href={results.some((r) => r.type === "item") ? "/items" : "/plans"}
           className="text-sm font-semibold text-orange-600 hover:text-orange-700"
         >
           Ver todos los resultados →

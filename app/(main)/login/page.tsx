@@ -16,6 +16,7 @@ export default function UserPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
   const [userName, setUserName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +60,7 @@ export default function UserPage() {
       return;
     }
   } else {
-    const validation = validateRegisterForm(userName, email, password, confirmPassword);
+    const validation = validateRegisterForm(userName, email, password, confirmPassword, phone || undefined);
     if (!validation.valid) {
       setError(validation.error || "Datos inválidos");
       return;
@@ -98,6 +99,7 @@ export default function UserPage() {
           name: userName,
           email,
           password,
+          phone: phone || undefined,
         }),
       })
 
@@ -119,6 +121,7 @@ export default function UserPage() {
         setTimeout(() => {
           setMode("login")
           setEmail("")
+          setPhone("")
           setPassword("")
           setConfirmPassword("")
           setUserName("")
@@ -187,14 +190,14 @@ export default function UserPage() {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Correo electrónico
+                    {mode === "login" ? "Correo o teléfono" : "Correo electrónico"}
                   </label>
                   <input
                     id="email"
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu@correo.com"
+                    placeholder={mode === "login" ? "tu@correo.com / +57 300 123 4567" : "tu@correo.com"}
                     className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
                     required
                   />
@@ -205,11 +208,11 @@ export default function UserPage() {
                     <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                       Contraseña
                     </label>
-                   {/*  {mode === "login" && (
+                    {mode === "login" && (
                       <a href="/forgot-password" className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors">
                         ¿Olvidaste?
                       </a>
-                    )} */}
+                    )}
                   </div>
                   <input
                     id="password"
@@ -249,20 +252,36 @@ export default function UserPage() {
                 </div>
 
                 {mode === "register" && (
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
-                      Confirmar contraseña
-                    </label>
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
-                      required
-                    />
-                  </div>
+                  <>
+
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Confirmar contraseña
+                      </label>
+                      <input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Teléfono (opcional)
+                      </label>
+                      <input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+57 300 123 4567"
+                        className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
 

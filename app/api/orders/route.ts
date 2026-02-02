@@ -60,6 +60,8 @@ export async function POST(request: Request) {
       data: {
         userId: session?.user ? parseInt(session.user.id as string) : null,
         planId: type === 'plan' ? parseInt(planId) : null,
+        customerFirstName: type === 'cart' ? shippingInfo.firstName : null,
+        customerLastName: type === 'cart' ? shippingInfo.lastName : null,
         customerEmail: type === 'cart' ? shippingInfo.email : session?.user?.email || '',
         customerPhone: type === 'cart' ? shippingInfo.phone : null,
         totalAmount: total,

@@ -14,14 +14,14 @@ interface FavoriteItemButtonProps {
 
 export default function FavoriteItemButton({ id, title, image, slug }: FavoriteItemButtonProps) {
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
-  const isFav = isFavorite(id, "product");
+  const isFav = isFavorite(id, "item");
 
   const handleToggleFavorite = () => {
     if (isFav) {
-      removeFavorite(id, "product");
+      removeFavorite(id, "item");
       toast.success("Eliminado de favoritos ❤️", { duration: 3000 });
     } else {
-      addFavorite({ id, type: "product", title, image, slug });
+      addFavorite({ id, type: "item", title, image, slug });
       toast.success("Agregado a favoritos ❤️", { duration: 3000 });
     }
   };

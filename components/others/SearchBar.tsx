@@ -28,7 +28,7 @@ export default function SearchBar({
   const pathname = usePathname();
 
   // Determinar si estamos en una página de búsqueda local
-  const isLocalSearchPage = pathname === "/products" || pathname === "/plans";
+  const isLocalSearchPage = pathname === "/items" || pathname === "/plans";
 
   useEffect(() => {
     if (onSearch && !isLocalSearch) {

@@ -27,7 +27,7 @@ const ItemCard = ({
   const isOutOfStock = (stock ?? 0) <= 0
 
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
-  const isFav = isFavorite(id, "product")
+  const isFav = isFavorite(id, "item")
 
   const handleToggleCart = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -44,10 +44,10 @@ const ItemCard = ({
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isFav) {
-      removeFavorite(id, "product")
+      removeFavorite(id, "item")
       toast.success("Eliminado de favoritos ❤️", { duration: 3000 })
     } else {
-      addFavorite({ id, type: "product", title, image, slug })
+      addFavorite({ id, type: "item", title, image, slug })
       toast.success("Agregado a favoritos ❤️", {
         duration: 4000,
       })
