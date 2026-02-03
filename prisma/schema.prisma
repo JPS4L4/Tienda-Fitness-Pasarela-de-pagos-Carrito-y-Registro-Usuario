@@ -26,6 +26,16 @@ model User {
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
+  // Perfil fitness (formulario de planes)
+  weightKg                 Float?
+  heightCm                 Float?
+  age                       Int?
+  trainingTime              String?
+  goal                      String?
+  equipmentAvailability     String?
+  healthCondition           String?
+  fitnessProfileCompleted   Boolean   @default(false)
+
   //Verificación de email
   emailVerificationToken       String?   @unique
   emailVerificationTokenExpiry DateTime?

@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { Star } from "lucide-react"
 
 interface AddReviewFormProps {
   onReviewAdded?: () => void
+  productId?: number
+  planId?: number
 }
 
-export default function AddReviewForm({ onReviewAdded }: AddReviewFormProps) {
+export default function AddReviewForm({ onReviewAdded, productId, planId }: AddReviewFormProps) {
   const { data: session, status } = useSession()
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
@@ -16,6 +18,49 @@ export default function AddReviewForm({ onReviewAdded }: AddReviewFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [eligibilityChecked, setEligibilityChecked] = useState(false)
+  const [canReview, setCanReview] = useState(true)
+  const [eligibilityMessage, setEligibilityMessage] = useState<string | null>(null)
+
+  const targetType = planId ? "plan" : "producto"
+
+  const loadEligibility = async () => {
+    if ((!productId && !planId) || !session) {
+      setEligibilityChecked(true)
+      return
+    }
+
+    try {
+      const query = planId ? `planId=${planId}` : `productId=${productId}`
+      const res = await fetch(`/api/comments/eligibility?${query}`)
+      const data = await res.json()
+
+      if (!res.ok) {
+        setCanReview(false)
+        setEligibilityMessage("No fue posible validar tu compra")
+        return
+      }
+
+      if (!data.eligible) {
+        setCanReview(false)
+        if (data.reason === "NOT_PURCHASED") {
+          setEligibilityMessage(`Solo puedes calificar ${targetType}s que hayas comprado`)
+        } else if (data.reason === "ALREADY_REVIEWED") {
+          setEligibilityMessage(`Ya has dejado una reseña para este ${targetType}`)
+        } else {
+          setEligibilityMessage(`No tienes acceso para calificar este ${targetType}`)
+        }
+      } else {
+        setCanReview(true)
+        setEligibilityMessage(null)
+      }
+    } catch (err) {
+      setCanReview(false)
+      setEligibilityMessage("No fue posible validar tu compra")
+    } finally {
+      setEligibilityChecked(true)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,6 +92,8 @@ export default function AddReviewForm({ onReviewAdded }: AddReviewFormProps) {
         body: JSON.stringify({
           rating,
           content: content.trim(),
+          ...(productId ? { productId } : {}),
+          ...(planId ? { planId } : {}),
         }),
       })
 
@@ -76,6 +123,22 @@ export default function AddReviewForm({ onReviewAdded }: AddReviewFormProps) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (productId && planId) {
+      setEligibilityChecked(true)
+      setCanReview(false)
+      setEligibilityMessage("No puedes calificar producto y plan al mismo tiempo")
+      return
+    }
+
+    if ((!productId && !planId) || !session) {
+      setEligibilityChecked(true)
+      return
+    }
+
+    loadEligibility()
+  }, [productId, planId, session])
 
   // Si no está autenticado, mostrar mensaje
   if (status === "loading") {
@@ -108,6 +171,24 @@ export default function AddReviewForm({ onReviewAdded }: AddReviewFormProps) {
           >
             Iniciar Sesión
           </a>
+        </div>
+      </div>
+    )
+  }
+
+  if (eligibilityChecked && !canReview) {
+    return (
+      <div className="bg-linear-to-br from-slate-50 to-slate-100 rounded-2xl shadow-lg p-8 border border-slate-200">
+        <div className="text-center">
+          <div className="inline-block p-4 bg-indigo-100 rounded-full mb-4">
+            <Star className="w-8 h-8 text-indigo-600" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">
+            Reseñas disponibles tras la compra
+          </h3>
+          <p className="text-slate-600">
+            {eligibilityMessage || `No tienes acceso para calificar este ${targetType}`}
+          </p>
         </div>
       </div>
     )

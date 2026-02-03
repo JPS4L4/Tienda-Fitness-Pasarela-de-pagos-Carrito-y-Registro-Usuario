@@ -94,18 +94,141 @@ export async function POST(request: Request) {
     // Obtener el ID del usuario desde la sesión
     const userId = parseInt(session.user.id);
 
-    // Crear la review en la base de datos
-    const newReview = await prisma.review.create({
-      data: {
-        userId,
-        rating,
-        comment: content.trim(), // Campo 'comment' según schema de Prisma
-        productId: productId ? parseInt(productId) : null,
-        planId: planId ? parseInt(planId) : null,
-      },
-      include: {
-        user: true,
-      },
+    const parsedProductId = productId ? parseInt(productId) : null;
+    const parsedPlanId = planId ? parseInt(planId) : null;
+
+    if (parsedProductId && parsedPlanId) {
+      return NextResponse.json(
+        { error: 'Solo puedes calificar un producto o un plan a la vez' },
+        { status: 400 }
+      );
+    }
+
+    if (parsedProductId) {
+      const existingReview = await prisma.review.findFirst({
+        where: { userId, productId: parsedProductId },
+        select: { id: true },
+      });
+
+      if (existingReview) {
+        return NextResponse.json(
+          { error: 'Ya has dejado una reseña para este producto' },
+          { status: 409 }
+        );
+      }
+
+      const orders = await prisma.order.findMany({
+        where: {
+          userId,
+          status: 'COMPLETED',
+        },
+        select: { items: true },
+      });
+
+      const hasPurchased = orders.some((order) => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        return items.some((item: any) => {
+          const itemProductId = item?.productId ?? item?.id;
+          return Number(itemProductId) === parsedProductId;
+        });
+      });
+
+      if (!hasPurchased) {
+        return NextResponse.json(
+          { error: 'Solo puedes calificar productos que hayas comprado' },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (parsedPlanId) {
+      const existingReview = await prisma.review.findFirst({
+        where: { userId, planId: parsedPlanId },
+        select: { id: true },
+      });
+
+      if (existingReview) {
+        return NextResponse.json(
+          { error: 'Ya has dejado una reseña para este plan' },
+          { status: 409 }
+        );
+      }
+
+      const orders = await prisma.order.findMany({
+        where: {
+          userId,
+          status: 'COMPLETED',
+        },
+        select: { items: true, planId: true },
+      });
+
+      const hasPurchased = orders.some((order) => {
+        if (Number(order.planId) === parsedPlanId) {
+          return true;
+        }
+        const items = Array.isArray(order.items) ? order.items : [];
+        return items.some((item: any) => {
+          const itemPlanId = item?.planId ?? item?.id;
+          return Number(itemPlanId) === parsedPlanId;
+        });
+      });
+
+      if (!hasPurchased) {
+        return NextResponse.json(
+          { error: 'Solo puedes calificar planes que hayas comprado' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Crear la review en la base de datos y recalcular promedio si es producto
+    const newReview = await prisma.$transaction(async (tx) => {
+      const created = await tx.review.create({
+        data: {
+          userId,
+          rating,
+          comment: content.trim(), // Campo 'comment' según schema de Prisma
+          productId: parsedProductId,
+          planId: parsedPlanId,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (parsedProductId) {
+        const aggregate = await tx.review.aggregate({
+          where: { productId: parsedProductId },
+          _avg: { rating: true },
+          _count: { rating: true },
+        });
+
+        await tx.item.update({
+          where: { id: parsedProductId },
+          data: {
+            rating: aggregate._avg.rating ?? 0,
+            reviewCount: aggregate._count.rating ?? 0,
+          },
+        });
+      }
+
+      if (parsedPlanId) {
+        const aggregate = await tx.review.aggregate({
+          where: { planId: parsedPlanId },
+          _avg: { rating: true },
+          _count: { rating: true },
+        });
+
+        await tx.plan.update({
+          where: { id: parsedPlanId },
+          data: {
+            rating: aggregate._avg.rating ?? 0,
+            reviewCount: aggregate._count.rating ?? 0,
+          },
+        });
+      }
+
+      return created;
     });
 
     return NextResponse.json(

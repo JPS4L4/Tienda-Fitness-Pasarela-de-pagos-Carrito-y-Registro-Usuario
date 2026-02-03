@@ -5,6 +5,8 @@ import { PlanUI } from '@/app/src/types/plan';
 import { SafeImage } from '@/components/others/SafeImage';
 import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
 import Link from 'next/link';
+import FitnessProfileGate from '@/components/others/FitnessProfileGate';
+import PlanReviewsSection from '@/components/others/PlanReviewsSection';
 
 // Definimos los estilos por tipo
 const planStyles = {
@@ -56,7 +58,8 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   console.log('Plan cargado:', { title: plan.title, slug: plan.slug, price: plan.price });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
+    <div className="min-h-screen bg-white">
+      <FitnessProfileGate />
       <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Lado izquierdo: Imagen */}
@@ -65,14 +68,14 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
               <SafeImage
                 src={plan.image}
                 alt={plan.title}
-                className="object-cover w-full h-full"
+                className="object-cover w-fit h-fit"
                 containerClassName="aspect-[4/3]"
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             ) : (
               <div className="aspect-[4/3] relative">
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/30 to-transparent">
+                <div className="absolute inset-0 flex items-center justify-center ">
                   <div className="text-center p-8">
                     {style.icon}
                     <p className={`text-xl font-medium ${style.text} mt-4`}>
@@ -95,7 +98,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
 
           {/* Lado derecho: Contenido */}
           <div className="flex flex-col">
-            <div className="mb-8">
+            <div className="mb-4">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <span className={`inline-block px-4 py-1.5 ${style.badge} rounded-full text-sm font-semibold uppercase tracking-wide`}>
                   {style.typeLabel}
@@ -231,6 +234,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
             )}
           </div>
         </div>
+        <PlanReviewsSection planId={plan.id} />
       </div>
     </div>
   );

@@ -46,10 +46,12 @@ const Footer = () => {
         </div>
 
         {/* 3. Sección derecha: Enlaces */}
-        <div className="flex justify-center md:justify-end gap-2 font-mono text-md">
+        <div className="flex justify-center md:justify-end gap-2 font-mono text-md flex-wrap">
             <a className="hover:text-orange-500 transition-colors duration-300" href="/contact">Contacto</a>
             <span>|</span>
             <a className="hover:text-orange-500 transition-colors duration-300" href="/support">Soporte</a>
+            <span>|</span>
+            <a className="hover:text-orange-500 transition-colors duration-300" href="/legal">Legal</a>
         </div>
 
     </div>

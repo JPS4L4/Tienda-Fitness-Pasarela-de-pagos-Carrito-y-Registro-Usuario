@@ -369,13 +369,10 @@ export default function UserPage() {
             {mode === "register" && (
               <p className="mt-4 text-xs text-slate-500">
                 Al registrarte aceptas nuestros{" "}
-                <a href="/terminos" className="text-teal-600 hover:underline">
-                  términos
-                </a>{" "}
-                y{" "}
-                <a href="/privacidad" className="text-teal-600 hover:underline">
-                  política de privacidad
+                <a href="/legal" className="text-teal-600 hover:underline">
+                  términos y política de privacidad
                 </a>
+                
               </p>
             )}
           </div>

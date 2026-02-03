@@ -7,11 +7,29 @@ interface ProfileData {
   name: string | null;
   email: string | null;
   phone: string | null;
+  weightKg: string | null;
+  heightCm: string | null;
+  age: string | null;
+  trainingTime: string | null;
+  goal: string | null;
+  equipmentAvailability: string | null;
+  healthCondition: string | null;
 }
 
 export default function ProfileEditClient() {
   const router = useRouter();
-  const [form, setForm] = useState<ProfileData>({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState<ProfileData>({
+    name: "",
+    email: "",
+    phone: "",
+    weightKg: "",
+    heightCm: "",
+    age: "",
+    trainingTime: "",
+    goal: "",
+    equipmentAvailability: "",
+    healthCondition: "",
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +47,13 @@ export default function ProfileEditClient() {
           name: data.user?.name ?? "",
           email: data.user?.email ?? "",
           phone: data.user?.phone ?? "",
+          weightKg: data.user?.weightKg?.toString() ?? "",
+          heightCm: data.user?.heightCm?.toString() ?? "",
+          age: data.user?.age?.toString() ?? "",
+          trainingTime: data.user?.trainingTime ?? "",
+          goal: data.user?.goal ?? "",
+          equipmentAvailability: data.user?.equipmentAvailability ?? "",
+          healthCondition: data.user?.healthCondition ?? "",
         });
       } catch (err: any) {
         setError(err.message || "Error cargando el perfil");
@@ -40,7 +65,9 @@ export default function ProfileEditClient() {
     loadProfile();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -51,6 +78,14 @@ export default function ProfileEditClient() {
     setError(null);
     setSuccess(null);
 
+    const hasFitnessProfile =
+      Boolean(form.weightKg) &&
+      Boolean(form.heightCm) &&
+      Boolean(form.age) &&
+      Boolean(form.trainingTime) &&
+      Boolean(form.goal) &&
+      Boolean(form.equipmentAvailability);
+
     try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
@@ -58,6 +93,14 @@ export default function ProfileEditClient() {
         body: JSON.stringify({
           name: form.name || undefined,
           phone: form.phone || null,
+          weightKg: form.weightKg ? Number(form.weightKg) : null,
+          heightCm: form.heightCm ? Number(form.heightCm) : null,
+          age: form.age ? Number(form.age) : null,
+          trainingTime: form.trainingTime || null,
+          goal: form.goal || null,
+          equipmentAvailability: form.equipmentAvailability || null,
+          healthCondition: form.healthCondition || null,
+          ...(hasFitnessProfile ? { fitnessProfileCompleted: true } : {}),
         }),
       });
       const data = await res.json();
@@ -133,6 +176,133 @@ export default function ProfileEditClient() {
                 placeholder="+57 300 123 4567"
                 className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
               />
+            </div>
+
+            <div className="pt-6 border-t border-slate-200">
+              <h2 className="text-xl font-semibold text-slate-800 mb-4">Perfil fitness</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="weightKg" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Peso (kg)
+                  </label>
+                  <input
+                    id="weightKg"
+                    name="weightKg"
+                    type="number"
+                    min="20"
+                    max="400"
+                    step="0.1"
+                    value={form.weightKg || ""}
+                    onChange={handleChange}
+                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="heightCm" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Altura (cm)
+                  </label>
+                  <input
+                    id="heightCm"
+                    name="heightCm"
+                    type="number"
+                    min="120"
+                    max="250"
+                    step="0.1"
+                    value={form.heightCm || ""}
+                    onChange={handleChange}
+                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Edad
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="10"
+                    max="100"
+                    value={form.age || ""}
+                    onChange={handleChange}
+                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="trainingTime" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Tiempo entrenando
+                  </label>
+                  <select
+                    id="trainingTime"
+                    name="trainingTime"
+                    value={form.trainingTime || ""}
+                    onChange={handleChange}
+                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                  >
+                    <option value="">Selecciona una opción</option>
+                    <option value="0-6 meses">0-6 meses</option>
+                    <option value="6-12 meses">6-12 meses</option>
+                    <option value="1-3 años">1-3 años</option>
+                    <option value="3+ años">3+ años</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="goal" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Objetivo principal
+                  </label>
+                  <select
+                    id="goal"
+                    name="goal"
+                    value={form.goal || ""}
+                    onChange={handleChange}
+                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                  >
+                    <option value="">Selecciona una opción</option>
+                    <option value="Bajar de peso">Bajar de peso</option>
+                    <option value="Ganar masa muscular">Ganar masa muscular</option>
+                    <option value="Recomposición corporal">Recomposición corporal</option>
+                    <option value="Mejorar rendimiento">Mejorar rendimiento</option>
+                    <option value="Mantener">Mantener</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label htmlFor="equipmentAvailability" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Disponibilidad de equipos
+                </label>
+                <select
+                  id="equipmentAvailability"
+                  name="equipmentAvailability"
+                  value={form.equipmentAvailability || ""}
+                  onChange={handleChange}
+                  className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="Sin equipo">Sin equipo</option>
+                  <option value="Básico (mancuernas/bandas)">Básico (mancuernas/bandas)</option>
+                  <option value="Gimnasio completo">Gimnasio completo</option>
+                  <option value="Mixto">Mixto</option>
+                </select>
+              </div>
+
+              <div className="mt-4">
+                <label htmlFor="healthCondition" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Condición médica (opcional)
+                </label>
+                <textarea
+                  id="healthCondition"
+                  name="healthCondition"
+                  rows={3}
+                  value={form.healthCondition || ""}
+                  onChange={handleChange}
+                  placeholder="Indícanos si tienes alguna lesión, enfermedad o condición relevante"
+                  className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                />
+              </div>
             </div>
 
             {error && (

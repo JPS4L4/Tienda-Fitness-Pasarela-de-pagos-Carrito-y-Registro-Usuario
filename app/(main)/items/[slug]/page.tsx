@@ -6,6 +6,7 @@ import { ItemUI } from '@/app/src/types/item';
 import { getItemBySlug } from '../../../src/lib/items';
 import { cn } from '@/lib/utils';
 import FavoriteItemButton from '../../../../components/buttons/FavoriteItemButton';
+import ProductReviewsSection from '@/components/others/ProductReviewsSection';
 
 const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
@@ -220,6 +221,7 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
             )}
           </div>
         )}
+        <ProductReviewsSection productId={item.id} />
       </div>
     </div>
   );

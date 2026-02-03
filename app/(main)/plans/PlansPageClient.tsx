@@ -3,6 +3,7 @@
 import { PlanCard } from "@/components/cards/PlanCard";
 import { PlanUI } from "@/app/src/types/plan";
 import { useState, useMemo } from "react";
+import FitnessProfileGate from "@/components/others/FitnessProfileGate";
 
 type PlansPageClientProps = {
   plans: PlanUI[];
@@ -36,6 +37,7 @@ export default function PlansPageClient({ plans }: PlansPageClientProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 py-16 px-4">
+      <FitnessProfileGate />
       <div className="max-w-4xl mx-auto text-center mb-12">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
           Nuestros Planes
