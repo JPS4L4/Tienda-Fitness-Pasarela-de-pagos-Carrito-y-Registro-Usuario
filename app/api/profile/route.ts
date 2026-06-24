@@ -23,6 +23,7 @@ export async function GET() {
       goal: true,
       equipmentAvailability: true,
       healthCondition: true,
+      fitnessProfileData: true,
       fitnessProfileCompleted: true,
     },
   });
@@ -46,6 +47,7 @@ export async function PATCH(request: NextRequest) {
     goal?: string | null;
     equipmentAvailability?: string | null;
     healthCondition?: string | null;
+    fitnessProfileData?: Record<string, unknown> | null;
     fitnessProfileCompleted?: boolean;
   };
   try {
@@ -77,6 +79,27 @@ export async function PATCH(request: NextRequest) {
 
   const fitnessProfileCompleted =
     typeof body.fitnessProfileCompleted === "boolean" ? body.fitnessProfileCompleted : undefined;
+
+  const shouldUpdateFitnessProfileData =
+    weightKg !== undefined ||
+    heightCm !== undefined ||
+    age !== undefined ||
+    trainingTime !== undefined ||
+    goal !== undefined ||
+    equipmentAvailability !== undefined ||
+    healthCondition !== undefined;
+
+  const fitnessProfileData = shouldUpdateFitnessProfileData
+    ? {
+        weightKg: weightKg ?? null,
+        heightCm: heightCm ?? null,
+        age: age ?? null,
+        trainingTime: trainingTime ?? null,
+        goal: goal ?? null,
+        equipmentAvailability: equipmentAvailability ?? null,
+        healthCondition: healthCondition ?? null,
+      }
+    : undefined;
 
   if (name) {
     const nameValidation = validateName(name);
@@ -123,6 +146,7 @@ export async function PATCH(request: NextRequest) {
         ...(goal !== undefined ? { goal } : {}),
         ...(equipmentAvailability !== undefined ? { equipmentAvailability } : {}),
         ...(healthCondition !== undefined ? { healthCondition } : {}),
+        ...(fitnessProfileData !== undefined ? { fitnessProfileData } : {}),
         ...(fitnessProfileCompleted !== undefined ? { fitnessProfileCompleted } : {}),
       },
       select: {
@@ -137,6 +161,7 @@ export async function PATCH(request: NextRequest) {
         goal: true,
         equipmentAvailability: true,
         healthCondition: true,
+        fitnessProfileData: true,
         fitnessProfileCompleted: true,
       },
     });

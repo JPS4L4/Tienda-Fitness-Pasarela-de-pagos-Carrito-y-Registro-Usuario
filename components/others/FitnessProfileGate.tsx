@@ -22,7 +22,7 @@ const defaultForm: FitnessProfileForm = {
   healthCondition: "",
 };
 
-export default function FitnessProfileGate() {
+export default function FitnessProfileGate({ forceComplete = false }: { forceComplete?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -259,13 +259,15 @@ export default function FitnessProfileGate() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors"
-            >
-              Ahora no
-            </button>
+            {!forceComplete && (
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors"
+              >
+                Ahora no
+              </button>
+            )}
             <button
               type="submit"
               disabled={saving}

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { sendPlanInstructorEmail } from '@/lib/emailService';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret
@@ -217,6 +218,41 @@ export async function POST(request: NextRequest) {
             },
           ],
         },
+      });
+
+      const userProfile = await prisma.user.findUnique({
+        where: { id: parsedUserId! },
+        select: {
+          name: true,
+          email: true,
+          fitnessProfileData: true,
+          weightKg: true,
+          heightCm: true,
+          age: true,
+          trainingTime: true,
+          goal: true,
+          equipmentAvailability: true,
+          healthCondition: true,
+        },
+      });
+
+      const fallbackProfileData = userProfile
+        ? {
+            weightKg: userProfile.weightKg ?? null,
+            heightCm: userProfile.heightCm ?? null,
+            age: userProfile.age ?? null,
+            trainingTime: userProfile.trainingTime ?? null,
+            goal: userProfile.goal ?? null,
+            equipmentAvailability: userProfile.equipmentAvailability ?? null,
+            healthCondition: userProfile.healthCondition ?? null,
+          }
+        : null;
+
+      await sendPlanInstructorEmail({
+        userName: userProfile?.name ?? null,
+        userEmail: userProfile?.email ?? session.user.email ?? null,
+        planTitle: plan.title,
+        fitnessProfileData: (userProfile?.fitnessProfileData as Record<string, unknown> | null) ?? fallbackProfileData,
       });
 
       return NextResponse.json({

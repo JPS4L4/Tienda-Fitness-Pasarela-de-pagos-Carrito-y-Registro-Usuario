@@ -13,6 +13,8 @@ if (!resendEnabled) {
 const getFromEmail = () => process.env.EMAIL_FROM || 'onboarding@resend.dev'
 const getAdminEmail = (fallback: string) =>
   process.env.EMAIL_ADMIN || process.env.EMAIL_USER || fallback
+const getInstructorEmail = (fallback: string) =>
+  process.env.EMAIL_INSTRUCTOR || process.env.EMAIL_ADMIN || process.env.EMAIL_USER || fallback
 
 const logEmail = (to: string, subject: string) => {
   console.log('📧 [EMAIL] Para:', to)
@@ -425,6 +427,71 @@ export async function sendSupportEmail(
     return true;
   } catch (error) {
     console.error('Error enviando email de soporte:', error);
+    return false;
+  }
+}
+
+/**
+ * Enviar email al instructor con el perfil fitness del usuario
+ */
+export async function sendPlanInstructorEmail(params: {
+  userName: string | null;
+  userEmail: string | null;
+  planTitle: string;
+  fitnessProfileData: Record<string, unknown> | null;
+}): Promise<boolean> {
+  try {
+    const instructorEmail = getInstructorEmail('instructor@nansalazar.com');
+    const resolvedUserName = params.userName || 'Usuario';
+    const resolvedUserEmail = params.userEmail || 'sin-email';
+    const profileJson = JSON.stringify(params.fitnessProfileData ?? {}, null, 2);
+
+    if (!resendEnabled) {
+      logEmail(instructorEmail, `Nuevo plan solicitado - ${params.planTitle}`);
+      return false;
+    }
+
+    const mailOptionsInstructor = {
+      from: getFromEmail(),
+      to: instructorEmail,
+      subject: `Nuevo plan solicitado - ${params.planTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 32px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">Solicitud de Plan</h1>
+          </div>
+          <div style="background: #f8fafc; padding: 32px; border-radius: 0 0 8px 8px;">
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 4px 0;">USUARIO</p>
+              <p style="color: #0f172a; font-size: 16px; font-weight: bold; margin: 0;">${resolvedUserName}</p>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 4px 0;">EMAIL</p>
+              <p style="color: #0f172a; font-size: 16px; font-weight: bold; margin: 0;">${resolvedUserEmail}</p>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+              <p style="color: #64748b; font-size: 12px; margin: 0 0 4px 0;">PLAN</p>
+              <p style="color: #0f172a; font-size: 16px; font-weight: bold; margin: 0;">${params.planTitle}</p>
+            </div>
+            <div style="background: #0f172a; padding: 16px; border-radius: 8px;">
+              <p style="color: #93c5fd; font-size: 12px; margin: 0 0 8px 0;">PERFIL FITNESS (JSON)</p>
+              <pre style="color: #e2e8f0; font-size: 12px; margin: 0; white-space: pre-wrap;">${profileJson}</pre>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    const { error } = await resend.emails.send(mailOptionsInstructor);
+    if (error) {
+      console.error('Error Resend (plan instructor):', error);
+      return false;
+    }
+
+    console.log(`Email de plan enviado a instructor: ${instructorEmail}`);
+    return true;
+  } catch (error) {
+    console.error('Error enviando email al instructor:', error);
     return false;
   }
 }

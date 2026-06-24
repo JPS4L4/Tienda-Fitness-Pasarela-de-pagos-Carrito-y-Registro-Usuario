@@ -29,6 +29,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear Payment Intent
+    const parsedUserId = session?.user?.id ? parseInt(session.user.id, 10) : null;
+
+    if (type === 'plan') {
+      if (!session?.user?.id || !Number.isFinite(parsedUserId)) {
+        return NextResponse.json(
+          { error: 'Debes iniciar sesión para comprar un plan' },
+          { status: 401 }
+        );
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: parsedUserId },
+        select: { fitnessProfileCompleted: true },
+      });
+
+      if (!user?.fitnessProfileCompleted) {
+        return NextResponse.json(
+          { error: 'Completa tu perfil fitness antes de comprar un plan' },
+          { status: 403 }
+        );
+      }
+    }
+
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await prisma.checkoutSession.deleteMany({
       where: {
@@ -36,8 +59,6 @@ export async function POST(request: NextRequest) {
         status: { not: 'COMPLETED' },
       },
     });
-    const parsedUserId = session?.user?.id ? parseInt(session.user.id, 10) : null;
-
     const checkoutSession = type === 'cart'
       ? await prisma.checkoutSession.create({
           data: {

@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import CheckoutSummary from './components/CheckoutSummary';
 import CheckoutPaymentForm from './components/CheckoutPaymentForm';
 import { ItemUI } from '@/app/src/types/item';
+import FitnessProfileGate from '@/components/others/FitnessProfileGate';
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
@@ -84,6 +85,8 @@ const CheckoutForm = ({
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'mercadopago'>('stripe');
   const isBuyNow = Boolean(buyNowItemId);
+  const [fitnessProfileLoading, setFitnessProfileLoading] = useState(false);
+  const [requiresFitnessProfile, setRequiresFitnessProfile] = useState(false);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: '',
@@ -114,6 +117,40 @@ const CheckoutForm = ({
       router.push(`/login?callbackUrl=/checkout?type=plan&planId=${planId}`);
     }
   }, [type, status, router, planId]);
+
+  useEffect(() => {
+    if (type !== 'plan' || status !== 'authenticated') {
+      setRequiresFitnessProfile(false);
+      return;
+    }
+
+    let active = true;
+
+    const loadFitnessProfile = async () => {
+      setFitnessProfileLoading(true);
+      try {
+        const res = await fetch('/api/profile');
+        if (res.status === 401) return;
+        const data = await res.json();
+        if (!active) return;
+        setRequiresFitnessProfile(!Boolean(data?.user?.fitnessProfileCompleted));
+      } catch (error) {
+        if (active) {
+          setRequiresFitnessProfile(true);
+        }
+      } finally {
+        if (active) {
+          setFitnessProfileLoading(false);
+        }
+      }
+    };
+
+    loadFitnessProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [type, status]);
 
   useEffect(() => {
     if (!stripeKey && paymentMethod === 'stripe') {
@@ -208,6 +245,10 @@ const CheckoutForm = ({
 
   useEffect(() => {
     const createStripeIntent = async () => {
+      if (type === 'plan' && (fitnessProfileLoading || requiresFitnessProfile)) {
+        return;
+      }
+
       if (paymentMethod !== 'stripe') {
         if (stripeIntentLoading) {
           onStripeIntentLoadingChange(false);
@@ -293,10 +334,17 @@ const CheckoutForm = ({
     stripeIntentAmount,
     onStripeIntentChange,
     onStripeIntentLoadingChange,
+    fitnessProfileLoading,
+    requiresFitnessProfile,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (type === 'plan' && requiresFitnessProfile) {
+      toast.error('Completa tu perfil fitness antes de comprar un plan');
+      return;
+    }
 
     if (paymentMethod === 'stripe' && (!stripe || !elements)) {
       toast.error('Stripe no está cargado correctamente');
@@ -427,6 +475,7 @@ const CheckoutForm = ({
 
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+      {type === 'plan' && <FitnessProfileGate forceComplete />}
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center mb-12">
@@ -438,6 +487,14 @@ const CheckoutForm = ({
           </p>
           <div className="w-24 h-1 bg-linear-to-r from-indigo-600 to-blue-600 mx-auto mt-4 rounded-full"></div>
         </div>
+
+        {type === 'plan' && requiresFitnessProfile && (
+          <div className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-amber-900">
+            <p className="text-sm font-semibold">
+              Antes de continuar, completa tu perfil fitness para que el instructor pueda crear tu plan.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
           {/* Componente de Resumen */}

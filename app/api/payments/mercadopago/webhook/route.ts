@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { prisma } from '@/lib/prisma';
+import { sendPlanInstructorEmail } from '@/lib/emailService';
 
 export async function POST(request: NextRequest) {
   let paymentId: number | string | undefined;
@@ -128,6 +129,12 @@ export async function POST(request: NextRequest) {
         } else if (type === 'plan') {
           // Crear orden de plan
           const planId = metadata.plan_id ? parseInt(metadata.plan_id, 10) : null;
+          const plan = planId
+            ? await prisma.plan.findUnique({
+                where: { id: planId },
+                select: { title: true },
+              })
+            : null;
 
           await prisma.order.create({
             data: {
@@ -147,6 +154,45 @@ export async function POST(request: NextRequest) {
               ],
             },
           });
+
+          if (userId) {
+            const userProfile = await prisma.user.findUnique({
+              where: { id: userId },
+              select: {
+                name: true,
+                email: true,
+                fitnessProfileData: true,
+                weightKg: true,
+                heightCm: true,
+                age: true,
+                trainingTime: true,
+                goal: true,
+                equipmentAvailability: true,
+                healthCondition: true,
+              },
+            });
+
+            const fallbackProfileData = userProfile
+              ? {
+                  weightKg: userProfile.weightKg ?? null,
+                  heightCm: userProfile.heightCm ?? null,
+                  age: userProfile.age ?? null,
+                  trainingTime: userProfile.trainingTime ?? null,
+                  goal: userProfile.goal ?? null,
+                  equipmentAvailability: userProfile.equipmentAvailability ?? null,
+                  healthCondition: userProfile.healthCondition ?? null,
+                }
+              : null;
+
+            await sendPlanInstructorEmail({
+              userName: userProfile?.name ?? null,
+              userEmail: userProfile?.email ?? null,
+              planTitle: plan?.title || 'Plan',
+              fitnessProfileData:
+                (userProfile?.fitnessProfileData as Record<string, unknown> | null) ??
+                fallbackProfileData,
+            });
+          }
         }
       }
     }

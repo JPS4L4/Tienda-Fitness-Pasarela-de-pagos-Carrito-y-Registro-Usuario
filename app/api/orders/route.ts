@@ -44,6 +44,21 @@ export async function POST(request: Request) {
       );
     }
 
+    if (type === 'plan' && session?.user?.id) {
+      const userId = parseInt(session.user.id as string, 10);
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { fitnessProfileCompleted: true },
+      });
+
+      if (!user?.fitnessProfileCompleted) {
+        return NextResponse.json(
+          { error: 'Completa tu perfil fitness antes de comprar un plan' },
+          { status: 403 }
+        );
+      }
+    }
+
     if (type === 'cart' && (!shippingInfo || !items)) {
       return NextResponse.json(
         { error: 'Datos de envío o items faltantes' },
