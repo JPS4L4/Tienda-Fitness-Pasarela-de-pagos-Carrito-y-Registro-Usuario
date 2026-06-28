@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nan Salazar",
-  description: "Página de Nan Salazar, entrenador personal y nutricionista",
+  title: "Fitness Studio",
+  description: "Tienda fitness con productos, planes y entrenamiento personalizado",
 };
 
 const RootLayout = ({

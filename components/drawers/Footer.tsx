@@ -42,7 +42,7 @@ const Footer = () => {
 
         {/* 2. Sección centro: Copyright (Ahora sí estará en el puro centro) */}
         <div className="font-mono text-center">
-            <p>Nan Salazar © 2025 | Derechos reservados.</p>
+            <p>Fitness Studio © 2025 | Derechos reservados.</p>
         </div>
 
         {/* 3. Sección derecha: Enlaces */}

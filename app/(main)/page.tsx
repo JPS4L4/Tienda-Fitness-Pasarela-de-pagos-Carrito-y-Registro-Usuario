@@ -178,7 +178,7 @@ useEffect(() => {
       </section>
       </section>
 
-      {/* 7. Info del Entrenador - Hernán Salazar */}
+      {/* 7. Info del Equipo Fitness */}
       <section className="py-24 bg-linear-to-br from-indigo-50 via-white to-slate-50 relative overflow-hidden">
         {/* Patrón de fondo decorativo */}
         <div className="absolute inset-0 opacity-5">
@@ -190,10 +190,10 @@ useEffect(() => {
           {/* Título de sección */}
           <div className="text-center mb-16">
             <span className="inline-block text-indigo-600 font-bold text-sm uppercase tracking-widest mb-3">
-              Conoce a tu entrenador
+              Conoce nuestra propuesta
             </span>
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
-              Hernán Salazar
+              Equipo Fitness
             </h2>
             <div className="w-20 h-1 bg-indigo-600 mx-auto"></div>
           </div>
@@ -212,13 +212,13 @@ useEffect(() => {
                   <div className="relative">
                     <img 
                       src="/hernan-salazar.jpg" 
-                      alt="Hernán Salazar - Entrenador Personal Certificado" 
+                      alt="Equipo Fitness - Entrenamiento y nutrición" 
                       className="w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full object-cover mx-auto shadow-2xl ring-8 ring-white"
                     />
                     
                     {/* Badge de certificación */}
                     <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border-4 border-indigo-100">
-                      <p className="text-indigo-600 p-2 text-center font-black text-sm">+10 Años Experiencia</p>
+                      <p className="text-indigo-600 p-2 text-center font-black text-sm">Planificación personalizada</p>
                     </div>
                   </div>
                 </div>

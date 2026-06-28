@@ -60,7 +60,7 @@ export default function Navbar() {
               href="/" 
               className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
             >
-              Nan Salazar
+              Fitness Studio
             </Link>
           </div>
 
