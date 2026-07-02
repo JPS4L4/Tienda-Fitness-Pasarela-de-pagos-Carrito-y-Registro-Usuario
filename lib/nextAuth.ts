@@ -7,25 +7,28 @@ import { validateCredentials, registerOAuthUser } from "@/lib/authService"
 import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
 
-export const authOptions: NextAuthOptions = {
-  // Proveedores de autenticación
-  providers: [
-    // Google (opcional, pero muy útil para empezar rápido)
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-    }),
+const nextAuthSecret = process.env.NEXTAUTH_SECRET || "change-me-in-vercel"
 
-    // Facebook (opcional)
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || "",
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-    }),
-
-    // Login manual con email + contraseña
-    CredentialsProvider({
+const providers = [
+  ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? [
+        GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          allowDangerousEmailAccountLinking: true,
+        }),
+      ]
+    : []),
+  ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET
+    ? [
+        FacebookProvider({
+          clientId: process.env.FACEBOOK_CLIENT_ID,
+          clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+          allowDangerousEmailAccountLinking: true,
+        }),
+      ]
+    : []),
+  CredentialsProvider({
       name: "Correo y Contraseña",
       credentials: {
         email: { label: "Correo o teléfono", type: "text", placeholder: "tu@correo.com / +57 300 123 4567" },
@@ -67,7 +70,11 @@ export const authOptions: NextAuthOptions = {
         return null
       },
     }),
-  ],
+]
+
+export const authOptions: NextAuthOptions = {
+  // Proveedores de autenticación
+  providers,
 
   // Páginas personalizadas
   pages: {
@@ -82,8 +89,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
 
-  // Secreto obligatorio (viene de .env)
-  secret: process.env.NEXTAUTH_SECRET,
+  // Secreto obligatorio (viene de .env o Vercel)
+  secret: nextAuthSecret,
 
   callbacks: {
     // Callback jwt: se ejecuta cuando se crea o actualiza el token

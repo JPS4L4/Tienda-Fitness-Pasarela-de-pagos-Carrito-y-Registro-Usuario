@@ -3,8 +3,8 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 
 const resendApiKey = process.env.RESEND_API_KEY
-const resend = new Resend(resendApiKey)
 const resendEnabled = Boolean(resendApiKey)
+const resend = resendEnabled ? new Resend(resendApiKey) : null
 
 if (!resendEnabled) {
   console.warn('⚠️ RESEND_API_KEY no configurada. Los emails se loguearán pero NO se enviarán.')
@@ -48,19 +48,19 @@ export async function sendVerificationEmail(
   try {
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`
 
-    if (!resendEnabled) {
-      logEmail(email, 'Verifica tu email - NanSalazar')
+    if (!resend) {
+      logEmail(email, 'Verifica tu email - FitnessStudio')
       return false
     }
 
     const { data, error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
-      subject: 'Verifica tu email - NanSalazar',
+      subject: 'Verifica tu email - FitnessStudio',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0; font-size: 28px;">Bienvenido a NanSalazar</h1>
+            <h1 style="margin: 0; font-size: 28px;">Bienvenido a FitnessStudio</h1>
           </div>
           
           <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
@@ -119,7 +119,7 @@ export async function sendPasswordResetEmail(
   try {
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`
 
-    if (!resendEnabled) {
+    if (!resend) {
       logEmail(email, 'Resetea tu contraseña - NanSalazar')
       return false
     }
@@ -127,7 +127,7 @@ export async function sendPasswordResetEmail(
     const { data, error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
-      subject: 'Resetea tu contraseña - NanSalazar',
+      subject: 'Resetea tu contraseña - FitnessStudio',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -199,7 +199,7 @@ export async function sendContactEmail(
   try {
     const adminEmail = getAdminEmail('admin@nansalazar.com');
 
-    if (!resendEnabled) {
+    if (!resend) {
       logEmail(adminEmail, `Nuevo mensaje de contacto - ${name} ${lastName}`)
       logEmail(email, 'Recibimos tu mensaje - NanSalazar')
       return false
@@ -247,7 +247,7 @@ export async function sendContactEmail(
     const mailOptionsUser = {
       from: getFromEmail(),
       to: email,
-      subject: 'Recibimos tu mensaje - NanSalazar',
+      subject: 'Recibimos tu mensaje - FitnessStudio',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -308,9 +308,9 @@ export async function sendSupportEmail(
   orderNumber?: string
 ): Promise<boolean> {
   try {
-    const adminEmail = getAdminEmail('soporte@nansalazar.com');
+    const adminEmail = getAdminEmail('soporte@fitnessStudio.com');
 
-    if (!resendEnabled) {
+    if (!resend) {
       logEmail(adminEmail, `[SOPORTE] ${subject}`)
       logEmail(email, `Ticket de soporte recibido: ${subject}`)
       return false
@@ -446,7 +446,7 @@ export async function sendPlanInstructorEmail(params: {
     const resolvedUserEmail = params.userEmail || 'sin-email';
     const profileJson = JSON.stringify(params.fitnessProfileData ?? {}, null, 2);
 
-    if (!resendEnabled) {
+    if (!resend) {
       logEmail(instructorEmail, `Nuevo plan solicitado - ${params.planTitle}`);
       return false;
     }

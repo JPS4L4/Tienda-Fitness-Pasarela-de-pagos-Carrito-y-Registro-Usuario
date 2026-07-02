@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "prisma generate",
+    "postbuild": "prisma migrate deploy"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -48,7 +50,7 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "seed": "ts-node prisma/seed.ts"
+    
   }
 }
