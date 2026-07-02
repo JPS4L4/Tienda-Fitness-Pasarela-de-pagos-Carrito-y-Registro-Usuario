@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear Payment Intent
-    const parsedUserId = session?.user?.id ? parseInt(session.user.id, 10) : null;
+    const parsedUserId = session?.user?.id ? Number.parseInt(session.user.id, 10) : undefined;
 
     if (type === 'plan') {
       if (!session?.user?.id || !Number.isFinite(parsedUserId)) {

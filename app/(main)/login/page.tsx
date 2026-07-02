@@ -27,6 +27,7 @@ export default function UserPage() {
 
   const router = useRouter()
   const rateLimiter = new ClientRateLimiter()
+  const genericAuthMessage = "No se pudo completar la solicitud. Inténtalo de nuevo."
 
   // Countdown para rate limit
   useEffect(() => {
@@ -85,7 +86,8 @@ export default function UserPage() {
           router.push("/")
         }, 1000)
       } else {
-        setError(result?.error || "Correo o contraseña incorrectos")
+        console.error("Login fallido:", result?.error)
+        setError(genericAuthMessage)
       }
     } else {
       // Registro
@@ -128,13 +130,13 @@ export default function UserPage() {
           setSuccess(null)
         }, 1500)
       } else {
-        const errorMsg = data.error || data.message || "Error desconocido al crear la cuenta"
+        const errorMsg = data.error || data.message
         console.error("❌ Error en registro:", errorMsg);
-        setError(errorMsg)
+        setError(genericAuthMessage)
       }
     }
   } catch (err) {
-    setError("Error de conexión. Intenta de nuevo")
+    setError(genericAuthMessage)
     console.error(err)
   } finally {
     setLoading(false)
@@ -146,7 +148,7 @@ export default function UserPage() {
     try {
       await signIn(provider, { callbackUrl: "/" })
     } catch (err) {
-      setError(`Error al iniciar con ${provider}`)
+      setError(genericAuthMessage)
       console.error(err)
     } finally {
       setLoading(false)
