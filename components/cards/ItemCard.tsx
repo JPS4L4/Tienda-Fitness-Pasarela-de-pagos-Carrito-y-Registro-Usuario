@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Heart, ShoppingCart, Check } from "lucide-react"
+import { Heart, ShoppingCart, Check, Plus } from "lucide-react"
 import toast from "react-hot-toast"
 import { formatPrice, applyDiscount } from "@/lib/money"
 import { SafeImage } from "../others/SafeImage"
@@ -133,9 +133,12 @@ const ItemCard = ({
             </>
           ) : (
             <>
-              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-              <span className="sm:hidden">Añadir</span>
-              <span className="hidden sm:inline">Añadir al carrito</span>
+              <span>Agregar</span>
+              <span className="inline-flex items-center" aria-hidden="true">
+                <ShoppingCart className="h-5 w-5" />
+                <Plus className="-ml-0.5 h-3.5 w-3.5" strokeWidth={3} />
+              </span>
+              <span className="sr-only">al carrito</span>
             </>
           )}
         </button>
