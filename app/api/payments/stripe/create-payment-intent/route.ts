@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { prepareCheckout, cancelPendingOrder } from '@/lib/orders/checkout';
+import { CheckoutError } from '@/lib/orders/pricing';
+import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';
+import { toMinorUnits } from '@/lib/orders/fulfillment';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret
@@ -10,102 +12,47 @@ const stripe = stripeSecret
   : null;
 
 export async function POST(request: NextRequest) {
+  let orderId: number | null = null;
   try {
     if (!stripe) {
       return NextResponse.json(
-        { error: 'STRIPE_SECRET_KEY no está configurado' },
-        { status: 500 }
-      );
-    }
-    const session = await getServerSession(authOptions);
-    const { amount, type, items, planId, shippingInfo } = await request.json();
-
-    // Validar datos
-    if (!amount || amount <= 0) {
-      return NextResponse.json(
-        { error: 'Monto inválido' },
-        { status: 400 }
+        { error: 'El pago con tarjeta no está disponible' },
+        { status: 503 }
       );
     }
 
-    // Crear Payment Intent
-    const parsedUserId = session?.user?.id ? Number.parseInt(session.user.id, 10) : undefined;
-
-    if (type === 'plan') {
-      if (!session?.user?.id || !Number.isFinite(parsedUserId)) {
-        return NextResponse.json(
-          { error: 'Debes iniciar sesión para comprar un plan' },
-          { status: 401 }
-        );
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { id: parsedUserId },
-        select: { fitnessProfileCompleted: true },
-      });
-
-      if (!user?.fitnessProfileCompleted) {
-        return NextResponse.json(
-          { error: 'Completa tu perfil fitness antes de comprar un plan' },
-          { status: 403 }
-        );
-      }
-    }
-
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await prisma.checkoutSession.deleteMany({
-      where: {
-        expiresAt: { lt: new Date() },
-        status: { not: 'COMPLETED' },
-      },
-    });
-    const checkoutSession = type === 'cart'
-      ? await prisma.checkoutSession.create({
-          data: {
-            userId: Number.isFinite(parsedUserId) ? parsedUserId : null,
-            type: 'cart',
-            amount,
-            currency: 'COP',
-            items,
-            shippingInfo,
-            paymentProvider: 'STRIPE',
-            expiresAt,
-          },
-        })
-      : null;
+    // El monto enviado por el cliente se ignora: el total sale de la BD.
+    const body = await request.json();
+    const checkout = await prepareCheckout(body, PAYMENT_METHOD.STRIPE);
+    orderId = checkout.orderId;
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe usa centavos
-      currency: 'cop', // Peso colombiano
+      amount: toMinorUnits(checkout.total), // Stripe usa centavos
+      currency: CURRENCY.toLowerCase(),
       metadata: {
-        type,
-        userId: session?.user?.id?.toString() || 'guest',
-        ...(type === 'cart'
-          ? {
-              itemCount: Array.isArray(items) ? items.length.toString() : '0',
-              checkoutId: checkoutSession?.id || '',
-            }
-          : { planId: planId?.toString() || '' }),
+        type: checkout.type,
+        orderId: String(checkout.orderId),
+        userId: checkout.userId ? String(checkout.userId) : 'guest',
       },
     });
 
-    if (checkoutSession) {
-      await prisma.checkoutSession.update({
-        where: { id: checkoutSession.id },
-        data: { paymentIntentId: paymentIntent.id },
-      });
-    }
+    await prisma.order.update({
+      where: { id: checkout.orderId },
+      data: { paymentId: paymentIntent.id },
+    });
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      checkoutSessionId: checkoutSession?.id || null,
+      orderId: checkout.orderId,
+      amount: checkout.total,
     });
-  } catch (error: any) {
+  } catch (error) {
+    if (orderId) await cancelPendingOrder(orderId).catch(() => undefined);
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Error creating payment intent:', error);
-    return NextResponse.json(
-      { error: error.message || 'Error al crear el pago' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear el pago' }, { status: 500 });
   }
 }

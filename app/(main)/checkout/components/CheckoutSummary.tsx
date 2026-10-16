@@ -152,7 +152,7 @@ export default function CheckoutSummary({
                   <div>
                     <p className="text-indigo-100 text-sm font-medium mb-1">Total a pagar</p>
                     <span className="text-white text-4xl font-black">
-                      ${plan.price.toLocaleString()}
+                      ${calculateTotal().toLocaleString()}
                     </span>
                   </div>
                   <div className="text-white/80">

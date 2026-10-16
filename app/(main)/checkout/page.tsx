@@ -29,6 +29,7 @@ interface Plan {
   id: number;
   title: string;
   price: number;
+  discount?: number | null;
   description?: string;
   coverage: string[];
 }
@@ -213,7 +214,9 @@ const CheckoutForm = ({
         return sum + itemPrice * item.quantity;
       }, 0);
     }
-    return plan?.price || 0;
+    if (!plan) return 0;
+    // Mismo cálculo que el servidor (que es quien fija el monto real a cobrar)
+    return plan.discount ? Math.round(plan.price * (1 - plan.discount / 100)) : plan.price;
   }, [type, cartItems, plan]);
 
   // Variable para moneda

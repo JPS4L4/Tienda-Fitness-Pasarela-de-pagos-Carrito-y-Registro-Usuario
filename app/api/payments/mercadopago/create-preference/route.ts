@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { prepareCheckout, cancelPendingOrder } from '@/lib/orders/checkout';
+import { CheckoutError } from '@/lib/orders/pricing';
+import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';
 
 export async function POST(request: NextRequest) {
+  let orderId: number | null = null;
   try {
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!accessToken) {
       return NextResponse.json(
-        { error: 'MERCADOPAGO_ACCESS_TOKEN no está configurado' },
-        { status: 500 }
+        { error: 'El pago con MercadoPago no está disponible' },
+        { status: 503 }
       );
     }
 
@@ -18,8 +20,9 @@ export async function POST(request: NextRequest) {
       accessToken,
     });
 
-    const session = await getServerSession(authOptions);
-    const { amount, type, items, planId, shippingInfo } = await request.json();
+    const session = await auth();
+    // El monto enviado por el cliente se ignora: el total sale de la BD.
+    const body = await request.json();
 
     const rawReturnBaseUrl =
       process.env.MERCADOPAGO_RETURN_URL ||
@@ -50,77 +53,30 @@ export async function POST(request: NextRequest) {
       notificationBaseUrl
     ).toString();
 
-    // Validar datos
-    if (!amount || amount <= 0) {
-      return NextResponse.json(
-        { error: 'Monto inválido' },
-        { status: 400 }
-      );
-    }
+    const checkout = await prepareCheckout(body, PAYMENT_METHOD.MERCADOPAGO);
+    orderId = checkout.orderId;
 
-    // Preparar items para MercadoPago
-    const mpItems = type === 'cart'
-      ? items.map((item: any) => ({
-          title: item.title,
-          quantity: item.quantity,
-          unit_price: item.discount
-            ? Math.round(item.price * (1 - item.discount / 100))
-            : item.price,
-          currency_id: 'COP',
-        }))
-      : [
-          {
-            title: `Plan de entrenamiento`,
-            quantity: 1,
-            unit_price: amount,
-            currency_id: 'COP',
-          },
-        ];
+    // Items de MercadoPago a partir de los precios calculados en el servidor
+    const mpItems =
+      checkout.type === 'cart'
+        ? checkout.lines.map((line) => ({
+            id: String(line.productId),
+            title: line.title,
+            quantity: line.quantity,
+            unit_price: line.price,
+            currency_id: CURRENCY,
+          }))
+        : [
+            {
+              id: `plan-${checkout.orderId}`,
+              title: checkout.planTitle || 'Plan de entrenamiento',
+              quantity: 1,
+              unit_price: checkout.total,
+              currency_id: CURRENCY,
+            },
+          ];
 
-    const parsedUserId = session?.user?.id ? Number.parseInt(session.user.id, 10) : undefined;
-
-    if (type === 'plan') {
-      if (!session?.user?.id || !Number.isFinite(parsedUserId)) {
-        return NextResponse.json(
-          { error: 'Debes iniciar sesión para comprar un plan' },
-          { status: 401 }
-        );
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { id: parsedUserId },
-        select: { fitnessProfileCompleted: true },
-      });
-
-      if (!user?.fitnessProfileCompleted) {
-        return NextResponse.json(
-          { error: 'Completa tu perfil fitness antes de comprar un plan' },
-          { status: 403 }
-        );
-      }
-    }
-
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await prisma.checkoutSession.deleteMany({
-      where: {
-        expiresAt: { lt: new Date() },
-        status: { not: 'COMPLETED' },
-      },
-    });
-    const checkoutSession = type === 'cart'
-      ? await prisma.checkoutSession.create({
-          data: {
-            userId: Number.isFinite(parsedUserId) ? parsedUserId : null,
-            type: 'cart',
-            amount,
-            currency: 'COP',
-            items,
-            shippingInfo,
-            paymentProvider: 'MERCADOPAGO',
-            expiresAt,
-          },
-        })
-      : null;
+    const shippingInfo = body?.shippingInfo;
 
     // Crear preferencia de pago
     const preference = new Preference(client);
@@ -128,12 +84,10 @@ export async function POST(request: NextRequest) {
       body: {
         items: mpItems,
         payer: {
-          email: shippingInfo?.email || session?.user?.email || '',
-          ...(shippingInfo?.phone && {
-            phone: {
-              number: shippingInfo.phone,
-            },
-          }),
+          email:
+            (checkout.type === 'cart' ? shippingInfo?.email : undefined) ||
+            session?.user?.email ||
+            '',
         },
         back_urls: {
           success: successUrl,
@@ -142,12 +96,11 @@ export async function POST(request: NextRequest) {
         },
         notification_url: notificationUrl,
         auto_return: 'approved',
+        // La orden PENDING del servidor es la referencia: el webhook la resuelve por aquí.
+        external_reference: String(checkout.orderId),
         metadata: {
-          type,
-          user_id: session?.user?.id || 'guest',
-          ...(type === 'cart'
-            ? { checkout_id: checkoutSession?.id || '' }
-            : { plan_id: planId }),
+          type: checkout.type,
+          order_id: checkout.orderId,
         },
       },
     });
@@ -159,11 +112,16 @@ export async function POST(request: NextRequest) {
       preferenceId: result.id,
       initPoint: resolvedInitPoint,
       sandboxInitPoint: result.sandbox_init_point,
+      orderId: checkout.orderId,
     });
-  } catch (error: any) {
+  } catch (error) {
+    if (orderId) await cancelPendingOrder(orderId).catch(() => undefined);
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Error creating MercadoPago preference:', error);
     return NextResponse.json(
-      { error: error.message || 'Error al crear la preferencia de pago' },
+      { error: 'Error al crear la preferencia de pago' },
       { status: 500 }
     );
   }
