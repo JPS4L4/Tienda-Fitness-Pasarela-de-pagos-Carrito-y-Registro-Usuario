@@ -1,6 +1,31 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
+function assertSafeSeedTarget() {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    console.error('DATABASE_URL no está definida. Abortando seed.');
+    process.exit(1);
+  }
+  let host = '';
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    console.error('DATABASE_URL no es una URL válida. Abortando seed.');
+    process.exit(1);
+  }
+  const isLocal = host === 'localhost' || host === '127.0.0.1';
+  if (!isLocal && process.env.SEED_ALLOW_REMOTE !== 'true') {
+    console.error(
+      `El seed BORRA todos los datos y la base de datos apunta a "${host}" (no es local). ` +
+        'Abortando. Si estás seguro, ejecuta con SEED_ALLOW_REMOTE=true.'
+    );
+    process.exit(1);
+  }
+}
+
+assertSafeSeedTarget();
+
 const prisma = new PrismaClient();
 
 async function main() {
