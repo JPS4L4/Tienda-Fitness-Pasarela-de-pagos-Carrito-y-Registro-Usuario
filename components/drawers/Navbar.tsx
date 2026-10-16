@@ -2,21 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User as UserIcon, ShoppingCart as ShoppingCartIcon, LogOut, Heart, Menu, X } from "lucide-react";
-import { useFavoritesStore } from "@/lib/stores/favoritesStore" // ajusta la ruta
+import { User as UserIcon, ShoppingCart as ShoppingCartIcon, LogOut, Heart, Menu, X, Package, LayoutDashboard } from "lucide-react";
+import { useFavoritesStore } from "@/lib/stores/favoritesStore";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/hooks/useAuthUser";
 import { signOut } from "next-auth/react";
 import { BRAND_NAME } from "@/lib/brand";
+import { cn } from "@/lib/utils";
 import FavoritesDrawer from "./FavoritesDrawer";
 
+const NAV_LINKS = [
+  { href: "/items", label: "Tienda" },
+  { href: "/plans", label: "Planes" },
+];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const favorites = useFavoritesStore(state => state.favorites)
+  const favorites = useFavoritesStore((state) => state.favorites);
   const { getTotalItems, openCart } = useCart();
   const { user, isAuthenticated, isLoading } = useUser();
   const totalItems = getTotalItems();
@@ -24,218 +29,151 @@ export default function Navbar() {
   // El rol viene de la sesión (calculado en el servidor); es solo para mostrar el enlace.
   const isAdmin = user?.role === "admin";
 
+  const linkClass = (active: boolean) =>
+    cn(
+      "relative py-2 text-base font-extrabold uppercase tracking-[0.12em] transition-colors",
+      "after:absolute after:inset-x-0 after:-bottom-1 after:h-[3px] after:origin-left after:bg-accent after:transition-transform",
+      active ? "text-fg after:scale-x-100" : "text-fg-soft hover:text-fg after:scale-x-0 hover:after:scale-x-100"
+    );
+
+  const iconBtn =
+    "relative flex h-11 w-11 items-center justify-center text-fg transition-colors hover:bg-surface-3 hover:text-accent";
+  const countBadge =
+    "absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center bg-accent px-1 text-xs font-extrabold text-on-accent";
 
   return (
-    <nav className="bg-white border-b border-black sticky top-0 z-50 hover:border-orange-500 transition-colors ease-in-out duration-300">
+    <nav className="sticky top-0 z-50 border-b-2 border-accent bg-bg/95" aria-label="Principal">
       <div className="container mx-auto px-4">
-        <div className="h-20 flex items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-4 md:h-[72px]">
           {/* Botón menú móvil */}
           <button
-            onClick={() => setIsMobileMenuOpen(prev => !prev)}
-            className="md:hidden p-2 rounded-md hover:bg-gray-100 transition"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className={cn(iconBtn, "md:hidden")}
             aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={isMobileMenuOpen}
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6 text-black" /> : <Menu className="w-6 h-6 text-black" />}
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* 1. SECCIÓN IZQUIERDA (Productos y Planes) */}
-          {/* Usamos flex-1 para que ocupe el mismo espacio que la derecha */}
-          <div className="hidden md:flex flex-1 items-center justify-evenly mr-10">
-          <NavLink href="/items" currentPath={pathname}>
-            <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/items" && "text-orange-500"}`}>Tienda</span>
-          </NavLink>
-          <NavLink href="/plans" currentPath={pathname}>
-             <span className={`text-black text-lg hover:text-orange-400 ${pathname == "/plans" && "text-orange-500"}`}>Planes</span>
-          </NavLink>
-          
-        
-          </div>
-    
-
-          {/* 2. CENTRO (La Marca / Home) */}
-          <div className="shrink-0 text-center flex-1 md:flex-none">
-            <Link 
-              href="/" 
-              className={`font-black text-black uppercase text-lg sm:text-2xl tracking-wider sm:tracking-widest whitespace-nowrap hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
-            >
-              {BRAND_NAME}
-            </Link>
-          </div>
-
-          {/* 3. SECCIÓN DERECHA (Contacto, Buscador, Usuario) */}
-          <div className="hidden md:flex flex-1 items-center justify-evenly ml-10">
-          {/* Lista de deseos */}
-           <button
-        onClick={() => setIsOpen(true)}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition"
-      >
-        <Heart className="w-6 h-6 text-gray-700" />
-        {favorites.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {favorites.length}
-          </span>
-        )}
-          </button>
-
-          <FavoritesDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} />
-
-          {/* Carrito de compras */}
-            <button onClick={() => openCart()} className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <ShoppingCartIcon className="w-5 h-5 text-black hover:text-orange-500 transition-colors" />
-            {totalItems > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </button>
-
-          {/* Gestión de usuario */}
-          {!isLoading && (
-            isAuthenticated && user ? (
-              // Usuario autenticado: mostrar menú desplegable
-              <div className="relative">
-                <button 
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`p-2  hover:text-orange-500 text-black transition-colors ${pathname == "/profile" && "text-orange-500"}`}
-                  title={user.name || "Usuario"}
-                >
-                  <UserIcon className="w-5 h-5 inline-block ml-1" /> Hola!, {user.name?.split(" ")[0] || "Usuario"} 
-                </button>
-
-                {/* Menú desplegable */}
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                    {/* Header con nombre del usuario */}
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-
-                    {/* Links del menú */}
-                    <Link 
-                      href="/profile" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      👤 Mi Perfil
-                    </Link>
-                    <Link 
-                      href="/profile/orders" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      📦 Mis Compras
-                    </Link>
-                    {
-                      isAdmin && (
-                        <Link 
-                          href="/admin"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          🛠️ Admin Dashboard
-                        </Link>
-                      )
-                    }
-                    
-
-                    {/* Separator */}
-                    <div className="border-t border-gray-100 my-2"></div>
-
-                    {/* Botón de logout */}
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false)
-                        signOut({ callbackUrl: "/" })
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Cerrar sesión
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Usuario no autenticado: mostrar enlace de login
-              <Link href="/login" className={`text-black text-lg hover:text-orange-400 ${pathname == "/login" && "text-orange-500"}`}>
-                <span>Iniciar Sesión</span>
+          {/* Izquierda: enlaces */}
+          <div className="hidden flex-1 items-center gap-8 md:flex">
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className={linkClass(pathname === l.href)}>
+                {l.label}
               </Link>
-            )
-          )}
-          
+            ))}
           </div>
 
-          {/* Acciones rápidas en móvil */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="relative p-2 rounded-full hover:bg-gray-100 transition"
-              aria-label="Abrir favoritos"
-            >
-              <Heart className="w-6 h-6 text-gray-700" />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
+          {/* Centro: marca */}
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-2 font-display text-2xl uppercase leading-none tracking-wide text-fg transition-colors hover:text-accent sm:text-3xl"
+            aria-label={`${BRAND_NAME}, inicio`}
+          >
+            <span aria-hidden="true" className="inline-block h-6 w-2 -skew-x-12 bg-accent sm:h-7" />
+            {BRAND_NAME}
+          </Link>
+
+          {/* Derecha: acciones */}
+          <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
+            <button onClick={() => setIsOpen(true)} className={iconBtn} aria-label="Abrir favoritos">
+              <Heart className="h-5 w-5" />
+              {favorites.length > 0 && <span className={countBadge}>{favorites.length}</span>}
             </button>
-            <button
-              onClick={() => openCart()}
-              className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Abrir carrito"
-            >
-              <ShoppingCartIcon className="w-5 h-5 text-black hover:text-orange-500 transition-colors" />
-              {totalItems > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
+
+            <button onClick={() => openCart()} className={iconBtn} aria-label="Abrir carrito">
+              <ShoppingCartIcon className="h-5 w-5" />
+              {totalItems > 0 && <span className={countBadge}>{totalItems}</span>}
             </button>
+
+            <FavoritesDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} />
+
+            {/* Usuario (escritorio) */}
+            {!isLoading &&
+              (isAuthenticated && user ? (
+                <div className="relative hidden md:block">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className={cn(
+                      "flex h-11 items-center gap-2 px-3 text-base font-extrabold uppercase tracking-[0.1em] transition-colors hover:bg-surface-3 hover:text-accent",
+                      pathname.startsWith("/profile") ? "text-accent" : "text-fg"
+                    )}
+                    aria-expanded={showUserMenu}
+                    aria-haspopup="menu"
+                    title={user.name || "Usuario"}
+                  >
+                    <UserIcon className="h-5 w-5" />
+                    {user.name?.split(" ")[0] || "Usuario"}
+                  </button>
+
+                  {showUserMenu && (
+                    <div role="menu" className="absolute right-0 z-50 mt-2 w-60 border-2 border-line-strong bg-surface">
+                      <div className="border-b border-line px-4 py-3">
+                        <p className="text-sm font-bold text-fg">{user.name}</p>
+                        <p className="truncate text-xs text-muted">{user.email}</p>
+                      </div>
+                      <MenuLink href="/profile" icon={<UserIcon className="h-4 w-4" />} onClick={() => setShowUserMenu(false)}>
+                        Mi perfil
+                      </MenuLink>
+                      <MenuLink href="/profile/orders" icon={<Package className="h-4 w-4" />} onClick={() => setShowUserMenu(false)}>
+                        Mis compras
+                      </MenuLink>
+                      {isAdmin && (
+                        <MenuLink href="/admin" icon={<LayoutDashboard className="h-4 w-4" />} onClick={() => setShowUserMenu(false)}>
+                          Panel admin
+                        </MenuLink>
+                      )}
+                      <button
+                        role="menuitem"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          signOut({ callbackUrl: "/" });
+                        }}
+                        className="flex w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-sm font-bold uppercase tracking-wider text-danger transition-colors hover:bg-danger/10"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link href="/login" className="btn btn-primary btn-sm ml-2 hidden md:inline-flex">
+                  Iniciar sesión
+                </Link>
+              ))}
           </div>
         </div>
 
         {/* Menú móvil */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pb-4 border-t border-gray-100">
-            <div className="flex flex-col gap-2 pt-4">
-              <Link
-                href="/items"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 ${pathname == "/items" ? "text-orange-500" : "text-black"}`}
-              >
-                Tienda
-              </Link>
-              <Link
-                href="/plans"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 ${pathname == "/plans" ? "text-orange-500" : "text-black"}`}
-              >
-                Planes
-              </Link>
-              {!isLoading && (
-                isAuthenticated && user ? (
+          <div className="border-t border-line pb-4 md:hidden">
+            <div className="flex flex-col pt-2">
+              {NAV_LINKS.map((l) => (
+                <MobileLink key={l.href} href={l.href} active={pathname === l.href} onClick={() => setIsMobileMenuOpen(false)}>
+                  {l.label}
+                </MobileLink>
+              ))}
+              {!isLoading &&
+                (isAuthenticated && user ? (
                   <>
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 ${pathname == "/profile" ? "text-orange-500" : "text-black"}`}
-                    >
-                      Mi Perfil
-                    </Link>
-                    <Link
-                      href="/profile/orders"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 text-black"
-                    >
-                      Mis Compras
-                    </Link>
+                    <MobileLink href="/profile" active={pathname === "/profile"} onClick={() => setIsMobileMenuOpen(false)}>
+                      Mi perfil
+                    </MobileLink>
+                    <MobileLink href="/profile/orders" active={pathname === "/profile/orders"} onClick={() => setIsMobileMenuOpen(false)}>
+                      Mis compras
+                    </MobileLink>
+                    {isAdmin && (
+                      <MobileLink href="/admin" active={false} onClick={() => setIsMobileMenuOpen(false)}>
+                        Panel admin
+                      </MobileLink>
+                    )}
                     <button
                       onClick={() => {
-                        setIsMobileMenuOpen(false)
-                        signOut({ callbackUrl: "/" })
+                        setIsMobileMenuOpen(false);
+                        signOut({ callbackUrl: "/" });
                       }}
-                      className="text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+                      className="px-2 py-3 text-left text-lg font-extrabold uppercase tracking-[0.1em] text-danger hover:bg-danger/10"
                     >
                       Cerrar sesión
                     </button>
@@ -244,12 +182,11 @@ export default function Navbar() {
                   <Link
                     href="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 ${pathname == "/login" ? "text-orange-500" : "text-black"}`}
+                    className="btn btn-primary btn-block mt-3"
                   >
-                    Iniciar Sesión
+                    Iniciar sesión
                   </Link>
-                )
-              )}
+                ))}
             </div>
           </div>
         )}
@@ -258,17 +195,49 @@ export default function Navbar() {
   );
 }
 
-// --- Componentes Auxiliares (Para mantener limpio el código principal) ---
-
-// 1. Componente para los Links de texto
-function NavLink({ href, children, currentPath }: { href: string; children: React.ReactNode; currentPath: string }) {
-  const isActive = currentPath === href;
+function MenuLink({
+  href,
+  icon,
+  onClick,
+  children,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors duration-200 ${
-        isActive ? "text-indigo-400" : "text-gray-300 hover:text-white"
-      }`}
+      role="menuitem"
+      onClick={onClick}
+      className="flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wider text-fg-soft transition-colors hover:bg-surface-3 hover:text-accent"
+    >
+      {icon}
+      {children}
+    </Link>
+  );
+}
+
+function MobileLink({
+  href,
+  active,
+  onClick,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "border-l-4 px-3 py-3 text-lg font-extrabold uppercase tracking-[0.1em] transition-colors hover:bg-surface-3",
+        active ? "border-accent text-accent" : "border-transparent text-fg"
+      )}
     >
       {children}
     </Link>

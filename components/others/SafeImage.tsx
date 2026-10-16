@@ -1,63 +1,59 @@
 "use client"
 
-import { Wallpaper } from "lucide-react"
+import { ImageOff } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 
 interface SafeImageProps {
   src: string | null | undefined
   alt: string
-  className?: string                  // clases para la imagen (object-cover, etc.)
-  containerClassName?: string         // clases adicionales para el contenedor
+  className?: string // clases para la imagen (object-cover, etc.)
+  containerClassName?: string // el padre define la proporción (aspect-*) o el alto
   fallback?: React.ReactNode
-  priority?: boolean                  // para imágenes above the fold
-  sizes?: string                      // ej: "100vw", "(max-width: 768px) 50vw, 33vw"
+  priority?: boolean // para imágenes above the fold
+  sizes?: string // ej: "(min-width: 1024px) 25vw, 50vw"
 }
 
+/**
+ * Imagen con contenedor de proporción fija: el padre aporta el aspect-ratio
+ * (o un alto) y la imagen rellena con object-cover. Nada se estira.
+ */
 export const SafeImage = ({
   src,
   alt,
-  className = "object-cover",         // por defecto object-cover (lo más común)
+  className = "object-cover",
   containerClassName = "",
-  fallback = <Wallpaper className="w-16 h-16 text-gray-400" />,
+  fallback = <ImageOff className="h-10 w-10 text-subtle" aria-hidden="true" />,
   priority = false,
   sizes,
 }: SafeImageProps) => {
-  const [error, setError] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null)
 
-  // Si no hay src o error → mostrar fallback
-  if (!src || error) {
+  if (!src || failedSrc === src) {
     return (
-      <div className={`flex items-center justify-center w-full h-full bg-gray-100 rounded-xl ${containerClassName}`}>
+      <div className={cn("flex h-full w-full items-center justify-center bg-surface-2", containerClassName)}>
         {fallback}
       </div>
     )
   }
 
+  const loading = loadedSrc !== src
+
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-gray-50 rounded-xl ${containerClassName}`}>
+    <div className={cn("relative h-full w-full overflow-hidden bg-surface-2", containerClassName)}>
       <Image
         src={src}
         alt={alt}
         fill
-        className={`transition-transform duration-700 ${className} ${loading ? 'opacity-0' : 'opacity-100'}`}
-        onLoadingComplete={() => setLoading(false)}
-        onError={() => {
-          setError(true)
-        }}
-       
+        className={cn("transition-opacity duration-300", className, loading ? "opacity-0" : "opacity-100")}
+        onLoad={() => setLoadedSrc(src)}
+        onError={() => setFailedSrc(src)}
         priority={priority}
-        sizes={sizes || "100vw"}     // por defecto asume full width
-        quality={85}                 // balance entre calidad y velocidad
+        sizes={sizes || "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"}
+        quality={75}
       />
-
-      {/* Loading overlay */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50/50 backdrop-blur-sm">
-          <div className="animate-pulse bg-gray-300 w-12 h-12 rounded-full" />
-        </div>
-      )}
     </div>
   )
 }

@@ -22,28 +22,27 @@ export default function StateMessage({
   className = "",
 }: StateMessageProps) {
   const isError = tone === "error"
-  const buttonClass =
-    "inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+  const buttonClass = "btn btn-primary"
 
   return (
     <div
       role={isError ? "alert" : "status"}
-      className={`mx-auto w-full max-w-xl rounded-2xl border bg-white px-6 py-10 text-center shadow-sm ${
-        isError ? "border-red-200" : "border-slate-200"
+      className={`mx-auto w-full max-w-xl border-2 bg-surface px-6 py-10 text-center ${
+        isError ? "border-danger" : "border-line"
       } ${className}`}
     >
       {icon && (
         <div
           aria-hidden="true"
-          className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-2xl ${
-            isError ? "bg-red-50 text-red-500" : "bg-slate-100 text-slate-400"
+          className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center font-display text-3xl ${
+            isError ? "bg-danger/10 text-danger" : "bg-surface-2 text-subtle"
           }`}
         >
           {icon}
         </div>
       )}
-      <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-      {description && <p className="mt-2 text-slate-600">{description}</p>}
+      <h3 className="text-3xl text-fg">{title}</h3>
+      {description && <p className="mt-2 text-muted">{description}</p>}
       {action && (
         <div className="mt-6">
           {action.href ? (

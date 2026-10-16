@@ -16,7 +16,7 @@ export default function MainError({
   }, [error])
 
   return (
-    <main className="flex min-h-[60vh] items-center bg-slate-50 px-4 py-16">
+    <main className="flex min-h-[60vh] items-center bg-bg px-4 py-16">
       <StateMessage
         tone="error"
         icon="!"

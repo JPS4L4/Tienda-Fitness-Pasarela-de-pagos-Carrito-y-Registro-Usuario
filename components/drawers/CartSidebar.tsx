@@ -13,36 +13,39 @@ export default function CartSidebar() {
   if (!isOpen) return null;
 
   const totalPrice = getTotalPrice();
+  const stepper = "flex h-9 w-9 items-center justify-center text-fg transition-colors hover:bg-accent hover:text-on-accent";
 
   return (
     <>
       {/* Overlay oscuro */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300"
-        onClick={closeCart}
-      />
+      <div className="fixed inset-0 z-40 bg-black/70" onClick={closeCart} aria-hidden="true" />
 
       {/* Sidebar del carrito */}
-      <div className="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col overflow-hidden transition-transform duration-300">
-        
-        {/* Header */}
-        <div className="bg-linear-to-r from-gray-900 to-gray-600 text-white p-6 flex items-center justify-between">
-          <ShoppingCart className="w-10 h-10 mx-auto" />
-          <h2 className="text-2xl font-bold mx-auto">Carrito</h2>
+      <aside
+        className="fixed bottom-0 right-0 top-0 z-50 flex w-full flex-col overflow-hidden border-l-2 border-accent bg-surface sm:w-[26rem]"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Carrito de compras"
+      >
+        <div className="flex items-center justify-between border-b border-line p-5">
+          <h2 className="flex items-center gap-3 text-3xl text-fg">
+            <ShoppingCart className="h-7 w-7 text-accent" aria-hidden="true" />
+            Carrito
+          </h2>
           <button
             onClick={closeCart}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="flex h-11 w-11 items-center justify-center text-fg transition-colors hover:bg-surface-3 hover:text-accent"
+            aria-label="Cerrar carrito"
           >
-            <X className="w-6 h-6" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Contenido del carrito */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <div className="text-6xl mb-4">🛒</div>
-              <p className="text-lg font-semibold">Tu carrito está vacío</p>
+            <div className="flex h-full flex-col items-center justify-center text-center text-muted">
+              <ShoppingCart className="mb-4 h-14 w-14 text-subtle" aria-hidden="true" />
+              <p className="text-lg font-bold text-fg-soft">Tu carrito está vacío</p>
               <p className="text-sm">Agrega productos para empezar</p>
             </div>
           ) : (
@@ -51,67 +54,48 @@ export default function CartSidebar() {
               const subtotal = itemPrice * item.quantity;
 
               return (
-                <div
-                  key={item.id}
-                  className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
-                >
-                  {/* Imagen y título */}
-                  <div className="flex gap-4 mb-4">
+                <div key={item.id} className="border border-line bg-surface-2 p-3">
+                  <div className="mb-3 flex gap-3">
                     {item.image && (
-                      <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                        <SafeImage
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                          containerClassName="w-full h-full"
-                        />
+                      <div className="media aspect-square w-20 shrink-0">
+                        <SafeImage src={item.image} alt={item.title} sizes="80px" className="object-cover" />
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-gray-600">{item.category}</p>
-                      <p className="text-lg font-bold text-green-600 mt-2">
-                        {formatPrice(itemPrice)}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-sans text-base font-bold normal-case tracking-normal text-fg">{item.title}</h3>
+                      <p className="text-sm text-muted">{item.category}</p>
+                      <p className="price mt-1 text-2xl text-fg">{formatPrice(itemPrice)}</p>
                     </div>
                   </div>
 
-                  {/* Controles de cantidad */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-stretch border-2 border-line-strong">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className={stepper}
+                        aria-label="Disminuir cantidad"
                       >
-                        <Minus className="w-4 h-4 text-gray-700" />
+                        <Minus className="h-4 w-4" />
                       </button>
-                      <span className="w-8 text-center font-semibold text-gray-900">
+                      <span className="flex w-10 items-center justify-center border-x-2 border-line-strong font-bold text-fg">
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className={stepper}
+                        aria-label="Aumentar cantidad"
                       >
-                        <Plus className="w-4 h-4 text-gray-700" />
+                        <Plus className="h-4 w-4" />
                       </button>
                     </div>
-                    <p className="text-sm font-semibold text-gray-700">
-                      Subtotal: {formatPrice(subtotal)}
-                    </p>
+                    <p className="text-sm font-semibold text-fg-soft">Subtotal: {formatPrice(subtotal)}</p>
                   </div>
 
-                  {/* Botón eliminar */}
                   <button
                     onClick={() => removeFromCart(item.id)}
-                    className="w-full py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 py-2 text-sm font-bold uppercase tracking-[0.1em] text-danger transition-colors hover:bg-danger/10"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                     Eliminar
                   </button>
                 </div>
@@ -120,28 +104,21 @@ export default function CartSidebar() {
           )}
         </div>
 
-        {/* Footer */}
         {cart.length > 0 && (
-          <div className="border-t border-gray-200 p-6 space-y-4 bg-gray-50">
-            <div className="flex items-center justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span className="text-2xl text-green-600">{formatPrice(totalPrice)}</span>
+          <div className="space-y-4 border-t border-line bg-surface-2 p-5">
+            <div className="flex items-end justify-between">
+              <span className="text-sm font-extrabold uppercase tracking-[0.14em] text-muted">Total</span>
+              <span className="price text-4xl text-fg">{formatPrice(totalPrice)}</span>
             </div>
-            <Link
-              href="/checkout?type=cart"
-              className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 text-center block"
-            >
-              Proceder al Pago
+            <Link href="/checkout?type=cart" onClick={closeCart} className="btn btn-primary btn-lg btn-block">
+              Proceder al pago
             </Link>
-            <button
-              onClick={closeCart}
-              className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              Continuar Comprando
+            <button onClick={closeCart} className="btn btn-secondary btn-block">
+              Continuar comprando
             </button>
           </div>
         )}
-      </div>
+      </aside>
     </>
   );
 }

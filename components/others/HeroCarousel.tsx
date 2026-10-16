@@ -1,15 +1,13 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay, EffectFade, A11y } from "swiper/modules"
 import type { Swiper as SwiperType } from "swiper"
 
-/**
- * Tipo para cada slide del carousel
- */
 interface HeroSlide {
   id: number
   title: string
@@ -18,115 +16,82 @@ interface HeroSlide {
   ctaLink: string
   image: string
   imageAlt: string
-  /** Capa de color con alfa sobre la foto (legibilidad del texto) */
-  overlay: string
-  textColor?: string
+  /** Punto focal de la foto (object-position) para que el sujeto no quede tapado por el texto */
+  focus: string
 }
 
-/**
- * Slides del hero. Fotos en public/images/hero (créditos en public/images/CREDITS.md)
- */
+/** Slides del hero. Fotos en public/images/hero (créditos en public/images/CREDITS.md) */
 const HERO_SLIDES: HeroSlide[] = [
   {
     id: 1,
-    title: "Define tu Fuerza",
-    subtitle: "Entrenamiento personalizado para alcanzar tus objetivos",
-    ctaText: "Comenzar Ahora",
+    title: "Define tu fuerza",
+    subtitle: "Entrenamiento personalizado para alcanzar tus objetivos.",
+    ctaText: "Comenzar ahora",
     ctaLink: "/plans",
     image: "/images/hero/fuerza.webp",
     imageAlt: "Persona levantando una barra con discos en un gimnasio",
-    overlay: "from-slate-950/85 via-slate-950/55 to-slate-950/25",
-    textColor: "text-white"
+    focus: "70% 40%",
   },
   {
     id: 2,
-    title: "Transforma tu Vida",
-    subtitle: "Planes de nutrición y ejercicio diseñados para ti",
-    ctaText: "Ver Planes",
+    title: "Transforma tu vida",
+    subtitle: "Planes de nutrición y ejercicio diseñados para ti.",
+    ctaText: "Ver planes",
     ctaLink: "/plans",
     image: "/images/hero/transforma.webp",
     imageAlt: "Entrenador guiando un ejercicio al aire libre",
-    overlay: "from-indigo-950/85 via-indigo-950/55 to-slate-950/25",
-    textColor: "text-white"
+    focus: "75% 40%",
   },
   {
     id: 3,
-    title: "Ofertas Especiales",
-    subtitle: "50% OFF en tu primer mes - Únete hoy",
-    ctaText: "Ver Ofertas",
+    title: "Ofertas especiales",
+    subtitle: "Hasta 50% de descuento en equipo y suplementos.",
+    ctaText: "Ver ofertas",
     ctaLink: "/items?discount=true",
     image: "/images/hero/ofertas.webp",
     imageAlt: "Mancuernas y botella sobre una colchoneta de yoga",
-    overlay: "from-rose-950/85 via-slate-950/55 to-slate-950/25",
-    textColor: "text-white"
+    focus: "70% 50%",
   },
   {
     id: 4,
-    title: "Equipo Premium",
-    subtitle: "Descubre los mejores productos para tu entrenamiento",
-    ctaText: "Ver Tienda",
+    title: "Equipo premium",
+    subtitle: "Los mejores productos para tu entrenamiento.",
+    ctaText: "Ver tienda",
     ctaLink: "/items",
     image: "/images/hero/equipo.webp",
     imageAlt: "Estante con mancuernas en un gimnasio",
-    overlay: "from-teal-950/85 via-slate-950/55 to-slate-950/25",
-    textColor: "text-white"
-  }
+    focus: "70% 50%",
+  },
 ]
 
+const arrowClass =
+  "absolute top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center border-2 border-fg/40 bg-bg/70 text-fg transition-colors hover:border-accent hover:bg-accent hover:text-on-accent sm:flex"
+
 export default function HeroCarousel() {
-  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false)
   const swiperRef = useRef<SwiperType | null>(null)
 
-  // Manejar pause/resume del autoplay
-  const handleMouseEnter = () => {
-    if (swiperRef.current?.autoplay) {
-      swiperRef.current.autoplay.stop()
-      setIsAutoplayPaused(true)
-    }
-  }
-
-  const handleMouseLeave = () => {
-    if (swiperRef.current?.autoplay) {
-      swiperRef.current.autoplay.start()
-      setIsAutoplayPaused(false)
-    }
-  }
-
   return (
-    <section 
-      className="relative w-full h-[60vh] md:h-[75vh] lg:h-[85vh] overflow-hidden"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      aria-label="Hero carousel"
+    <section
+      className="hero-cut relative h-[calc(100svh-66px)] min-h-[520px] max-h-[760px] w-full overflow-hidden bg-bg"
+      aria-label="Destacados"
     >
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade, A11y]}
         spaceBetween={0}
         slidesPerView={1}
-        navigation={{
-          nextEl: ".swiper-button-next-custom",
-          prevEl: ".swiper-button-prev-custom",
-        }}
+        navigation={{ nextEl: ".swiper-button-next-custom", prevEl: ".swiper-button-prev-custom" }}
         pagination={{
           el: ".swiper-pagination-custom",
           clickable: true,
           bulletClass: "swiper-pagination-bullet-custom",
           bulletActiveClass: "swiper-pagination-bullet-active-custom",
         }}
-        autoplay={{
-          delay: 7000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        speed={800}
+        autoplay={{ delay: 7000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+        speed={500}
         effect="fade"
         fadeEffect={{ crossFade: true }}
         loop={true}
-        grabCursor={true}
-        keyboard={{
-          enabled: true,
-          onlyInViewport: true,
-        }}
+        keyboard={{ enabled: true, onlyInViewport: true }}
         a11y={{
           prevSlideMessage: "Slide anterior",
           nextSlideMessage: "Siguiente slide",
@@ -136,16 +101,13 @@ export default function HeroCarousel() {
         onSwiper={(swiper) => {
           swiperRef.current = swiper
         }}
-        className="w-full h-full"
+        className="h-full w-full"
       >
         {HERO_SLIDES.map((slide, index) => {
           const Title = index === 0 ? "h1" : "h2"
           return (
-          <SwiperSlide key={slide.id}>
-            {/* Contenedor del slide */}
-            <div className="relative w-full h-full">
-              {/* Imagen de fondo con Next/Image */}
-              <div className="absolute inset-0">
+            <SwiperSlide key={slide.id}>
+              <div className="relative h-full w-full">
                 <Image
                   src={slide.image}
                   alt={slide.imageAlt}
@@ -154,182 +116,52 @@ export default function HeroCarousel() {
                   quality={75}
                   sizes="100vw"
                   className="object-cover"
-                  placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCgAA8A/9k="
+                  style={{ objectPosition: slide.focus, filter: "contrast(1.08) saturate(0.85)" }}
                 />
-                
-                {/* Overlay con gradiente */}
-                <div 
-                  className={`absolute inset-0 bg-slate-950/20 bg-linear-to-r ${slide.overlay}`}
+                {/* Capa para legibilidad: negro sólido bajo el texto, foto visible en el resto */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/10 md:bg-gradient-to-r md:from-bg md:via-bg/60 md:to-bg/5"
                   aria-hidden="true"
                 />
-              </div>
 
-              {/* Contenido del slide */}
-              <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
-                <div className="max-w-4xl mx-auto text-center">
-                  {/* Título */}
-                  <Title 
-                    className={`
-                      text-4xl sm:text-5xl md:text-6xl lg:text-7xl 
-                      font-black ${slide.textColor || "text-white"} 
-                      mb-4 sm:mb-6 
-                      tracking-tighter 
-                      uppercase 
-                      animate-fade-in-up
-                      drop-shadow-2xl
-                    `}
-                  >
-                    {slide.title}
-                  </Title>
-
-                  {/* Subtítulo */}
-                  <p 
-                    className={`
-                      text-lg sm:text-xl md:text-2xl 
-                      ${slide.textColor || "text-gray-200"} 
-                      mb-6 sm:mb-8 
-                      font-light 
-                      max-w-2xl mx-auto
-                      animate-fade-in-up
-                      animation-delay-200
-                      drop-shadow-lg
-                    `}
-                  >
-                    {slide.subtitle}
-                  </p>
-
-                  {/* CTA Button */}
-                  <Link 
-                    href={slide.ctaLink}
-                    className="
-                      inline-block
-                      bg-white text-black 
-                      hover:bg-gray-100 
-                      px-6 sm:px-8 md:px-10 
-                      py-3 sm:py-4 
-                      rounded-full 
-                      font-bold 
-                      text-sm sm:text-base md:text-lg
-                      transition-all 
-                      duration-300
-                      hover:scale-105 
-                      hover:shadow-2xl
-                      active:scale-95
-                      uppercase 
-                      tracking-widest
-                      animate-fade-in-up
-                      animation-delay-400
-                      focus:outline-none
-                      focus:ring-4
-                      focus:ring-white/50
-                    "
-                    aria-label={`${slide.ctaText} - ${slide.title}`}
-                  >
-                    {slide.ctaText}
-                  </Link>
+                <div className="container relative z-10 mx-auto flex h-full items-end px-4 pb-20 md:items-center md:pb-14">
+                  <div className="max-w-3xl">
+                    <div className="mb-5 h-2 w-24 bg-accent" aria-hidden="true" />
+                    <Title className="animate-fade-in-up text-[clamp(3rem,9vw,7.5rem)] leading-[0.92] text-fg">
+                      {slide.title}
+                    </Title>
+                    <p className="animate-fade-in-up animation-delay-200 mt-5 max-w-xl text-lg font-medium text-fg-soft sm:text-xl">
+                      {slide.subtitle}
+                    </p>
+                    <div className="animate-fade-in-up animation-delay-400 mt-8">
+                      <Link
+                        href={slide.ctaLink}
+                        className="btn btn-primary btn-lg"
+                        aria-label={`${slide.ctaText}: ${slide.title}`}
+                      >
+                        {slide.ctaText}
+                        <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </SwiperSlide>
+            </SwiperSlide>
           )
         })}
       </Swiper>
 
-      {/* Controles personalizados - Flechas de navegación */}
-      <button
-        className="
-          swiper-button-prev-custom
-          absolute 
-          hidden sm:flex
-          left-2 sm:left-4 md:left-8 
-          top-1/2 
-          -translate-y-1/2 
-          z-20
-          bg-white/20 
-          hover:bg-white/40 
-          backdrop-blur-sm
-          rounded-full 
-          w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
-          items-center 
-          justify-center
-          transition-all 
-          duration-300
-          hover:scale-110
-          focus:outline-none
-          focus:ring-4
-          focus:ring-white/50
-          group
-        "
-        aria-label="Slide anterior"
-      >
-        <svg 
-          className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:scale-125 transition-transform" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-        </svg>
+      <button className={`swiper-button-prev-custom left-4 md:left-8 ${arrowClass}`} aria-label="Slide anterior">
+        <ChevronLeft className="h-7 w-7" strokeWidth={3} />
+      </button>
+      <button className={`swiper-button-next-custom right-4 md:right-8 ${arrowClass}`} aria-label="Siguiente slide">
+        <ChevronRight className="h-7 w-7" strokeWidth={3} />
       </button>
 
-      <button
-        className="
-          swiper-button-next-custom
-          absolute 
-          hidden sm:flex
-          right-2 sm:right-4 md:right-8 
-          top-1/2 
-          -translate-y-1/2 
-          z-20
-          bg-white/20 
-          hover:bg-white/40 
-          backdrop-blur-sm
-          rounded-full 
-          w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
-          items-center 
-          justify-center
-          transition-all 
-          duration-300
-          hover:scale-110
-          focus:outline-none
-          focus:ring-4
-          focus:ring-white/50
-          group
-        "
-        aria-label="Siguiente slide"
-      >
-        <svg 
-          className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:scale-125 transition-transform" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      {/* Paginación (dots) */}
-      <div 
-        className="
-          swiper-pagination-custom 
-          absolute 
-          bottom-4 sm:bottom-6 md:bottom-8 
-          left-0 
-          right-0 
-          z-20 
-          justify-center 
-          gap-2 sm:gap-3
-        "
+      <div
+        className="swiper-pagination-custom absolute bottom-14 left-0 right-0 z-20 container mx-auto flex px-4"
         aria-label="Indicadores de slides"
       />
-
-      {/* Indicador de pausa (opcional) */}
-      {isAutoplayPaused && (
-        <div className="absolute top-4 right-4 z-20 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full">
-          <span className="text-white text-xs font-medium">En pausa</span>
-        </div>
-      )}
     </section>
   )
 }

@@ -16,20 +16,20 @@ export default function GlobalError({
 
   return (
     <html lang="es">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#f8fafc", color: "#0f172a" }}>
+      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#0a0a0b", color: "#f5f3ef" }}>
         <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "1.5rem", textAlign: "center" }}>
           <div>
             <h1 style={{ fontSize: "2rem", margin: 0 }}>Algo salió mal</h1>
-            <p style={{ color: "#475569", marginTop: "0.75rem" }}>Ha ocurrido un error inesperado. Intenta de nuevo.</p>
+            <p style={{ color: "#a9a9b1", marginTop: "0.75rem" }}>Ha ocurrido un error inesperado. Intenta de nuevo.</p>
             <div style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", justifyContent: "center" }}>
               <button
                 onClick={reset}
-                style={{ background: "#4f46e5", color: "#fff", border: 0, borderRadius: 8, padding: "0.6rem 1.2rem", fontWeight: 600, cursor: "pointer" }}
+                style={{ background: "#ff4d14", color: "#0a0a0b", border: 0, borderRadius: 0, padding: "0.75rem 1.5rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", cursor: "pointer" }}
               >
                 Intentar de nuevo
               </button>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-              <a href="/" style={{ background: "#e2e8f0", color: "#0f172a", borderRadius: 8, padding: "0.6rem 1.2rem", fontWeight: 600, textDecoration: "none" }}>
+              <a href="/" style={{ border: "2px solid #f5f3ef", color: "#f5f3ef", borderRadius: 0, padding: "0.7rem 1.5rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", textDecoration: "none" }}>
                 Ir al inicio
               </a>
             </div>

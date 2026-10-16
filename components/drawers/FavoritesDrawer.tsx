@@ -5,6 +5,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { X, Heart } from 'lucide-react'
 import { useFavoritesStore } from '@/lib/stores/favoritesStore' // ajusta ruta
 import Link from 'next/link'
+import { SafeImage } from '@/components/others/SafeImage'
 
 interface FavoritesDrawerProps {
   isOpen: boolean
@@ -27,7 +28,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/70" />
         </Transition.Child>
 
         {/* Panel lateral */}
@@ -44,18 +45,18 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-2xl">
+                  <div className="flex h-full flex-col divide-y divide-line border-l-2 border-accent bg-surface">
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-6">
                       <div className="flex items-center gap-3">
-                        <Heart className="w-7 h-7 text-red-500 fill-red-500" />
-                        <Dialog.Title className="text-2xl font-bold text-gray-900">
+                        <Heart className="h-7 w-7 fill-accent text-accent" aria-hidden="true" />
+                        <Dialog.Title className="text-3xl text-fg">
                           Mis Favoritos ({favorites.length})
                         </Dialog.Title>
                       </div>
                       <button
                         type="button"
-                        className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                        aria-label="Cerrar favoritos" className="flex h-11 w-11 items-center justify-center text-fg transition-colors hover:bg-surface-3 hover:text-accent"
                         onClick={onClose}
                       >
                         <X className="h-7 w-7" />
@@ -65,8 +66,8 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                     {/* Lista de favoritos */}
                     <div className="flex-1 overflow-y-auto px-6 py-6">
                       {favorites.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-                          <Heart className="w-16 h-16 text-gray-300 mb-4" />
+                        <div className="flex flex-col items-center justify-center h-full text-center text-muted">
+                          <Heart className="w-16 h-16 text-subtle mb-4" />
                           <p className="text-lg font-medium">Aún no tienes favoritos</p>
                           <p className="mt-2">Agrega productos o planes que te gusten</p>
                         </div>
@@ -75,27 +76,24 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                           {favorites.map(item => (
                             <div
                               key={`${item.type}-${item.id}`}
-                              className="group relative flex gap-4 bg-white rounded-xl border border-gray-100 hover:border-gray-300 transition-all overflow-hidden shadow-sm hover:shadow"
+                              className="group relative flex gap-4 border border-line bg-surface-2 transition-colors hover:border-accent overflow-hidden"
                             >
                               <Link href={`/${item.type}s/${item.slug}`} className="flex-1 flex">
-                                <div className="w-28 h-28 flex-shrink-0">
-                                  <img
-                                    src={item.image}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover"
-                                  />
+                                <div className="media aspect-square w-28 shrink-0">
+                                  <SafeImage src={item.image} alt={item.title} sizes="112px" className="object-cover" />
                                 </div>
                                 <div className="flex-1 p-4">
-                                  <h4 className="font-medium text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                                  <h4 className="font-sans text-base font-bold normal-case tracking-normal text-fg line-clamp-2 group-hover:text-accent transition-colors">
                                     {item.title}
                                   </h4>
-                                  <p className="text-sm text-gray-500 capitalize mt-1">{item.type}</p>
+                                  <p className="text-sm text-muted capitalize mt-1">{item.type}</p>
                                 </div>
                               </Link>
 
                               <button
+                                aria-label="Quitar de favoritos"
                                 onClick={() => removeFavorite(item.id, item.type)}
-                                className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 text-red-500 hover:bg-red-50 transition"
+                                className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center bg-bg/85 text-fg transition-colors hover:bg-accent hover:text-on-accent"
                               >
                                 <X className="w-5 h-5" />
                               </button>
@@ -109,7 +107,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                     <div className="flex flex-shrink-0 justify-end px-6 py-4">
                       <button
                         type="button"
-                        className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                        className="btn btn-secondary btn-sm"
                         onClick={onClose}
                       >
                         Cerrar

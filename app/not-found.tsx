@@ -1,19 +1,17 @@
 import Link from "next/link";
+
 export default function NotFound() {
   return (
-    <main className="h-screen w-full grid place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
-      <div className="w-full max-w-7xl">
-          <div className="text-center  p-8 rounded-xl lg:text-left px-4">
-            <p className="text-base font-semibold text-orange-600">404</p>
-            <h1 className="mt-4 text-5xl font-semibold tracking-tight text-black sm:text-7xl">Página no encontrada</h1>
-            <p className="mt-6 text-lg text-gray-800">La página que buscas no existe.</p>
-            <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
-              <Link href="/" className="rounded-md bg-orange-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-400">Volver al inicio</Link>
-            </div>
-          </div>
-
-         
-       
+    <main className="grid min-h-screen w-full place-items-center bg-bg px-6 py-24">
+      <div className="w-full max-w-5xl">
+        <p className="price text-[clamp(7rem,28vw,20rem)] leading-none text-accent">404</p>
+        <h1 className="mt-2 text-5xl text-fg sm:text-7xl">Página no encontrada</h1>
+        <p className="mt-5 text-lg text-muted">La página que buscas no existe.</p>
+        <div className="mt-8">
+          <Link href="/" className="btn btn-primary btn-lg">
+            Volver al inicio
+          </Link>
+        </div>
       </div>
     </main>
   );
