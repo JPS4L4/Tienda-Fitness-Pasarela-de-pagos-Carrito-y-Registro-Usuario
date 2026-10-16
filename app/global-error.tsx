@@ -12,7 +12,7 @@ export default function Error({ error }: { error: Error }) {
     <div className="grid min-h-screen place-items-center bg-red-50 px-6 py-24 sm:py-32 lg:px-8">
       <div className="w-full max-w-3xl text-center">
         <h2 className="text-5xl font-semibold text-red-600">¡Vaya!</h2>
-        <p className="mt-6 text-lg text-gray-700">Ha ocurrido un {error.name} | {error.message ?? "inesperado"}</p>
+        <p className="mt-6 text-lg text-gray-700">Ha ocurrido un error inesperado. Intenta de nuevo.</p>
         <div className="flex items-center justify-center gap-6">
         <button
           onClick={() => window.location.reload()}
