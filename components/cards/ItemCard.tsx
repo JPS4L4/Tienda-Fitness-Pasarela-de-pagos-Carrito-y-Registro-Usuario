@@ -1,14 +1,15 @@
 "use client"
 
-import { formatPrice, applyDiscount } from '@/lib/money'
-
+import Link from "next/link"
 import { Heart, ShoppingCart, Check } from "lucide-react"
+import toast from "react-hot-toast"
+import { formatPrice, applyDiscount } from "@/lib/money"
 import { SafeImage } from "../others/SafeImage"
+import { Badge } from "@/components/ui/Badge"
 import { useCart } from "@/context/CartContext"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
-import toast from "react-hot-toast"
 import { ItemUI } from "@/app/src/types/item"
-import { cn } from "@/lib/utils" // si tienes una función cn de clsx/tailwind-merge
+import { cn } from "@/lib/utils"
 
 const ItemCard = ({
   id,
@@ -21,8 +22,8 @@ const ItemCard = ({
   image,
   isOfferOfTheDay,
   slug,
-  currency = "COP", // por defecto COP, pero ya viene de DB
-  stock
+  currency = "COP",
+  stock,
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item) => item.id === id)
@@ -34,152 +35,112 @@ const ItemCard = ({
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
   const isFav = isFavorite(id, "item")
 
-  const handleToggleCart = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggleCart = () => {
     if (isOutOfStock) return
     if (isInCart) {
       removeFromCart(id)
-      toast.success("Eliminado del carrito 🛒", { duration: 3000 })
+      toast.success("Eliminado del carrito", { duration: 3000 })
     } else {
       addToCart({ id, title, price, category, originalPrice, discount, installments, image, isOfferOfTheDay, slug, currency })
-      toast.success("Agregado al carrito 🛒", { duration: 3000 })
+      toast.success("Agregado al carrito", { duration: 3000 })
     }
   }
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggleFavorite = () => {
     if (isFav) {
       removeFavorite(id, "item")
-      toast.success("Eliminado de favoritos ❤️", { duration: 3000 })
+      toast.success("Eliminado de favoritos", { duration: 3000 })
     } else {
       addFavorite({ id, type: "item", title, image, slug })
-      toast.success("Agregado a favoritos ❤️", {
-        duration: 4000,
-      })
+      toast.success("Agregado a favoritos", { duration: 4000 })
     }
-  }
-
-  const handleMoreDetails = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    window.location.href = `/items/${slug}`
   }
 
   return (
-    <div 
+    <article
       className={cn(
-        "group relative flex flex-col bg-white rounded-2xl border border-gray-200",
-        "overflow-hidden hover:shadow-2xl hover:border-gray-300",
-        "transition-all duration-300 cursor-pointer h-full max-w-87.5"
+        "group relative flex h-full w-full flex-col border border-line bg-surface",
+        "transition-colors duration-150 hover:border-accent"
       )}
     >
-      {/* Contenedor de imagen */}
-      <div 
-        className="relative aspect-square overflow-hidden bg-gray-50"
-        onClick={handleMoreDetails}
-      >
-        {/* Corazón favorito */}
-        <button
-          onClick={handleToggleFavorite}
-          className="absolute top-3 left-3 z-30 p-2.5 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white hover:shadow-lg transition-all duration-300"
-          aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
-        >
-          <Heart
-            className={cn(
-              "w-6 h-6 transition-all duration-300",
-              isFav
-                ? "fill-red-500 text-red-500 scale-110 animate-heartbeat"
-                : "text-red-500 hover:text-red-600 hover:scale-110"
-            )}
+      {/* Imagen: proporción fija 1:1, object-cover */}
+      <div className="media aspect-square">
+        <Link href={`/items/${slug}`} aria-label={`Ver ${title}`} className="absolute inset-0 block">
+          <SafeImage
+            src={image || "/placeholder-product.jpg"}
+            alt={title}
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 50vw"
           />
-        </button>
+        </Link>
 
-        {/* Badge oferta */}
-        {isOfferOfTheDay && (
-          <span className="absolute top-3 right-3 z-20 bg-linear-to-r from-red-500 to-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-            Oferta del día
-          </span>
-        )}
-
-        {/* Badge agotado */}
-        {isOutOfStock && (
-          <span className="absolute bottom-3 left-3 z-20 bg-black/80 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-            Agotado
-          </span>
-        )}
-
-        {/* Imagen */}
-        <SafeImage 
-          src={image || "/placeholder-product.jpg"} 
-          alt={title} 
-          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-          containerClassName="w-full h-full"
-        />
-      </div>
-
-      {/* Contenido inferior */}
-      <div className="p-5 flex flex-col flex-1 space-y-3" onClick={handleMoreDetails}>
-        {/* Precio principal */}
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold text-slate-900">
-            {formatPrice(finalPrice, currency)}
-          </span>
-          {discount && discount >  0 ? (
-            <span className="text-emerald-600 text-sm font-semibold">
-              {discount}% OFF
-            </span>
-          ) : null}
+        <div className="pointer-events-none absolute left-0 top-0 flex flex-col items-start gap-1">
+          {isOfferOfTheDay && <Badge tone="accent">Oferta del día</Badge>}
+          {isOutOfStock && <Badge className="bg-bg text-fg">Agotado</Badge>}
         </div>
 
-        {/* Precio original y cuotas */}
-        {previousPrice && previousPrice > finalPrice && (
-          <span className="text-sm text-gray-400 line-through">
-            {formatPrice(previousPrice, currency)}
-          </span>
-        )}
-
-        {installments && installments > 1 && (
-          <p className="text-sm text-slate-600">
-            en <span className="font-medium text-emerald-600">{installments}x</span> sin interés
-          </p>
-        )}
-
-        {/* Título */}
-        <h3 className="text-lg font-semibold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-          {title}
-        </h3>
-
-        {/* Categoría */}
-        <p className="text-sm text-slate-500 capitalize">{category}</p>
+        <button
+          type="button"
+          onClick={handleToggleFavorite}
+          className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center bg-bg/85 text-fg transition-colors hover:bg-accent hover:text-on-accent"
+          aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+          aria-pressed={isFav}
+        >
+          <Heart className={cn("h-5 w-5", isFav && "fill-current animate-heartbeat")} />
+        </button>
       </div>
 
-      {/* Botón de carrito */}
-      <button
-        onClick={handleToggleCart}
-        disabled={isOutOfStock}
-        className={cn(
-          "mt-auto py-4 px-6 font-medium text-white transition-all duration-300 flex items-center justify-center gap-2",
-          isOutOfStock
-            ? "bg-gray-400 cursor-not-allowed"
-            : isInCart
-              ? "bg-emerald-600 hover:bg-emerald-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
-        )}
-      >
-        {isOutOfStock ? (
-          <>Agotado</>
-        ) : isInCart ? (
-          <>
-            <Check className="w-5 h-5" />
-            En carrito
-          </>
-        ) : (
-          <>
-            <ShoppingCart className="w-5 h-5" />
-            Añadir al carrito
-          </>
-        )}
-      </button>
-    </div>
+      {/* Contenido */}
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-subtle">{category}</p>
+        <h3 className="line-clamp-2 min-h-[2.6em] font-sans text-base font-bold normal-case leading-snug tracking-normal text-fg">
+          <Link href={`/items/${slug}`} className="transition-colors group-hover:text-accent">
+            {title}
+          </Link>
+        </h3>
+
+        <div className="mt-auto pt-2">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="price text-3xl text-fg">{formatPrice(finalPrice, currency)}</span>
+            {discount && discount > 0 ? <Badge tone="accent">-{discount}%</Badge> : null}
+          </div>
+          <div className="mt-1 min-h-5 text-sm text-muted">
+            {previousPrice && previousPrice > finalPrice ? (
+              <span className="mr-2 line-through">{formatPrice(previousPrice, currency)}</span>
+            ) : null}
+            {installments && installments > 1 ? (
+              <span>
+                o <b className="font-bold text-fg-soft">{installments}x</b> sin interés
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <button
+          type="button"
+          onClick={handleToggleCart}
+          disabled={isOutOfStock}
+          className={cn("btn btn-block", isInCart ? "btn-ghost" : "btn-primary")}
+        >
+          {isOutOfStock ? (
+            "Agotado"
+          ) : isInCart ? (
+            <>
+              <Check className="h-5 w-5" aria-hidden="true" />
+              En carrito
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+              <span className="sm:hidden">Añadir</span>
+              <span className="hidden sm:inline">Añadir al carrito</span>
+            </>
+          )}
+        </button>
+      </div>
+    </article>
   )
 }
 

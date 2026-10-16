@@ -25,7 +25,7 @@ function StorePageContent() {
 
   const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
 
-  // 🔹 Traer productos desde la API
+  // Traer productos desde la API
   const loadItems = useCallback(() => {
     setStatus("loading");
     fetch("/api/items")
@@ -45,7 +45,7 @@ function StorePageContent() {
     loadItems();
   }, [loadItems]);
 
-  // 🔹 Aplicar filtro de descuento desde URL
+  // Aplicar filtro de descuento desde URL
   useEffect(() => {
     const discountParam = searchParams.get('discount');
     if (discountParam === 'true') {
@@ -53,13 +53,13 @@ function StorePageContent() {
     }
   }, [searchParams]);
 
-  // 🔹 Categorías dinámicas
+  // Categorías dinámicas
   const allCategories = useMemo(
     () => [...new Set(featuredItems.map(p => p.category))],
     [featuredItems]
   );
 
-  // 🔹 Filtros
+  // Filtros
   const filteredItems = useMemo(() => {
     let result = [...featuredItems];
 
@@ -82,7 +82,7 @@ function StorePageContent() {
       result = result.filter(p => p.freeShipping);
     }
 
-    // 🔹 Filtro de descuentos
+    // Filtro de descuentos
     if (discountOnly) {
       result = result.filter(p => p.discount && p.discount > 0);
     }
@@ -133,15 +133,15 @@ function StorePageContent() {
   );
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-12">
+    <div className="bg-bg min-h-screen pb-12">
       {/* Container Principal */}
       <div className="container mx-auto px-4 pt-6">
         
         {/* Breadcrumbs (Migas de pan) */}
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="text-sm text-muted mb-4">
           <span className="cursor-pointer hover:underline">Inicio</span>
           <span className="mx-2">/</span>
-          <span className="font-semibold text-gray-800">Deportes y Fitness</span>
+          <span className="font-semibold text-fg">Deportes y Fitness</span>
         </div>
 
         <div className="flex gap-8">
@@ -149,19 +149,19 @@ function StorePageContent() {
           {/* --- SIDEBAR DE FILTROS (Izquierda) --- */}
           {/* 'hidden lg:block' lo oculta en celular y lo muestra en pantallas grandes */}
           <aside className="w-64 hidden lg:block shrink-0 overflow-visible">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Filtros</h2>
+            <h2 className="text-3xl mb-5 text-fg">Filtros</h2>
             {/*Barra de Búsqueda Local */}
             <div className="mb-6 relative z-40">
-              <h3 className="font-semibold text-gray-900 mb-3">Buscar</h3>
+              <h3 className="eyebrow mb-3">Buscar</h3>
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Buscar productos..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-orange-500 focus:outline-none"
+                  className="input !min-h-10 !py-1 text-sm"
                 />
-                <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none" />
+                <SearchIcon className="w-4 h-4 text-subtle absolute right-3 top-3 pointer-events-none" />
                 {searchQuery && (
                   <LocalSearchAutocomplete 
                     query={searchQuery} 
@@ -176,7 +176,7 @@ function StorePageContent() {
             {hasActiveFilters && (
               <button 
                 onClick={clearFilters}
-                className="mb-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded text-sm font-semibold transition"
+                className="btn btn-primary btn-sm btn-block mb-4"
               >
                 Limpiar filtros
               </button>
@@ -204,17 +204,17 @@ function StorePageContent() {
             <h1 className="sr-only">Tienda</h1>
             {/* Barra de búsqueda y filtros en móvil */}
             <div className="lg:hidden mb-4 space-y-3">
-              <div className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-3">Buscar</h3>
+              <div className="bg-surface border border-line p-4">
+                <h3 className="eyebrow mb-3">Buscar</h3>
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Buscar productos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-orange-500 focus:outline-none"
+                    className="input !min-h-10 !py-1 text-sm"
                   />
-                  <SearchIcon className="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none" />
+                  <SearchIcon className="w-4 h-4 text-subtle absolute right-3 top-3 pointer-events-none" />
                   {searchQuery && (
                     <LocalSearchAutocomplete 
                       query={searchQuery} 
@@ -227,14 +227,14 @@ function StorePageContent() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsFiltersOpen(true)}
-                  className="flex-1 bg-gray-900 hover:bg-black text-white py-2 px-3 rounded text-sm font-semibold transition"
+                  className="btn btn-ghost btn-sm flex-1"
                 >
                   Ver filtros
                 </button>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded text-sm font-semibold transition"
+                    className="btn btn-primary btn-sm flex-1"
                   >
                     Limpiar filtros
                   </button>
@@ -243,17 +243,17 @@ function StorePageContent() {
             </div>
             
             {/* Cabecera de Resultados */}
-            <div className="bg-white p-4 rounded shadow-sm mb-4 flex justify-between items-center flex-wrap gap-4">
-              <span className="text-gray-700 text-sm font-semibold">
+            <div className="bg-surface border border-line p-4 mb-4 flex justify-between items-center flex-wrap gap-4">
+              <span className="text-fg-soft text-sm font-semibold">
                 {status === "ready" ? `${filteredItems.length} resultado${filteredItems.length !== 1 ? "s" : ""}` : "00a0"}
               </span>
               
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Ordenar por:</span>
+                <span className="text-muted">Ordenar por:</span>
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="font-semibold text-gray-800 bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="input !min-h-10 !w-auto !py-1 font-semibold cursor-pointer"
                 >
                   <option value="relevance">Más relevantes</option>
                   <option value="price-asc">Menor precio</option>
@@ -264,7 +264,7 @@ function StorePageContent() {
 
             {/* Grid */}
             {status === "loading" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2" aria-busy="true">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4" aria-busy="true">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <ItemCardSkeleton key={i} />
                 ))}
@@ -285,7 +285,7 @@ function StorePageContent() {
                 action={{ label: "Ver planes", href: "/plans" }}
               />
             ) : filteredItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                 {filteredItems.map((item) => (
                   <ItemCard key={item.id} {...item} />
                 ))}
@@ -305,15 +305,15 @@ function StorePageContent() {
         {isFiltersOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div
-              className="absolute inset-0 bg-black/40"
+              className="absolute inset-0 bg-black/70"
               onClick={() => setIsFiltersOpen(false)}
             />
-            <div className="absolute right-0 top-0 h-full w-80 max-w-[85%] bg-white p-4 overflow-y-auto">
+            <div className="absolute right-0 top-0 h-full w-80 max-w-[85%] bg-surface border-l-2 border-accent p-4 overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Filtros</h2>
+                <h2 className="text-3xl text-fg">Filtros</h2>
                 <button
                   onClick={() => setIsFiltersOpen(false)}
-                  className="text-sm text-gray-500 hover:text-gray-800"
+                  className="text-sm text-muted hover:text-fg"
                 >
                   Cerrar
                 </button>
@@ -324,7 +324,7 @@ function StorePageContent() {
                     clearFilters();
                     setIsFiltersOpen(false);
                   }}
-                  className="mb-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded text-sm font-semibold transition"
+                  className="btn btn-primary btn-sm btn-block mb-4"
                 >
                   Limpiar filtros
                 </button>
@@ -354,10 +354,10 @@ function StorePageContent() {
 export default function StorePage() {
   return (
     <Suspense fallback={
-      <div className="bg-gray-100 min-h-screen pb-12 flex items-center justify-center">
+      <div className="bg-bg min-h-screen pb-12 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando tienda...</p>
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-muted">Cargando tienda...</p>
         </div>
       </div>
     }>
@@ -397,7 +397,7 @@ function FiltersPanel({
     <>
       {/* Categorías */}
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-3">Categorías</h3>
+        <h3 className="eyebrow mb-3">Categorías</h3>
         <ul className="text-sm space-y-2">
           {allCategories.map(cat => {
             const count = featuredItems.filter(p => p.category === cat).length;
@@ -405,10 +405,10 @@ function FiltersPanel({
               <li 
                 key={cat}
                 onClick={() => onSelectCategory(selectedCategory === cat ? null : cat)}
-                className={`cursor-pointer p-2 rounded transition ${
+                className={`cursor-pointer border-l-4 px-3 py-2 font-semibold transition ${
                   selectedCategory === cat 
-                    ? "bg-indigo-100 text-indigo-700 font-semibold" 
-                    : "text-gray-600 hover:text-indigo-600"
+                    ? "border-accent bg-surface-2 text-accent" 
+                    : "border-transparent text-fg-soft hover:text-accent"
                 }`}
               >
                 {cat} ({count})
@@ -420,54 +420,54 @@ function FiltersPanel({
 
       {/* Filtro de Precio */}
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-3">Precio</h3>
+        <h3 className="eyebrow mb-3">Precio</h3>
         <div className="flex items-center gap-2 mb-2">
           <input 
             type="number" 
             placeholder="Mín" 
             value={minPrice || ""}
             onChange={(e) => onMinPriceChange(e.target.value ? parseFloat(e.target.value) : null)}
-            className="w-24 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
+            className="input !min-h-10 !py-1 w-24 text-sm"
           />
-          <span className="text-gray-400">-</span>
+          <span className="text-subtle">-</span>
           <input 
             type="number" 
             placeholder="Máx" 
             value={maxPrice || ""}
             onChange={(e) => onMaxPriceChange(e.target.value ? parseFloat(e.target.value) : null)}
-            className="w-24 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
+            className="input !min-h-10 !py-1 w-24 text-sm"
           />
         </div>
-        <div className="text-xs text-gray-500 mt-2">
+        <div className="text-xs text-muted mt-2">
           {formatPrice(minPrice || 0)} - {maxPrice ? formatPrice(maxPrice) : "∞"}
         </div>
       </div>
 
       {/* Switch de Envío */}
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-3">Envío</h3>
+        <h3 className="eyebrow mb-3">Envío</h3>
         <label className="flex items-center gap-2 cursor-pointer group">
           <input 
             type="checkbox" 
             checked={freeShippingOnly}
             onChange={(e) => onFreeShippingChange(e.target.checked)}
-            className="w-4 h-4 accent-indigo-600 cursor-pointer"
+            className="w-4 h-4 cursor-pointer"
           />
-          <span className="text-sm text-green-600 font-semibold">Solo envío gratis</span>
+          <span className="text-sm text-ok font-semibold">Solo envío gratis</span>
         </label>
       </div>
 
       {/* Filtro de Descuentos */}
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-900 mb-3">Ofertas</h3>
+        <h3 className="eyebrow mb-3">Ofertas</h3>
         <label className="flex items-center gap-2 cursor-pointer group">
           <input 
             type="checkbox" 
             checked={discountOnly}
             onChange={(e) => onDiscountChange(e.target.checked)}
-            className="w-4 h-4 accent-red-600 cursor-pointer"
+            className="w-4 h-4 cursor-pointer"
           />
-          <span className="text-sm text-red-600 font-semibold">Solo con descuento</span>
+          <span className="text-sm text-danger font-semibold">Solo con descuento</span>
         </label>
       </div>
     </>

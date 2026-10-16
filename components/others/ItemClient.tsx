@@ -22,33 +22,18 @@ export default function ItemClient({ producto }: ItemClientProps) {
   };
   return (
     <div className="w-full space-y-4">
-      {/* Botones principales */}
-      <AddToCartButton
-        product={producto}
-        quantity={quantity}
-        onQuantityChange={setQuantity}
-      />
+      <AddToCartButton product={producto} quantity={quantity} onQuantityChange={setQuantity} />
 
       <button
         type="button"
         disabled={isOutOfStock}
         onClick={handleBuyNow}
-        className={`group relative w-full py-6 text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 ${
-          isOutOfStock
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-linear-to-r from-emerald-600 to-green-600"
-        }`}
+        className="btn btn-secondary btn-lg btn-block"
       >
-        <span className="relative z-10 flex items-center gap-3">
-          {isOutOfStock ? "Agotado" : "Comprar Ahora"}
-        </span>
-        <div className="absolute inset-0 bg-linear-to-r from-emerald-500/0 to-green-500/0 group-hover:from-emerald-400/20 group-hover:to-green-400/20 transition-opacity" />
+        {isOutOfStock ? "Agotado" : "Comprar ahora"}
       </button>
 
-      {/* Texto de confianza */}
-      <p className="pt-2 text-center text-gray-500 text-sm">
-        Compra segura • Entrega rápida • Soporte 24/7
-      </p>
+      <p className="pt-2 text-center text-sm text-muted">Compra segura. Entrega rápida. Soporte 24/7.</p>
     </div>
   );
 }

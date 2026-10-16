@@ -1,188 +1,116 @@
 "use client"
 
-import { formatPrice, applyDiscount } from '@/lib/money'
-
+import { formatPrice, applyDiscount } from "@/lib/money"
 import { Check, Apple, Dumbbell, ArrowRight, Heart } from "lucide-react"
 import Link from "next/link"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
 import toast from "react-hot-toast"
-import { cn } from "@/lib/utils" // si no tienes cn, agrégalo (ver abajo)
+import { cn } from "@/lib/utils"
+import { SafeImage } from "@/components/others/SafeImage"
+import { Badge } from "@/components/ui/Badge"
 import type { PlanUI } from "@/app/src/types/plan"
 
-const typeStyles = {
-  nutricion: {
-    icon: <Apple className="text-emerald-600" size={24} />,
-    badge: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    button: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700",
-    accent: "text-emerald-600",
-    hoverAccent: "group-hover:text-emerald-700",
-  },
-  entrenamiento: {
-    icon: <Dumbbell className="text-indigo-600" size={24} />,
-    badge: "bg-indigo-100 text-indigo-800 border-indigo-200",
-    button: "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700",
-    accent: "text-indigo-600",
-    hoverAccent: "group-hover:text-indigo-700",
-  }
-}
+const TYPE_ICON = {
+  nutricion: Apple,
+  entrenamiento: Dumbbell,
+} as const
 
-const FavoriteButton = ({ 
-  id, 
-  title, 
-  image, 
+const FavoriteButton = ({
+  id,
+  title,
+  image,
   slug,
-}: { 
+}: {
   id: number | string
   title: string
   image?: string
-  slug: string 
+  slug: string
 }) => {
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
   const favorite = isFavorite(id, "plan")
 
-  const toggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const toggle = () => {
     if (favorite) {
       removeFavorite(id, "plan")
-      toast.success("Eliminado de favoritos ❤️", { duration: 3000 })
+      toast.success("Eliminado de favoritos", { duration: 3000 })
     } else {
       addFavorite({ id, type: "plan", title, image, slug })
-      toast.success("Agregado a favoritos ❤️", {
-        duration: 4000,
-        
-      })
+      toast.success("Agregado a favoritos", { duration: 4000 })
     }
   }
 
   return (
     <button
+      type="button"
       onClick={toggle}
-      className="relative p-3 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:bg-white hover:shadow-xl transition-all duration-300"
+      className="btn btn-ghost h-12 w-12 shrink-0 px-0"
       aria-label={favorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+      aria-pressed={favorite}
     >
-      <Heart
-        className={cn(
-          "w-7 h-7 transition-all duration-300 ease-out",
-          favorite
-            ? "fill-red-500 text-red-500 scale-110 animate-heartbeat"
-            : "text-red-500 hover:text-red-600 hover:scale-110"
-        )}
-      />
+      <Heart className={cn("h-5 w-5", favorite && "fill-current text-accent animate-heartbeat")} />
     </button>
   )
 }
 
 export const PlanCard = ({ plan }: { plan: PlanUI }) => {
-  const style = typeStyles[plan.type as keyof typeof typeStyles] || typeStyles.nutricion
-
-
+  const Icon = TYPE_ICON[plan.type as keyof typeof TYPE_ICON] ?? Dumbbell
   const actualPrice = formatPrice(applyDiscount(plan.price, plan.discount), plan.currency)
+  const hasDiscount = !!plan.discount && plan.discount > 0
 
   return (
-    <div className={cn(
-      "group relative bg-white rounded-3xl border border-slate-200 overflow-hidden",
-      "flex flex-col h-full hover:shadow-2xl hover:border-slate-300 hover:-translate-y-2",
-      "transition-all duration-300 ease-out cursor-pointer"
-    )}>
-      {/* Decoración de fondo sutil */}
-      <div className={cn(
-        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-        "bg-gradient-to-br from-white/40 to-transparent pointer-events-none"
-      )} />
-
-      {/* Contenido principal */}
-      <div className="relative p-8 flex flex-col flex-1">
-        {/* Header: Icono + Badge */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="p-4 bg-slate-50 rounded-2xl shadow-sm">
-            {style.icon}
-          </div>
-          <span className={cn(
-            "text-xs uppercase font-bold tracking-widest px-4 py-2 rounded-full border",
-            style.badge
-          )}>
+    <article className="group relative flex h-full w-full flex-col border border-line bg-surface transition-colors duration-150 hover:border-accent">
+      {/* Imagen: proporción fija 16:10 */}
+      <div className="media aspect-[16/10]">
+        <Link href={`/plans/${plan.slug}`} aria-label={`Ver ${plan.title}`} className="absolute inset-0 block">
+          <SafeImage
+            src={plan.image}
+            alt={plan.title}
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 100vw"
+          />
+        </Link>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/70 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 flex flex-col items-start gap-1">
+          <Badge tone="accent">
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             {plan.type}
-          </span>
+          </Badge>
+          {hasDiscount && <Badge className="bg-bg text-fg">-{plan.discount}%</Badge>}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="mb-4 line-clamp-2 min-h-[2.05em] text-2xl leading-none text-fg md:text-3xl">{plan.title}</h3>
+
+        <div className="mb-5">
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <span className="price text-4xl text-fg md:text-5xl">{actualPrice}</span>
+            <span className="text-sm font-semibold uppercase tracking-wider text-muted">total</span>
+          </div>
+          {hasDiscount && (
+            <p className="mt-1 text-sm text-muted">
+              Antes <span className="line-through">{formatPrice(plan.price, plan.currency)}</span>
+            </p>
+          )}
         </div>
 
-        {/* Título */}
-        <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 leading-tight group-hover:text-slate-800 transition-colors">
-          {plan.title}
-        </h3>
-
-        {/* Precio */}
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            {actualPrice}
-          </span>
-          <span className="text-slate-500 text-lg font-light">/ total</span>
-          
-        </div>
-        <div className="flex justify-around items-center mb-6">
-          {
-            plan.discount ? (
-              <span className="text-gray-500 text-sm font-medium">
-                Antes 
-              <span className="text-gray-500 text-lg line-through mx-2">
-                {formatPrice(plan.price, plan.currency)}
-              </span>
-              </span>
-            ) : null
-          }
-          {plan.discount && plan.discount >  0 ? (
-            <span className="text-emerald-600 text-sm font-semibold">
-              {plan.discount}% OFF
-            </span>
-          ) : null}
-        </div>
-
-        {/* Beneficios */}
-        <ul className="space-y-4 mb-10">
-          {plan.coverage.map((c: string, i: number) => (
-            <li 
-              key={i} 
-              className="flex items-start gap-4 group/item transition-colors"
-            >
-              <div className={cn(
-                "mt-1 p-1 rounded-full",
-                style.accent,
-                "bg-opacity-10"
-              )}>
-                <Check className={cn("w-6 h-6", style.accent)} strokeWidth={3} />
-              </div>
-              <span className={cn(
-                "text-slate-700 text-base leading-relaxed",
-                "group-hover/item:text-slate-900 transition-colors"
-              )}>
-                {c}
-              </span>
+        <ul className="mb-8 space-y-3">
+          {plan.coverage.slice(0, 4).map((c: string, i: number) => (
+            <li key={i} className="flex items-start gap-3 text-fg-soft">
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-accent" strokeWidth={3} aria-hidden="true" />
+              <span className="leading-snug">{c}</span>
             </li>
           ))}
         </ul>
 
-        {/* Botones de acción */}
-        <div className="mt-auto flex items-center gap-4">
-          <Link 
-            href={`/plans/${plan.slug}`} 
-            className={cn(
-              "flex-1 flex items-center justify-center gap-3 py-5 px-8 rounded-2xl font-bold text-white",
-              "text-lg shadow-xl transition-all duration-300 active:scale-95",
-              style.button
-            )}
-            prefetch
-          >
+        <div className="mt-auto flex items-center gap-3">
+          <Link href={`/plans/${plan.slug}`} className="btn btn-primary flex-1" prefetch>
             Saber más
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </Link>
-
-          <FavoriteButton 
-            id={plan.id} 
-            title={plan.title} 
-            image={plan.image} 
-            slug={plan.slug} 
-          />
+          <FavoriteButton id={plan.id} title={plan.title} image={plan.image} slug={plan.slug} />
         </div>
       </div>
-    </div>
+    </article>
   )
 }

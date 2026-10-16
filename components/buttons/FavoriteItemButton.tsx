@@ -19,10 +19,10 @@ export default function FavoriteItemButton({ id, title, image, slug }: FavoriteI
   const handleToggleFavorite = () => {
     if (isFav) {
       removeFavorite(id, "item");
-      toast.success("Eliminado de favoritos ❤️", { duration: 3000 });
+      toast.success("Eliminado de favoritos", { duration: 3000 });
     } else {
       addFavorite({ id, type: "item", title, image, slug });
-      toast.success("Agregado a favoritos ❤️", { duration: 3000 });
+      toast.success("Agregado a favoritos", { duration: 3000 });
     }
   };
 
@@ -31,14 +31,15 @@ export default function FavoriteItemButton({ id, title, image, slug }: FavoriteI
       type="button"
       onClick={handleToggleFavorite}
       aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+      aria-pressed={isFav}
       className={cn(
-        "inline-flex items-center justify-center h-11 w-11 rounded-full border transition-colors",
+        "inline-flex h-11 w-11 items-center justify-center border-2 transition-colors",
         isFav
-          ? "bg-red-50 border-red-200 text-red-600"
-          : "bg-white border-gray-200 text-gray-500 hover:text-red-500"
+          ? "border-accent bg-accent text-on-accent"
+          : "border-line-strong text-fg hover:border-accent hover:text-accent"
       )}
     >
-      <Heart className={cn("w-5 h-5", isFav ? "fill-red-500 text-red-500" : "text-red-500")} />
+      <Heart className={cn("h-5 w-5", isFav && "fill-current")} />
     </button>
   );
 }

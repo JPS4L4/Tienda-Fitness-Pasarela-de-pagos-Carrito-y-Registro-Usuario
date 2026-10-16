@@ -41,17 +41,17 @@ export default function SearchBar({
         placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="bg-white text-sm text-gray-800 rounded-full pl-3 pr-8 py-1.5 border border-black focus:outline-none hover:border-orange-500 ease-in duration-100 focus:border-orange-500 w-40 transition-all focus:w-52"
+        className="input pl-3 pr-8"
       />
       {searchQuery ? (
         <button
           onClick={handleClear}
-          className="w-4 h-4 text-gray-800 absolute right-3 top-2 pointer-events-auto cursor-pointer hover:text-orange-500"
+          className="w-4 h-4 text-fg absolute right-3 top-2 pointer-events-auto cursor-pointer hover:text-accent"
         >
           <X className="w-4 h-4" />
         </button>
       ) : (
-        <SearchIcon className="w-4 h-4 text-gray-800 absolute right-3 top-2 pointer-events-none" />
+        <SearchIcon className="w-4 h-4 text-fg absolute right-3 top-2 pointer-events-none" />
       )}
     </div>
   );

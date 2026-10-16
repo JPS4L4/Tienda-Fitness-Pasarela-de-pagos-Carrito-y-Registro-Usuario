@@ -28,49 +28,44 @@ export default function AddToCartButton({ product, quantity, onQuantityChange }:
     }, 2000);
   };
 
+  const stepper =
+    "flex h-12 w-12 items-center justify-center text-xl font-bold transition-colors hover:bg-accent hover:text-on-accent disabled:cursor-not-allowed disabled:text-subtle disabled:hover:bg-transparent";
+
   return (
-    <div className="space-y-4 text-black">
+    <div className="space-y-4 text-fg">
       {/* Selector de cantidad */}
-      <div className="flex items-center gap-4 bg-gray-100 rounded-lg p-2 w-fit">
+      <div className="flex w-fit items-stretch border-2 border-line-strong" role="group" aria-label="Cantidad">
         <button
+          type="button"
           onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
           disabled={isOutOfStock}
-          className={`px-3 py-2 rounded transition-colors font-semibold text-lg ${
-            isOutOfStock ? "cursor-not-allowed text-gray-400" : "hover:bg-gray-200"
-          }`}
+          aria-label="Disminuir cantidad"
+          className={stepper}
         >
-          −
+          -
         </button>
-        <span className="w-8 text-center font-bold text-lg">{quantity}</span>
+        <span className="flex w-14 items-center justify-center border-x-2 border-line-strong text-lg font-bold" aria-live="polite">
+          {quantity}
+        </span>
         <button
+          type="button"
           onClick={() => onQuantityChange(quantity + 1)}
           disabled={isOutOfStock}
-          className={`px-3 py-2 rounded transition-colors font-semibold text-lg ${
-            isOutOfStock ? "cursor-not-allowed text-gray-400" : "hover:bg-gray-200"
-          }`}
+          aria-label="Aumentar cantidad"
+          className={stepper}
         >
           +
         </button>
       </div>
 
-      {/* Botón Agregar al Carrito */}
       <button
         onClick={handleAddToCart}
         type="button"
         disabled={isOutOfStock}
-        className={`group relative w-full py-6 text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 ${
-          isOutOfStock
-            ? "bg-gray-400 cursor-not-allowed"
-            : isAdded
-              ? "bg-linear-to-r from-green-600 to-emerald-600"
-              : "bg-linear-to-r from-indigo-600 to-blue-600"
-        }`}
+        className={isAdded ? "btn btn-ok btn-lg btn-block" : "btn btn-primary btn-lg btn-block"}
       >
-        <span className="relative z-10 flex items-center gap-3">
-          <ShoppingCart className="w-7 h-7" />
-          {isOutOfStock ? "Agotado" : isAdded ? "¡Agregado!" : "Agregar al Carrito"}
-        </span>
-        <div className="absolute inset-0 bg-linear-to-r from-indigo-500/0 to-blue-500/0 group-hover:from-indigo-400/20 group-hover:to-blue-400/20 transition-opacity" />
+        <ShoppingCart className="h-6 w-6" aria-hidden="true" />
+        {isOutOfStock ? "Agotado" : isAdded ? "Agregado" : "Agregar al carrito"}
       </button>
     </div>
   );

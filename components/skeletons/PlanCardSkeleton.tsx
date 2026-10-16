@@ -2,42 +2,23 @@
 
 export const PlanCardSkeleton = () => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col justify-between h-full animate-pulse relative overflow-hidden">
-      
-      {/* Decoración fondo */}
-      <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-100 rounded-full opacity-50" />
-
-      <div>
-        {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="w-12 h-12 bg-slate-200 rounded-xl" />
-          <div className="h-5 w-20 bg-slate-200 rounded-full" />
-        </div>
-
-        {/* Título */}
-        <div className="h-7 w-3/4 bg-slate-200 rounded mb-3" />
-
-        {/* Precio */}
-        <div className="flex items-baseline gap-2 mb-6">
-          <div className="h-8 w-24 bg-slate-200 rounded" />
-          <div className="h-4 w-14 bg-slate-200 rounded" />
-        </div>
-
-        {/* Beneficios */}
-        <ul className="space-y-4 mb-8">
-          {Array.from({ length: 4 }).map((_, i) => (
+    <div className="flex h-full w-full animate-pulse flex-col overflow-hidden border border-line bg-surface">
+      <div className="aspect-[16/10] bg-surface-3" />
+      <div className="flex flex-1 flex-col gap-4 p-6">
+        <div className="h-6 w-3/4 bg-surface-3" />
+        <div className="h-10 w-40 bg-surface-3" />
+        <ul className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
             <li key={i} className="flex items-start gap-3">
-              <div className="w-5 h-5 bg-slate-200 rounded-full" />
-              <div className="h-4 w-full bg-slate-200 rounded" />
+              <div className="h-5 w-5 bg-surface-3" />
+              <div className="h-4 w-full bg-surface-3" />
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* Botones */}
-      <div className="flex items-center gap-3 mt-6">
-        <div className="flex-1 h-12 bg-slate-200 rounded-xl" />
-        <div className="w-12 h-12 bg-slate-200 rounded-full" />
+        <div className="mt-auto flex items-center gap-3 pt-4">
+          <div className="h-12 flex-1 bg-surface-3" />
+          <div className="h-12 w-12 bg-surface-3" />
+        </div>
       </div>
     </div>
   )

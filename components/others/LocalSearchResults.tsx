@@ -42,16 +42,16 @@ export default function LocalSearchResults({
   }
 
   return (
-    <div className="absolute top-full mt-2 right-0 w-80 bg-white border-2 border-orange-500 rounded-lg shadow-2xl z-50 max-h-96 overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b border-orange-200 px-4 py-3 flex items-center justify-between">
-        <h3 className="font-bold text-gray-800">
+    <div className="absolute top-full mt-2 right-0 w-80 bg-surface border-2 border-accent   z-50 max-h-96 overflow-y-auto">
+      <div className="sticky top-0 bg-surface border-b border-accent px-4 py-3 flex items-center justify-between">
+        <h3 className="font-bold text-fg">
           {results.length} resultado{results.length !== 1 ? "s" : ""} encontrado
           {results.length !== 1 ? "s" : ""}
         </h3>
-        <X className="w-4 h-4 text-gray-500" />
+        <X className="w-4 h-4 text-muted" />
       </div>
 
-      <div className="divide-y divide-orange-100">
+      <div className="divide-y divide-accent">
         {results.map((item) => (
           <button
             key={item.id}
@@ -60,26 +60,26 @@ export default function LocalSearchResults({
                 onResultClick(item.id);
               }
             }}
-            className="w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors"
+            className="w-full text-left px-4 py-3 hover:bg-accent/10 transition-colors"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-800 text-sm line-clamp-2">
+                <p className="font-medium text-fg text-sm line-clamp-2">
                   {item.title}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {item.category}
                   {(item.discount ?? 0) > 0 && (
                     <>
                       <span className="mx-1">•</span>
-                      <span className="text-orange-600 font-semibold">
+                      <span className="text-accent font-semibold">
                         -{item.discount}%
                       </span>
                     </>
                   )}
                 </p>
               </div>
-              <span className="text-sm font-bold text-orange-600 whitespace-nowrap">
+              <span className="text-sm font-bold text-accent whitespace-nowrap">
                 {formatPrice(item.price)}
               </span>
             </div>

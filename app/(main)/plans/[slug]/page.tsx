@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { BRAND_NAME } from '@/lib/brand';
 import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
-import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag } from 'lucide-react';
+import { Check, ArrowRight, Apple, Dumbbell, Star, Tag } from 'lucide-react';
 import { getPlanBySlug } from '@/app/src/lib/plans';
 import { PlanUI } from '@/app/src/types/plan';
 import { SafeImage } from '@/components/others/SafeImage';
@@ -10,35 +10,13 @@ import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
 import Link from 'next/link';
 import FitnessProfileGate from '@/components/others/FitnessProfileGate';
 import PlanReviewsSection from '@/components/others/PlanReviewsSection';
+import { Badge } from '@/components/ui/Badge';
 import { auth } from '@/lib/nextAuth';
 import { canViewPlanContent } from '@/lib/planAccess';
 
-// Definimos los estilos por tipo
-const planStyles = {
-  nutricion: {
-    bgGradient: 'from-green-50 to-emerald-50',
-    text: 'text-green-700',
-    accent: 'text-green-600',
-    badge: 'bg-green-100 text-green-700 border-green-200',
-    buttonFrom: 'from-green-600',
-    buttonTo: 'to-emerald-600',
-    buttonHoverFrom: 'from-green-500',
-    buttonHoverTo: 'to-emerald-500',
-    icon: <Apple className="w-8 h-8 text-green-600" />,
-    typeLabel: 'Nutrición',
-  },
-  entrenamiento: {
-    bgGradient: 'from-blue-50 to-indigo-50',
-    text: 'text-blue-700',
-    accent: 'text-blue-600',
-    badge: 'bg-blue-100 text-blue-700 border-blue-200',
-    buttonFrom: 'from-blue-600',
-    buttonTo: 'to-indigo-600',
-    buttonHoverFrom: 'from-blue-500',
-    buttonHoverTo: 'to-indigo-500',
-    icon: <Dumbbell className="w-8 h-8 text-blue-600" />,
-    typeLabel: 'Entrenamiento',
-  },
+const TYPE_META = {
+  nutricion: { Icon: Apple, typeLabel: 'Nutrición' },
+  entrenamiento: { Icon: Dumbbell, typeLabel: 'Entrenamiento' },
 };
 
 interface PlanDetailPageProps {
@@ -74,184 +52,115 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
     ? (await getPlanBySlug(slug, { includeContent: true })) ?? publicPlan
     : publicPlan;
 
-  // Seleccionamos los estilos según el tipo
-  const style = planStyles[plan.type as keyof typeof planStyles] || planStyles.nutricion;
-
+  const meta = TYPE_META[plan.type as keyof typeof TYPE_META] || TYPE_META.nutricion;
+  const { Icon } = meta;
   const precioFinal = applyDiscount(plan.price, plan.discount);
+  const hasDiscount = (plan.discount ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-bg">
       <FitnessProfileGate />
-      <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {/* Lado izquierdo: Imagen */}
-          <div className={`relative w-full h-full grid items-center rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gradient-to-br ${style.bgGradient}`}>
-            {plan.image ? (
-              <SafeImage
-                src={plan.image}
-                alt={plan.title}
-                className="object-cover w-fit h-fit"
-                containerClassName="aspect-[4/3]"
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="aspect-[4/3] relative">
-                <div className="absolute inset-0 flex items-center justify-center ">
-                  <div className="text-center p-8">
-                    {style.icon}
-                    <p className={`text-xl font-medium ${style.text} mt-4`}>
-                      {style.typeLabel}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Badge de descuento */}
-            {(plan.discount ?? 0) > 0 && (
-              <div className="absolute top-4 right-4 z-10">
-                <span className="bg-red-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-lg">
-                  -{plan.discount}% OFF
-                </span>
-              </div>
-            )}
+      <div className="container mx-auto max-w-7xl px-4 py-10 md:py-14">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* Imagen: proporción fija 4:3 */}
+          <div className="media aspect-[4/3] border border-line lg:sticky lg:top-24">
+            <SafeImage
+              src={plan.image}
+              alt={plan.title}
+              className="object-cover"
+              priority
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              fallback={<Icon className="h-16 w-16 text-accent" aria-hidden="true" />}
+            />
+            <div className="pointer-events-none absolute left-0 top-0 flex flex-col items-start gap-1">
+              <Badge tone="accent" className="px-3 py-2 text-sm">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {meta.typeLabel}
+              </Badge>
+              {hasDiscount && (
+                <Badge className="bg-bg px-3 py-2 text-sm text-fg">-{plan.discount}% OFF</Badge>
+              )}
+            </div>
           </div>
 
-          {/* Lado derecho: Contenido */}
+          {/* Contenido */}
           <div className="flex flex-col">
-            <div className="mb-4">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <span className={`inline-block px-4 py-1.5 ${style.badge} rounded-full text-sm font-semibold uppercase tracking-wide`}>
-                  {style.typeLabel}
-                </span>
-                <FavoritePlanButton 
-                  id={plan.id} 
-                  title={plan.title} 
-                  image={plan.image} 
-                  slug={plan.slug} 
-                />
-              </div>
-              
-              <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-                {plan.title}
-              </h1>
-
-              {/* Rating */}
-              {plan.rating !== undefined && plan.reviewCount !== undefined && (
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.floor(plan.rating!)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-gray-600 font-medium">
-                    {plan.rating.toFixed(1)} ({plan.reviewCount} reseñas)
-                  </span>
-                </div>
-              )}
-
-              {/* Short Description */}
-              {plan.shortDescription && (
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  {plan.shortDescription}
-                </p>
-              )}
-
-              {/* Precio */}
-              <div className="flex items-baseline gap-4">
-                <p className={`text-4xl md:text-5xl font-black ${style.accent} tracking-tight`}>
-                  {formatPrice(precioFinal, plan.currency)}
-                  <span className="text-xl font-medium text-gray-500 ml-2">
-                    {plan.currency}
-                  </span>
-                </p>
-                {(plan.discount ?? 0) > 0 && (
-                  <p className="text-2xl text-gray-500 line-through">
-                    {formatPrice(plan.price, plan.currency)}
-                  </p>
-                )}
-              </div>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <h1 className="text-5xl leading-[0.95] text-fg md:text-6xl lg:text-7xl">{plan.title}</h1>
+              <FavoritePlanButton id={plan.id} title={plan.title} image={plan.image} slug={plan.slug} />
             </div>
 
-            {/* Tags */}
+            {plan.rating !== undefined && plan.reviewCount !== undefined && (
+              <div className="mb-5 flex items-center gap-3">
+                <div className="flex items-center gap-1" aria-hidden="true">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${i < Math.floor(plan.rating!) ? 'fill-accent text-accent' : 'text-line-strong'}`}
+                    />
+                  ))}
+                </div>
+                <span className="font-bold text-fg">
+                  {plan.rating.toFixed(1)} <span className="font-medium text-muted">({plan.reviewCount} reseñas)</span>
+                </span>
+              </div>
+            )}
+
+            {plan.shortDescription && (
+              <p className="mb-6 text-xl leading-relaxed text-fg-soft">{plan.shortDescription}</p>
+            )}
+
+            <div className="mb-6 border-y border-line py-5">
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, plan.currency)}</p>
+                <span className="text-sm font-bold uppercase tracking-[0.14em] text-muted">{plan.currency} total</span>
+              </div>
+              {hasDiscount && (
+                <p className="mt-2 text-xl text-muted line-through">{formatPrice(plan.price, plan.currency)}</p>
+              )}
+            </div>
+
             {plan.tags && plan.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className="mb-8 flex flex-wrap gap-2">
                 {plan.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className={`inline-flex items-center gap-1 px-3 py-1 ${style.badge} rounded-full text-sm font-medium`}
-                  >
-                    <Tag className="w-3 h-3" />
+                  <Badge key={index} tone="outline" className="px-3 py-2">
+                    <Tag className="h-3.5 w-3.5" aria-hidden="true" />
                     {tag}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             )}
 
-            {/* Beneficios */}
             <div className="mb-10">
-              <h2 className={`text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3`}>
-                <CheckCircle className={`w-8 h-8 ${style.accent}`} />
-                Lo que incluye
-              </h2>
-              <ul className="grid gap-4">
+              <h2 className="mb-5 text-3xl">Lo que incluye</h2>
+              <ul className="grid gap-px border border-line bg-line">
                 {plan.coverage.map((item, index) => (
-                  <li
-                    key={index}
-                    className={`flex items-start gap-4 bg-white/70 backdrop-blur-sm p-5 rounded-xl border ${style.badge.split(' ')[0]} hover:border-opacity-50 transition-all group`}
-                  >
-                    <div className="mt-1 flex-shrink-0">
-                      <CheckCircle className={`w-6 h-6 ${style.accent}`} />
-                    </div>
-                    <span className="text-lg text-gray-700 leading-relaxed group-hover:text-gray-900 transition-colors">
-                      {item}
-                    </span>
+                  <li key={index} className="flex items-start gap-4 bg-surface p-4">
+                    <Check className="mt-0.5 h-6 w-6 shrink-0 text-accent" strokeWidth={3} aria-hidden="true" />
+                    <span className="text-lg leading-snug text-fg-soft">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Botón principal */}
-            <Link
-              type="button"
-              className={`group relative w-full sm:w-auto px-10 py-5 bg-gradient-to-r ${style.buttonFrom} ${style.buttonTo} text-white font-bold text-xl rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95`}
-              href={`/checkout?type=plan&planId=${plan.id}`}
-            >
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                Contratar Plan Ahora
-                <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-              </span>
+            <Link href={`/checkout?type=plan&planId=${plan.id}`} className="btn btn-primary btn-lg w-full sm:w-auto">
+              Contratar plan ahora
+              <ArrowRight className="h-6 w-6" aria-hidden="true" />
             </Link>
 
-            <p className="mt-6 text-center sm:text-left text-gray-500 text-sm">
-              Comienza tu transformación hoy • Soporte personalizado incluido
-            </p>
+            <p className="mt-5 text-sm text-muted">Comienza tu transformación hoy. Soporte personalizado incluido.</p>
 
-            {/* Description completa */}
             {plan.description && (
-              <div className="mt-12 pt-12 border-t border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Descripción Completa</h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {plan.description}
-                </p>
+              <div className="mt-12 border-t border-line pt-10">
+                <h2 className="mb-4 text-3xl">Descripción completa</h2>
+                <p className="whitespace-pre-line leading-relaxed text-fg-soft">{plan.description}</p>
               </div>
             )}
 
-            {/* Content adicional */}
             {plan.content && (
               <div className="mt-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Contenido del Plan</h2>
-                <div className="prose prose-lg max-w-none text-gray-700">
-                  {plan.content}
-                </div>
+                <h2 className="mb-4 text-3xl">Contenido del plan</h2>
+                <div className="max-w-none text-fg-soft">{plan.content}</div>
               </div>
             )}
           </div>

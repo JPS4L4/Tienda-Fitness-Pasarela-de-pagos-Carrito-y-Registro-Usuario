@@ -73,31 +73,31 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
   }
 
   return (
-    <div className="absolute top-full mt-2 right-0 w-72 bg-white border-2 border-orange-500 rounded-lg shadow-2xl z-50 max-h-96 overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b border-orange-200 px-4 py-3 flex items-center justify-between">
-        <h3 className="font-bold text-gray-800">Resultados de búsqueda</h3>
-        <X className="w-4 h-4 text-gray-500 cursor-pointer" />
+    <div className="absolute top-full mt-2 right-0 w-72 bg-surface border-2 border-accent   z-50 max-h-96 overflow-y-auto">
+      <div className="sticky top-0 bg-surface border-b border-accent px-4 py-3 flex items-center justify-between">
+        <h3 className="font-bold text-fg">Resultados de búsqueda</h3>
+        <X className="w-4 h-4 text-muted cursor-pointer" />
       </div>
 
-      <div className="divide-y divide-orange-100">
+      <div className="divide-y divide-accent">
         {results.map((result) => (
           <a
             key={`${result.type}-${result.id}`}
             href={result.type === "item" ? "/items" : "/plans"}
-            className="block px-4 py-3 hover:bg-orange-50 transition-colors"
+            className="block px-4 py-3 hover:bg-accent/10 transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="font-medium text-gray-800 text-sm line-clamp-2">
+                <p className="font-medium text-fg text-sm line-clamp-2">
                   {result.title}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {result.type === "item" ? "Producto" : "Plan"} •{" "}
                   {result.category}
                 </p>
               </div>
               {result.price && (
-                <span className="text-sm font-bold text-orange-600 ml-2 whitespace-nowrap">
+                <span className="text-sm font-bold text-accent ml-2 whitespace-nowrap">
                   {typeof result.price === "number"
                     ? formatPrice(result.price)
                     : result.price}
@@ -108,10 +108,10 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
         ))}
       </div>
 
-      <div className="px-4 py-3 bg-orange-50 border-t border-orange-200 text-center">
+      <div className="px-4 py-3 bg-accent/10 border-t border-accent text-center">
         <a
           href={results.some((r) => r.type === "item") ? "/items" : "/plans"}
-          className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+          className="text-sm font-semibold text-accent hover:text-accent"
         >
           Ver todos los resultados →
         </a>

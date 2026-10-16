@@ -46,30 +46,30 @@ export default function PlanSearchAutocomplete({
   }
 
   const typeLabels: { [key: string]: string } = {
-    nutricion: "🍎 Nutrición",
-    entrenamiento: "💪 Entrenamiento",
+    nutricion: "Nutrición",
+    entrenamiento: "Entrenamiento",
   };
 
   return (
-    <div className="absolute top-full mt-2 left-0 right-0 w-full bg-white border-2 border-slate-300 rounded-lg shadow-2xl z-50 max-h-64 overflow-y-auto">
-      <ul className="divide-y divide-gray-200">
+    <div className="absolute top-full mt-2 left-0 right-0 w-full bg-surface border-2 border-line-strong   z-50 max-h-64 overflow-y-auto">
+      <ul className="divide-y divide-line">
         {results.map((plan) => (
           <li key={plan.id}>
             <button
               onClick={() => handleSelectItem(plan.title)}
               type="button"
-              className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors duration-150 flex items-center justify-between group"
+              className="w-full text-left px-4 py-3 hover:bg-surface-2 transition-colors duration-150 flex items-center justify-between group"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 group-hover:text-blue-600 truncate">
+                <p className="text-sm font-medium text-fg group-hover:text-accent truncate">
                   {plan.title}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted">
                   {typeLabels[plan.type] || plan.type}
                 </p>
               </div>
               {plan.price && (
-                <span className="text-xs font-semibold text-blue-600 ml-2 flex-shrink-0">
+                <span className="text-xs font-semibold text-accent ml-2 flex-shrink-0">
                   Desde {formatPrice(plan.price)}
                 </span>
               )}

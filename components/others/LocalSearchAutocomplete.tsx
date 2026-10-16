@@ -47,22 +47,22 @@ export default function LocalSearchAutocomplete({
 
   return (
     <div className="fixed top-full left-0 right-0 mt-2 flex justify-start pointer-events-none z-50">
-      <div className="absolute left-0 w-64 bg-white border-2 border-orange-500 rounded-lg shadow-2xl z-50 max-h-64 overflow-y-auto pointer-events-auto">
-        <ul className="divide-y divide-gray-200">
+      <div className="absolute left-0 w-64 bg-surface border-2 border-accent   z-50 max-h-64 overflow-y-auto pointer-events-auto">
+        <ul className="divide-y divide-line">
           {results.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => handleSelectItem(item.title)}
                 type="button"
-                className="w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors duration-150 flex items-center justify-between group"
+                className="w-full text-left px-4 py-3 hover:bg-accent/10 transition-colors duration-150 flex items-center justify-between group"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 group-hover:text-orange-600 truncate">
+                  <p className="text-sm font-medium text-fg group-hover:text-accent truncate">
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-500">{item.category}</p>
+                  <p className="text-xs text-muted">{item.category}</p>
                 </div>
-                <span className="text-xs font-semibold text-orange-600 ml-2 flex-shrink-0">
+                <span className="text-xs font-semibold text-accent ml-2 flex-shrink-0">
                   {formatPrice(item.price)}
                 </span>
               </button>
