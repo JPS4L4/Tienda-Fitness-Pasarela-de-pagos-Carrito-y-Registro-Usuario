@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { BRAND_NAME } from '@/lib/brand';
 import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag, Heart } from 'lucide-react';
@@ -42,6 +44,20 @@ const planStyles = {
 interface PlanDetailPageProps {
   params: Promise<{ slug: string }>;
 }
+
+export async function generateMetadata({ params }: PlanDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const plan = await getPlanBySlug(slug);
+  if (!plan) return { title: 'Plan no encontrado' };
+  const description = plan.shortDescription || plan.description || `${plan.title} en ${BRAND_NAME}`;
+  const images = plan.image ? [{ url: plan.image }] : undefined;
+  return {
+    title: plan.title,
+    description,
+    openGraph: { title: plan.title, description, type: 'website', images },
+    twitter: { card: 'summary_large_image', title: plan.title, description, images: plan.image ? [plan.image] : undefined },
+  };
+};
 
 const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   const { slug } = await params;

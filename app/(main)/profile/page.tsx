@@ -9,7 +9,7 @@ import Link from "next/link"
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: "Mi Perfil | Fitness Studio",
+  title: "Mi Perfil",
   description: "Perfil del usuario",
 }
 

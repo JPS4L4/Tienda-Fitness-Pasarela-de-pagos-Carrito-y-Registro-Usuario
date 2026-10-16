@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { BRAND_NAME } from '@/lib/brand';
 import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { CreditCard, Star, Truck, Package, Tag } from 'lucide-react';
@@ -8,6 +10,20 @@ import { getItemBySlug } from '../../../src/lib/items';
 import { cn } from '@/lib/utils';
 import FavoriteItemButton from '../../../../components/buttons/FavoriteItemButton';
 import ProductReviewsSection from '@/components/others/ProductReviewsSection';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const item = await getItemBySlug(slug);
+  if (!item) return { title: 'Producto no encontrado' };
+  const description = item.shortDescription || item.description || `${item.title} en ${BRAND_NAME}`;
+  const images = item.image ? [{ url: item.image }] : undefined;
+  return {
+    title: item.title,
+    description,
+    openGraph: { title: item.title, description, type: 'website', images },
+    twitter: { card: 'summary_large_image', title: item.title, description, images: item.image ? [item.image] : undefined },
+  };
+};
 
 const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;

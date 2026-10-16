@@ -1,29 +1,41 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 
-export default function Error({ error }: { error: Error }) {
+// Se renderiza solo si falla el layout raíz: debe incluir <html> y <body> propios.
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
-    console.error(error);
+    console.error("Global error", error.digest ?? "");
   }, [error]);
 
   return (
-    <div className="grid min-h-screen place-items-center bg-red-50 px-6 py-24 sm:py-32 lg:px-8">
-      <div className="w-full max-w-3xl text-center">
-        <h2 className="text-5xl font-semibold text-red-600">¡Vaya!</h2>
-        <p className="mt-6 text-lg text-gray-700">Ha ocurrido un error inesperado. Intenta de nuevo.</p>
-        <div className="flex items-center justify-center gap-6">
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-10 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500" >
-          Intentar de nuevo
-        </button>
-        <Link href={"/"} className="mt-10 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
-          Ir al inicio
-        </Link>
-        </div>
-      </div>
-    </div>
+    <html lang="es">
+      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#f8fafc", color: "#0f172a" }}>
+        <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "1.5rem", textAlign: "center" }}>
+          <div>
+            <h1 style={{ fontSize: "2rem", margin: 0 }}>Algo salió mal</h1>
+            <p style={{ color: "#475569", marginTop: "0.75rem" }}>Ha ocurrido un error inesperado. Intenta de nuevo.</p>
+            <div style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+              <button
+                onClick={reset}
+                style={{ background: "#4f46e5", color: "#fff", border: 0, borderRadius: 8, padding: "0.6rem 1.2rem", fontWeight: 600, cursor: "pointer" }}
+              >
+                Intentar de nuevo
+              </button>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              <a href="/" style={{ background: "#e2e8f0", color: "#0f172a", borderRadius: 8, padding: "0.6rem 1.2rem", fontWeight: 600, textDecoration: "none" }}>
+                Ir al inicio
+              </a>
+            </div>
+          </div>
+        </main>
+      </body>
+    </html>
   );
 }

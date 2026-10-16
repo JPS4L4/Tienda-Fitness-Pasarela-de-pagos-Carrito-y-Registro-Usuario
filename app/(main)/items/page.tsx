@@ -1,12 +1,14 @@
 "use client";
 
 import { formatPrice, applyDiscount } from "@/lib/money";
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ItemCard from "@/components/cards/ItemCard";
 import LocalSearchAutocomplete from "@/components/others/LocalSearchAutocomplete";
 import { Search as SearchIcon } from "lucide-react";
 import { ItemUI } from "../../src/types/item";
+import StateMessage from "@/components/others/StateMessage";
+import { ItemCardSkeleton } from "@/components/skeletons/ItemCardSkeleton";
 
 function StorePageContent() {
   const searchParams = useSearchParams();
@@ -21,13 +23,27 @@ function StorePageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
+  const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
+
   // 🔹 Traer productos desde la API
-  useEffect(() => {
+  const loadItems = useCallback(() => {
+    setStatus("loading");
     fetch("/api/items")
-      .then(res => res.json())
-      .then(data => setFeaturedItems(data))
-      .catch(console.error);
+      .then(res => {
+        if (!res.ok) throw new Error("items");
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data)) throw new Error("items");
+        setFeaturedItems(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
   }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
 
   // 🔹 Aplicar filtro de descuento desde URL
   useEffect(() => {
@@ -185,6 +201,7 @@ function StorePageContent() {
 
           {/* --- GRILLA DE PRODUCTOS (Derecha) --- */}
           <main className="flex-1">
+            <h1 className="sr-only">Tienda</h1>
             {/* Barra de búsqueda y filtros en móvil */}
             <div className="lg:hidden mb-4 space-y-3">
               <div className="bg-white p-4 rounded shadow-sm">
@@ -228,7 +245,7 @@ function StorePageContent() {
             {/* Cabecera de Resultados */}
             <div className="bg-white p-4 rounded shadow-sm mb-4 flex justify-between items-center flex-wrap gap-4">
               <span className="text-gray-700 text-sm font-semibold">
-                {filteredItems.length} resultado{filteredItems.length !== 1 ? "s" : ""}
+                {status === "ready" ? `${filteredItems.length} resultado${filteredItems.length !== 1 ? "s" : ""}` : "00a0"}
               </span>
               
               <div className="flex items-center gap-2 text-sm">
@@ -246,26 +263,40 @@ function StorePageContent() {
             </div>
 
             {/* Grid */}
-            {filteredItems.length > 0 ? (
+            {status === "loading" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2" aria-busy="true">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <ItemCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : status === "error" ? (
+              <StateMessage
+                tone="error"
+                icon="!"
+                title="No pudimos cargar los productos"
+                description="Revisa tu conexión e inténtalo de nuevo."
+                action={{ label: "Reintentar", onClick: loadItems }}
+              />
+            ) : featuredItems.length === 0 ? (
+              <StateMessage
+                icon="∅"
+                title="Aún no hay productos"
+                description="Estamos preparando el catálogo. Mientras tanto, mira nuestros planes."
+                action={{ label: "Ver planes", href: "/plans" }}
+              />
+            ) : filteredItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 {filteredItems.map((item) => (
                   <ItemCard key={item.id} {...item} />
                 ))}
               </div>
             ) : (
-              <div className="bg-white p-8 rounded shadow-sm text-center">
-                <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">Sin resultados</h3>
-                <p className="text-gray-500 mb-4">No encontramos productos que coincidan con tus filtros.</p>
-                <button 
-                  onClick={clearFilters}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded font-semibold transition"
-                >
-                  Limpiar filtros
-                </button>
-              </div>
+              <StateMessage
+                icon="?"
+                title="Sin resultados"
+                description="No encontramos productos que coincidan con tus filtros."
+                action={{ label: "Limpiar filtros", onClick: clearFilters }}
+              />
             )}
           </main> 
         </div>

@@ -47,11 +47,11 @@ const Footer = () => {
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-2" aria-label="Métodos de pago aceptados">
             <span className="sr-only">Métodos de pago aceptados:</span>
-            <span className="flex h-8 items-center rounded-md bg-white px-3">
-              <Image src={stripeLogo} alt="Stripe" height={16} className="h-4 w-auto" />
+            <span className="flex h-10 items-center rounded-md bg-white px-3">
+              <Image src={stripeLogo} alt="Stripe" height={28} className="h-7 w-auto" />
             </span>
-            <span className="flex h-8 items-center rounded-md bg-white px-2">
-              <Image src={mercadopagoLogo} alt="Mercado Pago" height={22} className="h-5 w-auto" />
+            <span className="flex h-10 items-center rounded-md bg-white px-2">
+              <Image src={mercadopagoLogo} alt="Mercado Pago" height={32} className="h-8 w-auto" />
             </span>
           </div>
           <p className="font-mono text-sm text-gray-300">

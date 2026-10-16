@@ -241,6 +241,7 @@ export default function HeroCarousel() {
         className="
           swiper-button-prev-custom
           absolute 
+          hidden sm:flex
           left-2 sm:left-4 md:left-8 
           top-1/2 
           -translate-y-1/2 
@@ -250,7 +251,6 @@ export default function HeroCarousel() {
           backdrop-blur-sm
           rounded-full 
           w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
-          flex 
           items-center 
           justify-center
           transition-all 
@@ -277,6 +277,7 @@ export default function HeroCarousel() {
         className="
           swiper-button-next-custom
           absolute 
+          hidden sm:flex
           right-2 sm:right-4 md:right-8 
           top-1/2 
           -translate-y-1/2 
@@ -286,7 +287,6 @@ export default function HeroCarousel() {
           backdrop-blur-sm
           rounded-full 
           w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14
-          flex 
           items-center 
           justify-center
           transition-all 
@@ -318,7 +318,6 @@ export default function HeroCarousel() {
           left-0 
           right-0 
           z-20 
-          flex 
           justify-center 
           gap-2 sm:gap-3
         "

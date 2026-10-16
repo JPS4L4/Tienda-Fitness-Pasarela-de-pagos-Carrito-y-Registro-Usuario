@@ -56,7 +56,7 @@ export default function Navbar() {
           <div className="shrink-0 text-center flex-1 md:flex-none">
             <Link 
               href="/" 
-              className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
+              className={`font-black text-black uppercase text-lg sm:text-2xl tracking-wider sm:tracking-widest whitespace-nowrap hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
             >
               {BRAND_NAME}
             </Link>

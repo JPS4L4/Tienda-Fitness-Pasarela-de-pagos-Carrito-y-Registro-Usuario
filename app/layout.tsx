@@ -9,6 +9,7 @@ import "swiper/css/effect-fade";
 import SessionProviderClient from "./SessionProviderClient";
 import CartProviderClient from "./CartProviderClient";
 import FavoritesHydrator from "./FavoritesHydrator";
+import { BRAND_NAME, BRAND_TAGLINE, BRAND_DESCRIPTION } from "@/lib/brand";
 
 
 const geistSans = Geist({
@@ -21,9 +22,32 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: "Fitness Studio",
-  description: "Tienda fitness con productos, planes y entrenamiento personalizado",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+    template: `%s | ${BRAND_NAME}`,
+  },
+  description: BRAND_DESCRIPTION,
+  applicationName: BRAND_NAME,
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    siteName: BRAND_NAME,
+    title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+    description: BRAND_DESCRIPTION,
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: BRAND_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
+    description: BRAND_DESCRIPTION,
+    images: ["/og.jpg"],
+  },
 };
 
 const RootLayout = ({
@@ -32,7 +56,7 @@ const RootLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

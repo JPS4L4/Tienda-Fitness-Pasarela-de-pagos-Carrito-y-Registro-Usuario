@@ -15,6 +15,7 @@ import { PlanUI } from "../src/types/plan";
 import { CommentsUI } from "../src/types/comments";
 import { ItemCardSkeleton } from "@/components/skeletons/ItemCardSkeleton";
 import { PlanCardSkeleton } from "@/components/skeletons/PlanCardSkeleton";
+import StateMessage from "@/components/others/StateMessage";
 
 export default function Home() {
 
@@ -24,6 +25,8 @@ export default function Home() {
   const [loadingItems, setLoadingItems] = useState(true)
   const [loadingPlans, setLoadingPlans] = useState(true)
   const [loadingComments, setLoadingComments] = useState(true)
+  const [errorItems, setErrorItems] = useState(false)
+  const [errorPlans, setErrorPlans] = useState(false)
 
   // Función para recargar comentarios
   const loadComments = async () => {
@@ -54,19 +57,30 @@ export default function Home() {
   };
 
 
-   useEffect(() => {
-  fetch("/api/items")
-    .then(res => res.json())
-    .then(setFeaturedItems)
-    .finally(() => setLoadingItems(false))
-}, [])
+  const fetchList = <T,>(url: string, set: (data: T[]) => void, setLoading: (v: boolean) => void, setError: (v: boolean) => void) => {
+    setLoading(true)
+    setError(false)
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(url)
+        return res.json()
+      })
+      .then(data => {
+        if (!Array.isArray(data)) throw new Error(url)
+        set(data)
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }
 
-useEffect(() => {
-  fetch("/api/plans")
-    .then(res => res.json())
-    .then(setFeaturedPlans)
-    .finally(() => setLoadingPlans(false))
-}, [])
+  const loadItems = () => fetchList<ItemUI>("/api/items", setFeaturedItems, setLoadingItems, setErrorItems)
+  const loadPlans = () => fetchList<PlanUI>("/api/plans", setFeaturedPlans, setLoadingPlans, setErrorPlans)
+
+  useEffect(() => {
+    loadItems()
+    loadPlans()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
 useEffect(() => {
   loadComments();
@@ -84,20 +98,31 @@ useEffect(() => {
       <section className="py-20 px-4 container mx-auto">
         <h2 className="text-3xl font-bold text-center mb-12 uppercase tracking-widest">Nuestros Planes</h2>
         {/* Mostrar algunos planes destacados */}
-       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 justify-items-center">
-              {loadingPlans
-          ? Array.from({ length: 3 }).map((_, i) => (
-              <PlanCardSkeleton key={i} />
-            ))
-          : featuredPlans.slice(1, 4).map(plan => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))
-        }
-      </div>
+       {errorPlans ? (
+          <StateMessage
+            tone="error"
+            icon="!"
+            title="No pudimos cargar los planes"
+            description="Inténtalo de nuevo en unos segundos."
+            action={{ label: "Reintentar", onClick: loadPlans }}
+          />
+        ) : !loadingPlans && featuredPlans.length === 0 ? (
+          <StateMessage
+            icon="∅"
+            title="Pronto habrá nuevos planes"
+            description="Estamos preparando planes de nutrición y entrenamiento."
+          />
+        ) : (
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 justify-items-center">
+            {loadingPlans
+              ? Array.from({ length: 3 }).map((_, i) => <PlanCardSkeleton key={i} />)
+              : featuredPlans.slice(1, 4).map(plan => <PlanCard key={plan.id} plan={plan} />)}
+          </div>
+        )}
         
-        <a href="/plans">
+        <Link href="/plans">
          <div className="text-center text-white font-semibold text-lg py-6 mt-4 mx-auto rounded-3xl bg-indigo-800 hover:bg-indigo-700 md:max-w-2xl">¿Deseas ver más?</div>
-        </a>
+        </Link>
       </section>
 
 
@@ -113,16 +138,27 @@ useEffect(() => {
           <a href="/items" className="text-indigo-600 hover:underline text-sm font-medium">Ver todo →</a>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {loadingItems
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <ItemCardSkeleton key={i} />
-              ))
-            : featuredItems.slice(0, 4).map(item => (
-                <ItemCard key={item.id} {...item} />
-              ))
-          }
-        </div>
+        {errorItems ? (
+          <StateMessage
+            tone="error"
+            icon="!"
+            title="No pudimos cargar los productos"
+            description="Inténtalo de nuevo en unos segundos."
+            action={{ label: "Reintentar", onClick: loadItems }}
+          />
+        ) : !loadingItems && featuredItems.length === 0 ? (
+          <StateMessage
+            icon="∅"
+            title="Aún no hay productos"
+            description="Estamos preparando el catálogo de la tienda."
+          />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {loadingItems
+              ? Array.from({ length: 4 }).map((_, i) => <ItemCardSkeleton key={i} />)
+              : featuredItems.slice(0, 4).map(item => <ItemCard key={item.id} {...item} />)}
+          </div>
+        )}
         
         {/* 4. CARRUSEL DE INFO */}
 <section className="py-24 bg-slate-50 overflow-hidden">

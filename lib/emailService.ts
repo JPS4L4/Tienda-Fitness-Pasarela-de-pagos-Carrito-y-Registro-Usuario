@@ -1,6 +1,7 @@
 // lib/emailService.ts
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { BRAND_NAME } from '@/lib/brand'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const resendEnabled = Boolean(resendApiKey)
@@ -49,18 +50,18 @@ export async function sendVerificationEmail(
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`
 
     if (!resend) {
-      logEmail(email, 'Verifica tu email - FitnessStudio')
+      logEmail(email, `Verifica tu email - ${BRAND_NAME}`)
       return false
     }
 
     const { data, error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
-      subject: 'Verifica tu email - FitnessStudio',
+      subject: `Verifica tu email - ${BRAND_NAME}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0; font-size: 28px;">Bienvenido a FitnessStudio</h1>
+            <h1 style="margin: 0; font-size: 28px;">Bienvenido a ${BRAND_NAME}</h1>
           </div>
           
           <div style="background: #f8fafc; padding: 40px; border-radius: 0 0 8px 8px;">
@@ -89,7 +90,7 @@ export async function sendVerificationEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Todos los derechos reservados.</p>
           </div>
         </div>
       `,
@@ -120,14 +121,14 @@ export async function sendPasswordResetEmail(
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`
 
     if (!resend) {
-      logEmail(email, 'Resetea tu contraseña - NanSalazar')
+      logEmail(email, `Resetea tu contraseña - ${BRAND_NAME}`)
       return false
     }
 
     const { data, error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
-      subject: 'Resetea tu contraseña - FitnessStudio',
+      subject: `Resetea tu contraseña - ${BRAND_NAME}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -160,7 +161,7 @@ export async function sendPasswordResetEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Todos los derechos reservados.</p>
           </div>
         </div>
       `,
@@ -201,7 +202,7 @@ export async function sendContactEmail(
 
     if (!resend) {
       logEmail(adminEmail, `Nuevo mensaje de contacto - ${name} ${lastName}`)
-      logEmail(email, 'Recibimos tu mensaje - NanSalazar')
+      logEmail(email, `Recibimos tu mensaje - ${BRAND_NAME}`)
       return false
     }
     
@@ -237,7 +238,7 @@ export async function sendContactEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Sistema de Contacto.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Sistema de Contacto.</p>
           </div>
         </div>
       `,
@@ -247,7 +248,7 @@ export async function sendContactEmail(
     const mailOptionsUser = {
       from: getFromEmail(),
       to: email,
-      subject: 'Recibimos tu mensaje - FitnessStudio',
+      subject: `Recibimos tu mensaje - ${BRAND_NAME}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #14b8a6 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -274,7 +275,7 @@ export async function sendContactEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Todos los derechos reservados.</p>
           </div>
         </div>
       `,
@@ -361,7 +362,7 @@ export async function sendSupportEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Sistema de Soporte.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Sistema de Soporte.</p>
           </div>
         </div>
       `,
@@ -408,7 +409,7 @@ export async function sendSupportEmail(
           </div>
           
           <div style="background: #1e293b; color: white; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px;">
-            <p style="margin: 0;">© 2026 NanSalazar. Todos los derechos reservados.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} ${BRAND_NAME}. Todos los derechos reservados.</p>
           </div>
         </div>
       `,

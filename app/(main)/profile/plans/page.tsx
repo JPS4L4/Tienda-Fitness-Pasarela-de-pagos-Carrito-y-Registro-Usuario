@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Mis Planes | Fitness Studio',
+  title: 'Mis Planes',
   description: 'Planes adquiridos por el usuario',
 };
 
