@@ -1,15 +1,15 @@
 # Configuración de OAuth (Google y Facebook)
 
-Los botones de login social ya están habilitados en la página de login/registro. Ahora necesitas configurar las credenciales de Google y Facebook.
+Guía para configurar el login social (Google y Facebook) con NextAuth.
 
-## 📋 Estado Actual
+## Estado
 
 ✅ **Frontend**: Botones de Google y Facebook habilitados  
 ✅ **Backend**: Callbacks OAuth configurados en `lib/nextAuth.ts`  
 ✅ **Base de Datos**: Campo `providerAccountId` agregado al modelo Account  
 ✅ **Lógica**: Usuarios OAuth se crean/actualizan automáticamente  
 
-⚠️ **Pendiente**: Configurar credenciales de Google y Facebook
+Para activar el login social solo falta configurar las credenciales de cada proveedor. Sin ellas los botones no funcionan, pero el login con correo y contraseña sigue disponible.
 
 ---
 
@@ -24,7 +24,7 @@ Los botones de login social ya están habilitados en la página de login/registr
 1. Click en **OAuth consent screen**
 2. Selecciona **External** (para usuarios fuera de tu organización)
 3. Completa la información básica:
-   - **App name**: Nan Salazar Fitness
+   - **App name**: Fitness Studio
    - **User support email**: tu email
    - **Developer contact**: tu email
 4. En **Scopes**, agrega:
@@ -35,7 +35,7 @@ Los botones de login social ya están habilitados en la página de login/registr
 ### Paso 3: Crear credenciales OAuth 2.0
 1. Ve a **Credentials** → **Create Credentials** → **OAuth 2.0 Client IDs**
 2. Tipo de aplicación: **Web application**
-3. **Nombre**: Nan Salazar Web Client
+3. **Nombre**: Fitness Studio Web Client
 4. **Authorized JavaScript origins**:
    ```
    http://localhost:3000
@@ -51,8 +51,8 @@ Los botones de login social ya están habilitados en la página de login/registr
 ### Paso 4: Copiar credenciales
 Copia el **Client ID** y **Client Secret** que aparecen.
 
-### Paso 5: Agregar a .env.local
-Abre tu archivo `.env.local` y agrega (reemplazando los valores actuales):
+### Paso 5: Agregar a .env
+Abre tu archivo `.env` y agrega (reemplazando los valores actuales):
 
 ```env
 GOOGLE_CLIENT_ID=tu-client-id-aqui.apps.googleusercontent.com
@@ -68,7 +68,7 @@ GOOGLE_CLIENT_SECRET=tu-client-secret-aqui
 2. Click en **My Apps** → **Create App**
 3. Tipo de app: **Consumer**
 4. Completa la información básica:
-   - **App Display Name**: Nan Salazar Fitness
+   - **App Display Name**: Fitness Studio
    - **App Contact Email**: tu email
 5. Click en **Create App**
 
@@ -96,8 +96,8 @@ GOOGLE_CLIENT_SECRET=tu-client-secret-aqui
 2. Copia el **App ID** y **App Secret**
    - Para ver el **App Secret**, necesitas confirmar tu contraseña de Facebook
 
-### Paso 5: Agregar a .env.local
-Abre tu archivo `.env.local` y agrega (reemplazando los valores actuales):
+### Paso 5: Agregar a .env
+Abre tu archivo `.env` y agrega (reemplazando los valores actuales):
 
 ```env
 FACEBOOK_CLIENT_ID=tu-app-id-de-facebook
@@ -151,7 +151,7 @@ Por defecto, la app está en "Development Mode". Para que usuarios reales puedan
 **Solución**: Verifica que agregaste `http://localhost:3000/api/auth/callback/facebook` en Facebook Login Settings.
 
 ### Error: "Client authentication failed" (Google)
-**Causa**: El Client Secret es incorrecto o no está en el .env.local.  
+**Causa**: El Client Secret es incorrecto o no está en el .env.  
 **Solución**: Verifica que copiaste correctamente el Client Secret y que reiniciaste el servidor.
 
 ### Error: "App Not Set Up"  (Facebook)
@@ -184,7 +184,7 @@ Antes de lanzar a producción, verifica:
 
 - [ ] Google OAuth configurado y probado
 - [ ] Facebook Login configurado y probado
-- [ ] Variables de entorno en .env.local (desarrollo)
+- [ ] Variables de entorno en .env (desarrollo)
 - [ ] Variables de entorno en tu servicio de hosting (producción)
 - [ ] URIs de redirección actualizadas para producción
 - [ ] App de Facebook en modo "Live"
@@ -195,12 +195,8 @@ Antes de lanzar a producción, verifica:
 
 ## 📝 Notas Adicionales
 
-### Permitir linking de cuentas
-El sistema está configurado con `allowDangerousEmailAccountLinking: true`, lo que significa que si un usuario:
-1. Se registra con email/contraseña: `usuario@example.com`
-2. Luego intenta loguearse con Google usando el mismo email: `usuario@example.com`
-
-Se vincularán automáticamente. Esto mejora la experiencia del usuario pero puede ser un riesgo de seguridad si los emails no están verificados.
+### Vinculación de cuentas
+No se vinculan automáticamente cuentas con el mismo correo (`allowDangerousEmailAccountLinking` está desactivado): hacerlo permitiría tomar una cuenta ajena si el proveedor no verifica el correo.
 
 ### Datos que se obtienen
 - **Google**: email, nombre, foto de perfil
@@ -208,6 +204,3 @@ Se vincularán automáticamente. Esto mejora la experiencia del usuario pero pue
 
 Estos datos se almacenan en la tabla `User` y se vinculan con una cuenta en la tabla `Account`.
 
----
-
-¿Necesitas ayuda con la configuración? Revisa los logs del servidor con `npm run dev` y busca mensajes de error específicos.

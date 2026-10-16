@@ -46,3 +46,12 @@ next-env.d.ts
 /lib/generated/prisma
 
 /generated/prisma
+
+# editor / agent tooling
+/.vscode/
+/.agents/
+/.neon
+skills-lock.json
+
+# local debug scripts
+/test-*.ts
