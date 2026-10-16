@@ -65,7 +65,7 @@ const HERO_SLIDES: HeroSlide[] = [
 ]
 
 const arrowClass =
-  "absolute top-1/2 z-20 hidden h-14 w-14 -translate-y-1/2 items-center justify-center border-2 border-fg/40 bg-bg/70 text-fg transition-colors hover:border-accent hover:bg-accent hover:text-on-accent sm:flex"
+  "absolute bottom-16 z-20 hidden h-12 w-12 items-center justify-center border-2 border-fg/40 bg-bg/70 text-fg transition-colors hover:border-accent hover:bg-accent hover:text-on-accent sm:flex"
 
 export default function HeroCarousel() {
   const swiperRef = useRef<SwiperType | null>(null)
@@ -120,14 +120,14 @@ export default function HeroCarousel() {
                 />
                 {/* Capa para legibilidad: negro sólido bajo el texto, foto visible en el resto */}
                 <div
-                  className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/10 md:bg-gradient-to-r md:from-bg md:via-bg/60 md:to-bg/5"
+                  className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-bg/40 md:bg-gradient-to-r md:from-bg md:via-bg/60 md:to-bg/5"
                   aria-hidden="true"
                 />
 
                 <div className="container relative z-10 mx-auto flex h-full items-end px-4 pb-20 md:items-center md:pb-14">
                   <div className="max-w-3xl">
                     <div className="mb-5 h-2 w-24 bg-accent" aria-hidden="true" />
-                    <Title className="animate-fade-in-up text-[clamp(3rem,9vw,7.5rem)] leading-[0.92] text-fg">
+                    <Title className="animate-fade-in-up text-[clamp(3rem,9vw,7rem)] leading-[1.02] text-fg">
                       {slide.title}
                     </Title>
                     <p className="animate-fade-in-up animation-delay-200 mt-5 max-w-xl text-lg font-medium text-fg-soft sm:text-xl">
@@ -151,7 +151,7 @@ export default function HeroCarousel() {
         })}
       </Swiper>
 
-      <button className={`swiper-button-prev-custom left-4 md:left-8 ${arrowClass}`} aria-label="Slide anterior">
+      <button className={`swiper-button-prev-custom right-[4.25rem] md:right-24 ${arrowClass}`} aria-label="Slide anterior">
         <ChevronLeft className="h-7 w-7" strokeWidth={3} />
       </button>
       <button className={`swiper-button-next-custom right-4 md:right-8 ${arrowClass}`} aria-label="Siguiente slide">

@@ -80,7 +80,7 @@ export const PlanCard = ({ plan }: { plan: PlanUI }) => {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        <h3 className="mb-4 line-clamp-2 min-h-[2.05em] text-2xl leading-none text-fg md:text-3xl">{plan.title}</h3>
+        <h3 className="mb-4 min-h-[2.2em] text-2xl leading-[1.1] text-fg md:text-3xl">{plan.title}</h3>
 
         <div className="mb-5">
           <div className="flex flex-wrap items-baseline gap-x-3">
