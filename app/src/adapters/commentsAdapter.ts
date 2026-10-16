@@ -3,7 +3,7 @@ import { CommentsUI } from '../types/comments';
 
 // Tipo extendido que incluye la relación con User
 export type ReviewWithUser = Review & {
-  user: User;
+  user: Pick<User, 'name' | 'email' | 'image'>;
 };
 
 /**

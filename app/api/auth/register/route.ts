@@ -137,12 +137,10 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error("❌ Error en registro:", error)
-    const errorMessage = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
       { 
         success: false, 
         message: "Error interno del servidor",
-        error: errorMessage 
       },
       { status: 500 }
     )

@@ -8,15 +8,12 @@ import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
 import { isAdminEmail } from "@/lib/adminAuth"
 
-const nextAuthSecret = process.env.NEXTAUTH_SECRET || "change-me-in-vercel"
-
 const providers = [
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? [
         GoogleProvider({
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          allowDangerousEmailAccountLinking: true,
         }),
       ]
     : []),
@@ -25,7 +22,6 @@ const providers = [
         FacebookProvider({
           clientId: process.env.FACEBOOK_CLIENT_ID,
           clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-          allowDangerousEmailAccountLinking: true,
         }),
       ]
     : []),
@@ -90,8 +86,9 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
 
-  // Secreto obligatorio (viene de .env o Vercel)
-  secret: nextAuthSecret,
+  // Secreto obligatorio (.env / Vercel). Sin fallback: si falta, NextAuth falla en producción
+  // en lugar de firmar sesiones con un valor conocido.
+  secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
     // Callback jwt: se ejecuta cuando se crea o actualiza el token
@@ -148,6 +145,10 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
+        // Google declara si el correo está verificado; Facebook no da esa garantía.
+        // Sin verificación no se vincula a una cuenta existente (ver registerOAuthUser).
+        const emailVerified = account.provider === "google" && profile?.email_verified === true;
+
         try {
           const result = await registerOAuthUser({
             email: user.email,
@@ -155,6 +156,7 @@ export const authOptions: NextAuthOptions = {
             image: user.image || profile?.picture || null,
             provider: account.provider,
             providerAccountId: account.providerAccountId || user.id,
+            emailVerified,
           });
 
           if (!result.success) {

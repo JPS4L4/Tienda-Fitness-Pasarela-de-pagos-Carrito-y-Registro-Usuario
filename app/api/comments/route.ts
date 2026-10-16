@@ -5,6 +5,9 @@ import { auth } from '@/lib/auth';
 import { validateRegisterForm } from '@/lib/validation';
 import { ORDER_STATUS } from '@/lib/orders/constants';
 
+// Solo los campos públicos del autor: nunca password ni tokens
+const USER_PUBLIC_SELECT = { id: true, name: true, email: true, image: true } as const;
+
 /**
  * GET /api/comments
  * Obtiene todos los comentarios/reviews con información del usuario
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
     const reviews = await prisma.review.findMany({
       where,
       include: {
-        user: true,
+        user: { select: USER_PUBLIC_SELECT },
       },
       orderBy: {
         createdAt: 'desc',
@@ -193,7 +196,7 @@ export async function POST(request: Request) {
           planId: parsedPlanId,
         },
         include: {
-          user: true,
+          user: { select: USER_PUBLIC_SELECT },
         },
       });
 

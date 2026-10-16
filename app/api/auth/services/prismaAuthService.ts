@@ -163,9 +163,8 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
     };
   } catch (error) {
     console.error('❌ Error registrando usuario:', error);
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('📍 Error detallado:', errorMsg);
-    return { success: false, error: errorMsg || 'Error al registrar usuario' };
+    // El detalle del error queda solo en el log; al cliente va un mensaje genérico.
+    return { success: false, error: 'Error al registrar usuario' };
   }
 }
 
@@ -247,6 +246,8 @@ export async function registerOAuthUser(payload: {
   image?: string | null;
   provider: string;
   providerAccountId: string;
+  /** El proveedor garantiza que el correo es del usuario */
+  emailVerified?: boolean;
 }): Promise<AuthResult> {
   try {
     console.log(`🔐 Procesando login OAuth [${payload.provider}]:`, payload.email);
@@ -268,6 +269,11 @@ export async function registerOAuthUser(payload: {
       );
 
       if (!hasProviderAccount) {
+        // Vincular por correo sin verificación permitiría tomar una cuenta ajena.
+        if (!payload.emailVerified) {
+          console.error('❌ Correo no verificado por el proveedor; no se vincula a la cuenta existente');
+          return { success: false, error: 'No se puede vincular la cuenta' };
+        }
         console.log(`🔗 Vinculando cuenta de ${payload.provider} al usuario existente`);
         await prisma.account.create({
           data: {
@@ -303,7 +309,7 @@ export async function registerOAuthUser(payload: {
         email: payload.email,
         name: payload.name || null,
         image: payload.image || null,
-        emailVerified: new Date(), // OAuth users are pre-verified
+        emailVerified: payload.emailVerified ? new Date() : null,
         accounts: {
           create: {
             provider: payload.provider,
@@ -326,7 +332,6 @@ export async function registerOAuthUser(payload: {
     };
   } catch (error) {
     console.error(`❌ Error registrando usuario OAuth [${payload.provider}]:`, error);
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    return { success: false, error: errorMsg || 'Error al registrar usuario OAuth' };
+    return { success: false, error: 'Error al registrar usuario OAuth' };
   }
 }
