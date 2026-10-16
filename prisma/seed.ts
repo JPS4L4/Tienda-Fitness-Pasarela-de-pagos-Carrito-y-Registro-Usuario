@@ -416,7 +416,7 @@ async function main() {
       {
         type: 'nutricion',
         title: 'Plan Nutricional Pérdida de Grasa',
-        image: '/images/plans/nutricion.webp',
+        image: '/images/plans/nutricion-grasa.webp',
         description: 'Plan alimenticio enfocado en déficit calórico controlado para perder grasa de forma sostenible.',
         shortDescription: 'Definición y control de peso',
         tags: ['nutrición', 'pérdida de grasa'],
@@ -434,7 +434,7 @@ async function main() {
       {
         type: 'nutricion',
         title: 'Plan Nutricional Ganancia Muscular',
-        image: '/images/plans/nutricion.webp',
+        image: '/images/plans/nutricion-musculo.webp',
         description: 'Plan de alimentación con superávit calórico y alto contenido proteico para ganar masa muscular.',
         shortDescription: 'Volumen limpio y masa magra',
         tags: ['nutrición', 'volumen', 'masa muscular'],
@@ -452,7 +452,7 @@ async function main() {
       {
         type: 'nutricion',
         title: 'Plan Nutricional Vegetariano Fitness',
-        image: '/images/plans/nutricion.webp',
+        image: '/images/plans/nutricion-vegetariano.webp',
         description: 'Plan nutricional 100% vegetariano diseñado para deportistas y personas activas.',
         shortDescription: 'Nutrición vegetal para el rendimiento',
         tags: ['nutrición', 'vegetariano'],
@@ -472,7 +472,7 @@ async function main() {
       {
         type: 'entrenamiento',
         title: 'Plan de Entrenamiento Home Gym',
-        image: '/images/plans/entrenamiento.webp',
+        image: '/images/plans/hogar.webp',
         description: 'Rutina práctica para entrenar en casa.',
         shortDescription: 'Entrena desde casa',
         tags: ['fitness', 'casa'],
@@ -521,7 +521,7 @@ async function main() {
       {
         type: 'entrenamiento',
         title: 'Plan de Entrenamiento Running 5K a 10K',
-        image: '/images/plans/entrenamiento.webp',
+        image: '/images/plans/running.webp',
         description: 'Programa progresivo para corredores que buscan pasar de correr 5K a completar 10K.',
         shortDescription: 'Prepárate para tu próxima carrera',
         tags: ['fitness', 'running', 'resistencia'],
