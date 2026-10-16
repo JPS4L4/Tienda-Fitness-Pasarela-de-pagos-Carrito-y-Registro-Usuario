@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 function assertSafeSeedTarget() {
   const url = process.env.DATABASE_URL;
@@ -26,6 +27,11 @@ function assertSafeSeedTarget() {
 
 assertSafeSeedTarget();
 
+// Cuentas de demostración (documentadas en el README). Contraseña solo para entornos de prueba.
+const DEMO_PASSWORD = 'Prueba123!';
+const DEMO_ADMIN_EMAIL = 'admin@fitness-studio.example';
+const DEMO_USER_EMAIL = 'demo@fitness-studio.example';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -44,19 +50,47 @@ async function main() {
   await prisma.item.deleteMany();
   await prisma.plan.deleteMany();
 
-  const passwordHash = await bcrypt.hash('Prueba123!', 10);
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
+  // Cuenta administradora de demostración (debe estar en ADMIN_EMAILS).
+  await prisma.user.create({
+    data: {
+      name: 'Admin Demo',
+      email: DEMO_ADMIN_EMAIL,
+      phone: '+573001112200',
+      emailVerified: new Date(),
+      accounts: {
+        create: { provider: 'credentials', password: passwordHash },
+      },
+    },
+  });
+
+  // Usuario de demostración con perfil fitness completo.
   const user = await prisma.user.create({
     data: {
       name: 'Usuario Demo',
-      email: 'demo@nan-salazar.com',
+      email: DEMO_USER_EMAIL,
       phone: '+573001112233',
       emailVerified: new Date(),
+      weightKg: 72,
+      heightCm: 175,
+      age: 29,
+      trainingTime: '6-12 meses',
+      goal: 'Ganar masa muscular',
+      equipmentAvailability: 'Básico (mancuernas/bandas)',
+      healthCondition: 'Ninguna',
+      fitnessProfileData: {
+        weightKg: 72,
+        heightCm: 175,
+        age: 29,
+        trainingTime: '6-12 meses',
+        goal: 'Ganar masa muscular',
+        equipmentAvailability: 'Básico (mancuernas/bandas)',
+        healthCondition: 'Ninguna',
+      },
+      fitnessProfileCompleted: true,
       accounts: {
-        create: {
-          provider: 'credentials',
-          password: passwordHash,
-        },
+        create: { provider: 'credentials', password: passwordHash },
       },
     },
   });
@@ -569,6 +603,7 @@ async function main() {
 
   await prisma.order.create({
     data: {
+      userId: user.id,
       customerFirstName: 'Usuario',
       customerLastName: 'Demo',
       customerEmail: user.email!,
@@ -580,6 +615,51 @@ async function main() {
       items: [{ title: createdProducts[0]?.title, quantity: 1, price: 129900 }],
     },
   });
+
+  // Suscripción activa a un plan, para que el perfil y el contenido del plan no salgan vacíos.
+  const demoPlan = createdPlans[0];
+  if (demoPlan) {
+    await prisma.plan.update({
+      where: { id: demoPlan.id },
+      data: {
+        content:
+          '## Semana 1\n- Desayuno: avena con fruta y proteína.\n- Almuerzo: pollo, arroz integral y ensalada.\n- Cena: pescado al horno con verduras.\n\n(Contenido de demostración visible solo para suscriptores.)',
+      },
+    });
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 30);
+    const accessToken = 'demo-access-token-' + randomBytes(8).toString('hex');
+    const planOrder = await prisma.order.create({
+      data: {
+        userId: user.id,
+        planId: demoPlan.id,
+        customerFirstName: 'Usuario',
+        customerLastName: 'Demo',
+        customerEmail: user.email!,
+        customerPhone: user.phone!,
+        totalAmount: demoPlan.price,
+        status: 'COMPLETED',
+        paymentMethod: 'STRIPE',
+        paymentId: 'demo-plan-payment-id',
+        items: [{ title: demoPlan.title, quantity: 1, price: demoPlan.price }],
+        accessToken,
+        tokenExpiresAt: endDate,
+        subscriptionType: 'monthly',
+        subscriptionStatus: 'ACTIVE',
+      },
+    });
+    await prisma.userSubscription.create({
+      data: {
+        userId: user.id,
+        planId: demoPlan.id,
+        orderId: planOrder.id,
+        status: 'active',
+        startDate: new Date(),
+        endDate,
+        accessToken,
+      },
+    });
+  }
 
   console.log('✅ Seed completado');
 }
