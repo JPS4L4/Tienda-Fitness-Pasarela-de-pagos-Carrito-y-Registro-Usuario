@@ -210,15 +210,15 @@ export default function PlansCrud() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="rounded-2xl w-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className=" w-2xl border border-line bg-surface p-6 ">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Planes</h2>
-            <p className="text-sm text-slate-500">Administra planes de entrenamiento y nutrición.</p>
+            <h2 className="text-3xl text-fg">Planes</h2>
+            <p className="text-sm text-muted">Administra planes de entrenamiento y nutrición.</p>
           </div>
           <button
             onClick={fetchPlans}
-            className="rounded-lg border border-blue-600 px-3 py-2 text-sm text-blue-600 hover:bg-slate-50"
+            className="btn btn-ghost btn-sm"
             type="button"
           >
             🔃 Actualizar
@@ -227,45 +227,45 @@ export default function PlansCrud() {
 
         <div className="mt-6">
           {loading ? (
-            <p className="text-sm text-slate-500">Cargando planes...</p>
+            <p className="text-sm text-muted">Cargando planes...</p>
           ) : !hasPlans ? (
-            <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+            <div className=" border border-dashed border-line p-6 text-center text-sm text-muted">
               No hay planes aún. Crea el primero desde el formulario.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-xs uppercase text-slate-400">
+                <thead className="text-left text-xs uppercase text-subtle">
                   <tr>
-                    <th className="pb-3">Plan</th>
-                    <th className="pb-3">Tipo</th>
-                    <th className="pb-3">Precio</th>
-                    <th className="pb-3">Acciones</th>
+                    <th className="pb-3 pr-4 font-bold">Plan</th>
+                    <th className="pb-3 pr-4 font-bold">Tipo</th>
+                    <th className="pb-3 pr-4 font-bold">Precio</th>
+                    <th className="pb-3 pr-4 font-bold">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-line">
                   {plans.map((plan) => (
                     <tr key={plan.id}>
-                      <td className="py-3">
-                        <p className="font-medium text-slate-900">{plan.title}</p>
-                        <p className="text-xs text-slate-500">{plan.slug}</p>
+                      <td className="py-3 pr-4">
+                        <p className="font-medium text-fg">{plan.title}</p>
+                        <p className="text-xs text-muted">{plan.slug}</p>
                       </td>
-                      <td className="py-3 text-slate-700">{plan.type}</td>
-                      <td className="py-3 text-slate-700">
+                      <td className="py-3 pr-4 text-fg-soft">{plan.type}</td>
+                      <td className="py-3 pr-4 text-fg-soft">
                         {formatPrice(plan.price, plan.currency)}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => handleEdit(plan)}
-                            className="rounded-lg border border-yellow-600 px-3 py-1 text-xs text-yellow-600 hover:bg-slate-50"
+                            className="btn btn-ghost btn-sm !text-warn"
                             type="button"
                           >
                             Editar
                           </button>
                           <button
                             onClick={() => handleDelete(plan.id)}
-                            className="rounded-lg border border-red-600 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+                            className="btn btn-danger btn-sm"
                             type="button"
                           >
                             Eliminar
@@ -281,20 +281,20 @@ export default function PlansCrud() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="panel">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">
+            <h2 className="text-3xl text-fg">
               {mode === 'create' ? 'Crear plan' : 'Editar plan'}
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted">
               Completa los datos clave para tus planes.
             </p>
           </div>
           {mode === 'edit' && (
             <button
               onClick={resetForm}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+              className=" border border-line px-3 py-2 text-sm text-muted hover:bg-surface-2"
               type="button"
             >
               Cancelar edición
@@ -304,124 +304,124 @@ export default function PlansCrud() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Tipo
               <select
                 value={form.type}
                 onChange={(event) => handleChange('type', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               >
                 <option value="nutricion">Nutrición</option>
                 <option value="entrenamiento">Entrenamiento</option>
               </select>
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Título
               <input
                 value={form.title}
                 onChange={(event) => handleChange('title', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
                 required
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Slug (auto)
               <input
                 value={form.slug}
                 readOnly
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                className="input"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Precio
               <input
                 type="number"
                 value={form.price}
                 onChange={(event) => handleChange('price', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
                 required
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Moneda
               <input
                 value={form.currency}
                 onChange={(event) => handleChange('currency', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Imagen (URL)
               <input
                 value={form.image}
                 onChange={(event) => handleChange('image', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Imagen (solo JPG/JPEG)
               <input
                 type="file"
                 accept=".jpg,.jpeg,image/jpeg"
                 onChange={(event) => handleImageUpload(event.target.files)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
             {uploadError && (
-              <p className="text-xs text-red-600">{uploadError}</p>
+              <p className="text-xs text-danger">{uploadError}</p>
             )}
             {uploadedImage && (
               <img
                 src={uploadedImage}
                 alt="Preview"
-                className="h-24 w-24 rounded-lg border border-slate-200 object-cover"
+                className="h-24 w-24  border border-line object-cover"
               />
             )}
           </div>
 
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-fg-soft">
             Descripción corta
             <input
               value={form.shortDescription}
               onChange={(event) => handleChange('shortDescription', event.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="input mt-2 !min-h-10 text-sm"
             />
           </label>
 
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-fg-soft">
             Descripción
             <textarea
               value={form.description}
               onChange={(event) => handleChange('description', event.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="input mt-2 !min-h-10 text-sm"
               rows={3}
             />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Tags (separados por coma)
               <input
                 value={form.tags}
                 onChange={(event) => handleChange('tags', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Cobertura (separada por coma)
               <input
                 value={form.coverage}
                 onChange={(event) => handleChange('coverage', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">
               {error}
             </p>
           )}
@@ -429,7 +429,7 @@ export default function PlansCrud() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-xl bg-green-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn btn-primary btn-block"
           >
             {saving ? 'Guardando...' : mode === 'create' ? 'Crear plan' : 'Guardar cambios'}
           </button>

@@ -37,48 +37,48 @@ export default function UsersOverview() {
   }, [])
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="panel">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Usuarios</h2>
-          <p className="text-sm text-slate-500">Listado con información básica.</p>
+          <h2 className="text-3xl text-fg">Usuarios</h2>
+          <p className="text-sm text-muted">Listado con información básica.</p>
         </div>
       </div>
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-sm text-slate-500">Cargando usuarios...</p>
+          <p className="text-sm text-muted">Cargando usuarios...</p>
         ) : error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
         ) : users.length === 0 ? (
-          <p className="text-sm text-slate-500">No hay usuarios todavía.</p>
+          <p className="text-sm text-muted">No hay usuarios todavía.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase text-slate-400">
+              <thead className="text-left text-xs uppercase text-subtle">
                 <tr>
-                  <th className="pb-3">Usuario</th>
-                  <th className="pb-3">Email</th>
-                  <th className="pb-3">Teléfono</th>
-                  <th className="pb-3">Órdenes</th>
-                  <th className="pb-3">Suscripciones</th>
-                  <th className="pb-3">Registro</th>
+                  <th className="pb-3 pr-4 font-bold">Usuario</th>
+                  <th className="pb-3 pr-4 font-bold">Email</th>
+                  <th className="pb-3 pr-4 font-bold">Teléfono</th>
+                  <th className="pb-3 pr-4 font-bold">Órdenes</th>
+                  <th className="pb-3 pr-4 font-bold">Suscripciones</th>
+                  <th className="pb-3 pr-4 font-bold">Registro</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-line">
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="py-3">
-                      <p className="font-medium text-slate-900">
+                    <td className="py-3 pr-4">
+                      <p className="font-medium text-fg">
                         {user.name || 'Sin nombre'}
                       </p>
-                      <p className="text-xs text-slate-500">ID: {user.id}</p>
+                      <p className="text-xs text-muted">ID: {user.id}</p>
                     </td>
-                    <td className="py-3 text-slate-700">{user.email || '—'}</td>
-                    <td className="py-3 text-slate-700">{user.phone || '—'}</td>
-                    <td className="py-3 text-slate-700">{user._count.orders}</td>
-                    <td className="py-3 text-slate-700">{user._count.subscriptions}</td>
-                    <td className="py-3 text-slate-700">
+                    <td className="py-3 pr-4 text-fg-soft">{user.email || '—'}</td>
+                    <td className="py-3 pr-4 text-fg-soft">{user.phone || '—'}</td>
+                    <td className="py-3 pr-4 text-fg-soft">{user._count.orders}</td>
+                    <td className="py-3 pr-4 text-fg-soft">{user._count.subscriptions}</td>
+                    <td className="py-3 pr-4 text-fg-soft">
                       {new Date(user.createdAt).toLocaleDateString('es-CO')}
                     </td>
                   </tr>

@@ -30,12 +30,12 @@ export default async function AdminOrderDetailPage({
   if (data.error !== null) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-10">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-slate-900">Orden no encontrada</h2>
-          <p className="mt-2 text-slate-600">{data.error}</p>
+        <div className=" border border-line bg-surface p-6 ">
+          <h2 className="text-2xl font-semibold text-fg">Orden no encontrada</h2>
+          <p className="mt-2 text-muted">{data.error}</p>
           <Link
             href="/admin/orders"
-            className="mt-6 inline-flex items-center rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            className="mt-6 inline-flex items-center  border border-line px-4 py-2 text-sm text-fg-soft hover:bg-surface-2"
           >
             Volver a órdenes
           </Link>
@@ -50,21 +50,21 @@ export default async function AdminOrderDetailPage({
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Orden</p>
-          <h2 className="text-3xl font-semibold text-slate-900">#{order.id}</h2>
+          <p className="eyebrow">Orden</p>
+          <h2 className="text-5xl text-fg">#{order.id}</h2>
         </div>
         <Link
           href="/admin/orders"
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          className=" border border-line px-4 py-2 text-sm text-fg-soft hover:bg-surface-2"
         >
           Volver a órdenes
         </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Resumen</h3>
-          <dl className="mt-4 space-y-2 text-sm text-slate-700">
+        <section className="panel">
+          <h3 className="text-lg font-semibold text-fg">Resumen</h3>
+          <dl className="mt-4 space-y-2 text-sm text-fg-soft">
             <div className="flex justify-between">
               <dt>Estado</dt>
               <dd className="font-semibold">{order.status}</dd>
@@ -79,7 +79,7 @@ export default async function AdminOrderDetailPage({
             </div>
             <div className="flex justify-between">
               <dt>ID de pago</dt>
-              <dd className="text-xs text-slate-500">{order.paymentId || '—'}</dd>
+              <dd className="text-xs text-muted">{order.paymentId || '—'}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Fecha</dt>
@@ -88,9 +88,9 @@ export default async function AdminOrderDetailPage({
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Cliente</h3>
-          <dl className="mt-4 space-y-2 text-sm text-slate-700">
+        <section className="panel">
+          <h3 className="text-lg font-semibold text-fg">Cliente</h3>
+          <dl className="mt-4 space-y-2 text-sm text-fg-soft">
             <div className="flex justify-between">
               <dt>Nombre</dt>
               <dd>
@@ -114,9 +114,9 @@ export default async function AdminOrderDetailPage({
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-semibold text-slate-900">Items</h3>
-          <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-slate-900 p-4 text-xs text-slate-100">
+        <section className=" border border-line bg-surface p-6  lg:col-span-2">
+          <h3 className="text-lg font-semibold text-fg">Items</h3>
+          <pre className="mt-4 whitespace-pre-wrap  bg-surface p-4 text-xs text-fg-soft">
             {JSON.stringify(order.items, null, 2)}
           </pre>
         </section>

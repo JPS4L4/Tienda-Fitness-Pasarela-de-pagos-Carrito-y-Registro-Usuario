@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/nextAuth'
 import { isAdminEmail } from '@/lib/adminAuth'
+import AdminNav from '@/components/admin/AdminNav'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -12,17 +13,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!isAdminEmail(session.user.email)) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <main className="min-h-screen bg-bg">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h1 className="text-2xl font-semibold text-slate-900">Acceso restringido</h1>
-            <p className="mt-2 text-slate-600">
-              Tu cuenta no tiene permisos de administrador.
-            </p>
-            <Link
-              href="/"
-              className="mt-6 inline-flex items-center rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-            >
+          <div className="panel border-t-4 border-t-danger">
+            <h1 className="text-4xl text-fg">Acceso restringido</h1>
+            <p className="mt-3 text-muted">Tu cuenta no tiene permisos de administrador.</p>
+            <Link href="/" className="btn btn-secondary mt-6">
               Volver al inicio
             </Link>
           </div>
@@ -32,36 +28,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Panel Admin</p>
-            <Link href="/" className="text-xl font-semibold text-slate-900">Fitness Studio</Link>
+    <div className="min-h-screen bg-bg">
+      <header className="border-b border-line bg-surface">
+        <div className="container mx-auto flex flex-col gap-2 px-4 pt-4 md:flex-row md:items-end md:justify-between md:gap-8">
+          <div className="flex items-baseline gap-4 pb-2">
+            <Link href="/" className="font-display text-2xl uppercase leading-none text-fg hover:text-accent">
+              Fitness Studio
+            </Link>
+            <span className="badge badge-accent">Admin</span>
           </div>
-          <nav className="flex gap-3 text-sm text-slate-600">
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/">
-              🏠Inicio
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin">
-              🎛️Dashboard
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin/items">
-               🛒Items
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin/orders">
-               📋Ordenes
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin/plans">
-               🏋️Planes
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin/users">
-               👥Usuarios
-            </Link>
-            <Link className="rounded-lg px-3 py-2 hover:bg-slate-50" href="/admin/sales">
-               💰Ventas
-            </Link>
-          </nav>
+          <AdminNav />
         </div>
       </header>
       {children}

@@ -43,65 +43,65 @@ export default function OrdersOverview() {
   }, [])
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="panel">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Órdenes</h2>
-          <p className="text-sm text-slate-500">Listado general de órdenes.</p>
+          <h2 className="text-3xl text-fg">Órdenes</h2>
+          <p className="text-sm text-muted">Listado general de órdenes.</p>
         </div>
       </div>
 
       <div className="mt-6">
         {loading ? (
-          <p className="text-sm text-slate-500">Cargando órdenes...</p>
+          <p className="text-sm text-muted">Cargando órdenes...</p>
         ) : error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
         ) : orders.length === 0 ? (
-          <p className="text-sm text-slate-500">No hay órdenes aún.</p>
+          <p className="text-sm text-muted">No hay órdenes aún.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase text-slate-400">
+              <thead className="text-left text-xs uppercase text-subtle">
                 <tr>
-                  <th className="pb-3">Orden</th>
-                  <th className="pb-3">Cliente</th>
-                  <th className="pb-3">Estado</th>
-                  <th className="pb-3">Total</th>
-                  <th className="pb-3">Pago</th>
-                  <th className="pb-3">Fecha</th>
+                  <th className="pb-3 pr-4 font-bold">Orden</th>
+                  <th className="pb-3 pr-4 font-bold">Cliente</th>
+                  <th className="pb-3 pr-4 font-bold">Estado</th>
+                  <th className="pb-3 pr-4 font-bold">Total</th>
+                  <th className="pb-3 pr-4 font-bold">Pago</th>
+                  <th className="pb-3 pr-4 font-bold">Fecha</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-line">
                 {orders.map((order) => (
                   <tr key={order.id}>
-                    <td className="py-3">
+                    <td className="py-3 pr-4">
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="font-semibold text-teal-600 hover:underline"
+                        className="font-semibold text-accent hover:underline"
                       >
                         #{order.id}
                       </Link>
                       {order.planId && (
-                        <p className="text-xs text-slate-500">Plan #{order.planId}</p>
+                        <p className="text-xs text-muted">Plan #{order.planId}</p>
                       )}
                     </td>
-                    <td className="py-3">
-                      <p className="text-slate-900">
+                    <td className="py-3 pr-4">
+                      <p className="text-fg">
                         {order.customerFirstName || order.customerLastName
                           ? `${order.customerFirstName || ''} ${order.customerLastName || ''}`.trim()
                           : 'Cliente'}
                       </p>
-                      <p className="text-xs text-slate-500">{order.customerEmail || '—'}</p>
+                      <p className="text-xs text-muted">{order.customerEmail || '—'}</p>
                     </td>
-                    <td className="py-3 text-slate-700">{order.status}</td>
-                    <td className="py-3 text-slate-700">
+                    <td className="py-3 pr-4 text-fg-soft">{order.status}</td>
+                    <td className="py-3 pr-4 text-fg-soft">
                       {formatPrice(order.totalAmount)}
                     </td>
-                    <td className="py-3 text-slate-700">
+                    <td className="py-3 pr-4 text-fg-soft">
                       <p>{order.paymentMethod || '—'}</p>
-                      <p className="text-xs text-slate-500">{order.paymentId || '—'}</p>
+                      <p className="text-xs text-muted">{order.paymentId || '—'}</p>
                     </td>
-                    <td className="py-3 text-slate-700">
+                    <td className="py-3 pr-4 text-fg-soft">
                       {new Date(order.createdAt).toLocaleString('es-CO')}
                     </td>
                   </tr>

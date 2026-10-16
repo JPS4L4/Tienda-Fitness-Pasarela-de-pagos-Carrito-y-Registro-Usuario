@@ -241,15 +241,15 @@ export default function ItemsCrud() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="panel">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Items</h2>
-            <p className="text-sm text-slate-500">Administra productos y su catálogo.</p>
+            <h2 className="text-3xl text-fg">Items</h2>
+            <p className="text-sm text-muted">Administra productos y su catálogo.</p>
           </div>
           <button
             onClick={fetchItems}
-            className="rounded-lg border border-blue-600 px-3 py-2 text-sm text-blue-600 hover:bg-slate-50"
+            className="btn btn-ghost btn-sm"
             type="button"
           >
             🔃 Actualizar
@@ -258,45 +258,45 @@ export default function ItemsCrud() {
 
         <div className="mt-6">
           {loading ? (
-            <p className="text-sm text-slate-500">Cargando items...</p>
+            <p className="text-sm text-muted">Cargando items...</p>
           ) : !hasItems ? (
-            <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+            <div className=" border border-dashed border-line p-6 text-center text-sm text-muted">
               No hay items aún. Crea el primero desde el formulario.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-xs uppercase text-slate-400">
+                <thead className="text-left text-xs uppercase text-subtle">
                   <tr>
-                    <th className="pb-3">Item</th>
-                    <th className="pb-3">Precio</th>
-                    <th className="pb-3">Stock</th>
-                    <th className="pb-3">Acciones</th>
+                    <th className="pb-3 pr-4 font-bold">Item</th>
+                    <th className="pb-3 pr-4 font-bold">Precio</th>
+                    <th className="pb-3 pr-4 font-bold">Stock</th>
+                    <th className="pb-3 pr-4 font-bold">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-line">
                   {items.map((item) => (
                     <tr key={item.id}>
-                      <td className="py-3">
-                        <p className="font-medium text-slate-900">{item.title}</p>
-                        <p className="text-xs text-slate-500">{item.slug}</p>
+                      <td className="py-3 pr-4">
+                        <p className="font-medium text-fg">{item.title}</p>
+                        <p className="text-xs text-muted">{item.slug}</p>
                       </td>
-                      <td className="py-3 text-slate-700">
+                      <td className="py-3 pr-4 text-fg-soft">
                         {formatPrice(item.price, item.currency)}
                       </td>
-                      <td className="py-3 text-slate-700">{item.stock}</td>
-                      <td className="py-3">
+                      <td className="py-3 pr-4 text-fg-soft">{item.stock}</td>
+                      <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="rounded-lg border border-yellow-600 px-3 py-1 text-xs text-yellow-600 hover:bg-slate-50"
+                            className="btn btn-ghost btn-sm !text-warn"
                             type="button"
                           >
                             Editar
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="rounded-lg border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+                            className="btn btn-danger btn-sm"
                             type="button"
                           >
                             Eliminar
@@ -312,20 +312,20 @@ export default function ItemsCrud() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="panel">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">
+            <h2 className="text-3xl text-fg">
               {mode === 'create' ? 'Crear item' : 'Editar item'}
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted">
               Completa los campos principales para el catálogo.
             </p>
           </div>
           {mode === 'edit' && (
             <button
               onClick={resetForm}
-              className="rounded-lg border border-orange-600 px-3 py-2 text-sm text-orange-600 hover:bg-slate-50"
+              className="btn btn-ghost btn-sm"
               type="button"
             >
               Cancelar edición
@@ -335,74 +335,74 @@ export default function ItemsCrud() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Título
               <input
                 value={form.title}
                 onChange={(event) => handleChange('title', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
                 required
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Slug (auto)
               <input
                 value={form.slug}
                 readOnly
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                className="input"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Precio
               <input
                 type="number"
                 value={form.price}
                 onChange={(event) => handleChange('price', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
                 required
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Moneda
               <input
                 value={form.currency}
                 onChange={(event) => handleChange('currency', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Categoría
               <input
                 value={form.category}
                 onChange={(event) => handleChange('category', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
                 required
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Stock
               <input
                 type="number"
                 value={form.stock}
                 onChange={(event) => handleChange('stock', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Imágenes (solo JPG/JPEG)
               <input
                 type="file"
                 accept=".jpg,.jpeg,image/jpeg"
                 multiple
                 onChange={(event) => handleImageUpload(event.target.files)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
             {uploadError && (
-              <p className="text-xs text-red-600">{uploadError}</p>
+              <p className="text-xs text-danger">{uploadError}</p>
             )}
             {uploadedImages.length > 0 && (
               <div className="flex flex-wrap gap-3">
@@ -411,83 +411,83 @@ export default function ItemsCrud() {
                     key={`${src}-${index}`}
                     src={src}
                     alt="Preview"
-                    className="h-20 w-20 rounded-lg border border-slate-200 object-cover"
+                    className="h-20 w-20  border border-line object-cover"
                   />
                 ))}
               </div>
             )}
           </div>
 
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-fg-soft">
             Descripción corta
             <input
               value={form.shortDescription}
               onChange={(event) => handleChange('shortDescription', event.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="input mt-2 !min-h-10 text-sm"
             />
           </label>
 
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-fg-soft">
             Descripción
             <textarea
               value={form.description}
               onChange={(event) => handleChange('description', event.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="input mt-2 !min-h-10 text-sm"
               rows={3}
             />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Imágenes (URLs separadas por coma, opcional)
               <input
                 value={form.images}
                 onChange={(event) => handleChange('images', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Tags (separados por coma)
               <input
                 value={form.tags}
                 onChange={(event) => handleChange('tags', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Precio original
               <input
                 type="number"
                 value={form.originalPrice}
                 onChange={(event) => handleChange('originalPrice', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Descuento (%)
               <input
                 type="number"
                 value={form.discount}
                 onChange={(event) => handleChange('discount', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-fg-soft">
               Cuotas
               <input
                 type="number"
                 value={form.installments}
                 onChange={(event) => handleChange('installments', event.target.value)}
-                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="input mt-2 !min-h-10 text-sm"
               />
             </label>
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-fg-soft">
               <input
                 type="checkbox"
                 checked={form.freeShipping}
@@ -495,7 +495,7 @@ export default function ItemsCrud() {
               />
               Envío gratis
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-fg-soft">
               <input
                 type="checkbox"
                 checked={form.isOfferOfTheDay}
@@ -506,7 +506,7 @@ export default function ItemsCrud() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">
               {error}
             </p>
           )}
@@ -514,7 +514,7 @@ export default function ItemsCrud() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-xl bg-green-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn btn-primary btn-block"
           >
             {saving ? 'Guardando...' : mode === 'create' ? 'Crear item' : 'Guardar cambios'}
           </button>
