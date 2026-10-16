@@ -1,5 +1,7 @@
 "use client"
 
+import { formatPrice, applyDiscount } from '@/lib/money'
+
 import { Heart, ShoppingCart, Check } from "lucide-react"
 import { SafeImage } from "../others/SafeImage"
 import { useCart } from "@/context/CartContext"
@@ -25,6 +27,9 @@ const ItemCard = ({
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item: any) => item.id === id)
   const isOutOfStock = (stock ?? 0) <= 0
+  // price es el precio de lista: el cobro aplica el descuento (mismo cálculo que el servidor)
+  const finalPrice = applyDiscount(price, discount)
+  const previousPrice = discount ? price : originalPrice
 
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
   const isFav = isFavorite(id, "item")
@@ -116,7 +121,7 @@ const ItemCard = ({
         {/* Precio principal */}
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-extrabold text-slate-900">
-            {currency} {price.toLocaleString()}
+            {formatPrice(finalPrice, currency)}
           </span>
           {discount && discount >  0 ? (
             <span className="text-emerald-600 text-sm font-semibold">
@@ -126,9 +131,9 @@ const ItemCard = ({
         </div>
 
         {/* Precio original y cuotas */}
-        {originalPrice && originalPrice > price && (
+        {previousPrice && previousPrice > finalPrice && (
           <span className="text-sm text-gray-400 line-through">
-            {currency} {originalPrice.toLocaleString()}
+            {formatPrice(previousPrice, currency)}
           </span>
         )}
 

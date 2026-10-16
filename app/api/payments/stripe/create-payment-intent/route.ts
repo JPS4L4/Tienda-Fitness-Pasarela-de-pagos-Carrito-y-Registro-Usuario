@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { prepareCheckout, cancelPendingOrder } from '@/lib/orders/checkout';
 import { CheckoutError } from '@/lib/orders/pricing';
 import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';
-import { toMinorUnits } from '@/lib/orders/fulfillment';
+import { toMinorUnits } from '@/lib/money';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     orderId = checkout.orderId;
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: toMinorUnits(checkout.total), // Stripe usa centavos
+      amount: toMinorUnits(checkout.total), // COP en Stripe: pesos x 100
       currency: CURRENCY.toLowerCase(),
       metadata: {
         type: checkout.type,

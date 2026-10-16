@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/money'
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -104,7 +105,7 @@ export default async function PlansPage() {
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                   <p className="text-xs text-slate-500">Monto</p>
                   <p className="text-sm font-semibold text-slate-700">
-                    ${plan.price.toLocaleString('es-CO')}
+                    {formatPrice(plan.price)}
                   </p>
                 </div>
               </div>

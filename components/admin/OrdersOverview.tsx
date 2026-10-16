@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPrice } from '@/lib/money'
+
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -93,7 +95,7 @@ export default function OrdersOverview() {
                     </td>
                     <td className="py-3 text-slate-700">{order.status}</td>
                     <td className="py-3 text-slate-700">
-                      ${order.totalAmount.toLocaleString('es-CO')}
+                      {formatPrice(order.totalAmount)}
                     </td>
                     <td className="py-3 text-slate-700">
                       <p>{order.paymentMethod || '—'}</p>

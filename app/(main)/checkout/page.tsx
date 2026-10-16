@@ -1,5 +1,7 @@
 'use client';
 
+import { applyDiscount } from '@/lib/money'
+
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -208,19 +210,17 @@ const CheckoutForm = ({
   const totalAmount = useMemo(() => {
     if (type === 'cart') {
       return cartItems.reduce((sum, item) => {
-        const itemPrice = item.discount
-          ? Math.round(item.price * (1 - item.discount / 100))
-          : item.price;
+        const itemPrice = applyDiscount(item.price, item.discount);
         return sum + itemPrice * item.quantity;
       }, 0);
     }
     if (!plan) return 0;
     // Mismo cálculo que el servidor (que es quien fija el monto real a cobrar)
-    return plan.discount ? Math.round(plan.price * (1 - plan.discount / 100)) : plan.price;
+    return applyDiscount(plan.price, plan.discount);
   }, [type, cartItems, plan]);
 
   // Variable para moneda
-  const currency = '$';
+  const currency = 'COP';
 
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShippingInfo({

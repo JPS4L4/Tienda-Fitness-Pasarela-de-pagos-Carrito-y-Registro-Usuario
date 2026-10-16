@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPrice, applyDiscount } from "@/lib/money";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ItemCard from "@/components/cards/ItemCard";
@@ -58,8 +59,8 @@ function StorePageContent() {
       result = result.filter(p => p.category === selectedCategory);
     }
 
-    if (minPrice !== null) result = result.filter(p => p.price >= minPrice);
-    if (maxPrice !== null) result = result.filter(p => p.price <= maxPrice);
+    if (minPrice !== null) result = result.filter(p => applyDiscount(p.price, p.discount) >= minPrice);
+    if (maxPrice !== null) result = result.filter(p => applyDiscount(p.price, p.discount) <= maxPrice);
 
     if (freeShippingOnly) {
       result = result.filter(p => p.freeShipping);
@@ -72,10 +73,10 @@ function StorePageContent() {
 
     switch (sortBy) {
       case "price-asc":
-        result.sort((a, b) => a.price - b.price);
+        result.sort((a, b) => applyDiscount(a.price, a.discount) - applyDiscount(b.price, b.discount));
         break;
       case "price-desc":
-        result.sort((a, b) => b.price - a.price);
+        result.sort((a, b) => applyDiscount(b.price, b.discount) - applyDiscount(a.price, a.discount));
         break;
       default:
         result.sort((a, b) => {
@@ -395,7 +396,7 @@ function FiltersPanel({
             placeholder="Mín" 
             value={minPrice || ""}
             onChange={(e) => onMinPriceChange(e.target.value ? parseFloat(e.target.value) : null)}
-            className="w-20 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
+            className="w-24 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
           />
           <span className="text-gray-400">-</span>
           <input 
@@ -403,11 +404,11 @@ function FiltersPanel({
             placeholder="Máx" 
             value={maxPrice || ""}
             onChange={(e) => onMaxPriceChange(e.target.value ? parseFloat(e.target.value) : null)}
-            className="w-20 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
+            className="w-24 p-2 text-sm text-gray-700 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
           />
         </div>
         <div className="text-xs text-gray-500 mt-2">
-          ${minPrice || 0} - ${maxPrice || "∞"}
+          {formatPrice(minPrice || 0)} - {maxPrice ? formatPrice(maxPrice) : "∞"}
         </div>
       </div>
 

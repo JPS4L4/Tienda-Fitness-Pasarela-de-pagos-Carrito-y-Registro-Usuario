@@ -23,9 +23,6 @@ export class StockError extends Error {
   }
 }
 
-/** Monto en la unidad menor que usa Stripe (x100), para comparar con el PaymentIntent. */
-export const toMinorUnits = (amount: number) => Math.round(amount * 100)
-
 export async function fulfillOrder(
   orderId: number,
   payment: { method: PaymentMethod; paymentId: string }

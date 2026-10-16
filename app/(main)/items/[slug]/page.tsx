@@ -1,3 +1,4 @@
+import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { CreditCard, Star, Truck, Package, Tag } from 'lucide-react';
 import { SafeImage } from '@/components/others/SafeImage';
@@ -17,9 +18,9 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
     notFound();
   }
 
-  const precioFinal = item.discount
-    ? Math.round(item.price * (1 - item.discount / 100))
-    : item.price;
+  const precioFinal = applyDiscount(item.price, item.discount);
+  // Con descuento, el precio de lista tachado es item.price; sin descuento, el precio original (si existe)
+  const precioAnterior = item.discount ? item.price : item.originalPrice;
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
@@ -120,12 +121,12 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
             {/* Precio */}
             <div className="flex flex-wrap items-baseline gap-4">
               <p className="text-5xl md:text-6xl font-black text-emerald-600 tracking-tight">
-                ${precioFinal.toLocaleString('es-CO')}
+                {formatPrice(precioFinal, item.currency)}
               </p>
 
-              {item.originalPrice && item.originalPrice > precioFinal && (
+              {precioAnterior && precioAnterior > precioFinal && (
                 <p className="text-3xl text-gray-400 line-through">
-                  ${item.originalPrice.toLocaleString('es-CO')}
+                  {formatPrice(precioAnterior, item.currency)}
                 </p>
               )}
 

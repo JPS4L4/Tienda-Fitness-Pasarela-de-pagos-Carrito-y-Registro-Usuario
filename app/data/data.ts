@@ -26,7 +26,7 @@ export interface Plan {
   type: PlanType; // <-- Esto es lo que causaba el error
   title: string;
   coverage: string[];
-  price?: string;
+  price?: number; // COP
   slug?: string;
 }
 
@@ -45,7 +45,7 @@ export const db: Database = {
     id: 1,
     type: "nutricion",
     title: "Plan Nutricional Básico",
-    price: "Desde $49",
+    price: 48900,
     coverage: [
       "Evaluación nutricional inicial",
       "Plan alimenticio personalizado (4 semanas)",
@@ -57,7 +57,7 @@ export const db: Database = {
     id: 2,
     type: "nutricion",
     title: "Plan Nutricional Avanzado",
-    price: "Desde $89",
+    price: 88900,
     coverage: [
       "Evaluación nutricional avanzada",
       "Plan alimenticio personalizado (8 semanas)",
@@ -70,7 +70,7 @@ export const db: Database = {
     id: 3,
     type: "entrenamiento",
     title: "Plan de Entrenamiento Home Gym",
-    price: "Desde $59",
+    price: 58900,
     coverage: [
       "Rutina personalizada según objetivos",
       "Variantes para nivel principiante/intermedio",
@@ -82,7 +82,7 @@ export const db: Database = {
     id: 4,
     type: "entrenamiento",
     title: "Plan de Fuerza y Rendimiento",
-    price: "Desde $99",
+    price: 98900,
     coverage: [
       "Evaluación de fuerza inicial",
       "Programa de 12 semanas",
@@ -95,7 +95,7 @@ export const db: Database = {
     id: 5,
     type: "nutricion",
     title: "Plan de Perdida de Grasa",
-    price: "Desde $79",
+    price: 78900,
     coverage: [
       "Déficit calórico personalizado",
       "Plan alimenticio y recetas",
@@ -108,9 +108,9 @@ export const db: Database = {
          {
       id:1,
       title: "Kit de Pesas Ajustables 20kg - Entrenamiento en Casa",
-      price: 129.99,
+      price: 129900,
       category: "Deportes",
-      originalPrice: 159.99,
+      originalPrice: 159900,
       discount: 19,
       installments: 12,
       isOfferOfTheDay: true,
@@ -119,7 +119,7 @@ export const db: Database = {
     {
       id:2,
       title: "Smartwatch Series 9 - Pantalla Retina",
-      price: 399.00,
+      price: 398900,
       category: "Tecnología",
       installments: 6,
       image: "https://images.unsplash.com/photo-1546868871-70c122469d8b?q=80&w=500",
@@ -127,9 +127,9 @@ export const db: Database = {
     {
        id:3,
       title: "Auriculares Noise Cancelling Bluetooth",
-      price: 85.50,
+      price: 85900,
       category: "Audio",
-      originalPrice: 110.00,
+      originalPrice: 109900,
       discount: 22,
       freeShipping: true,
       image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=500",
@@ -137,7 +137,7 @@ export const db: Database = {
     {
        id:4,
       title: "Cafetera Espresso Automática",
-      price: 150.00,
+      price: 149900,
       category: "Hogar",
       isOfferOfTheDay: false,
       installments: 3,
@@ -146,18 +146,18 @@ export const db: Database = {
     {
       id:5,
       title: "Banda Elástica de Resistencia Premium",
-      price: 45.99,
+      price: 45900,
       category: "Deportes",
-      originalPrice: 65.00,
+      originalPrice: 64900,
       discount: 29,
       image: "https://images.unsplash.com/photo-1587280191167-51db060d93c6?q=80&w=500",
     },
     {
       id:6,
       title: "Mouse Inalámbrico Ergonómico",
-      price: 55.00,
+      price: 54900,
       category: "Tecnología",
-      originalPrice: 75.00,
+      originalPrice: 74900,
       discount: 27,
       freeShipping: true,
       image: "https://images.unsplash.com/photo-1527814050087-3793815479db?q=80&w=500",
@@ -165,7 +165,7 @@ export const db: Database = {
     {
       id:7,
       title: "Altavoz Portátil Bluetooth Resistente Agua",
-      price: 95.00,
+      price: 94900,
       category: "Audio",
       installments: 3,
       image: "https://images.unsplash.com/photo-1589003077984-894e133da19d?q=80&w=500",
@@ -173,25 +173,25 @@ export const db: Database = {
     {
       id:8,
       title: "Lámpara LED Inteligente RGB",
-      price: 72.50,
+      price: 72900,
       category: "Hogar",
-      originalPrice: 99.99,
+      originalPrice: 99900,
       discount: 27,
       image: "https://images.unsplash.com/photo-1565193566173-7ceb50291aa9?q=80&w=500",
     },
     {
       id:9,
       title: "Colchoneta de Yoga Extra Gruesa",
-      price: 59.99,
+      price: 59900,
       category: "Deportes",
       image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=500",
     },
     {
       id:10,
       title: "Teclado Mecánico Gaming RGB",
-      price: 189.99,
+      price: 189900,
       category: "Tecnología",
-      originalPrice: 249.99,
+      originalPrice: 249900,
       discount: 24,
       installments: 6,
       image: "https://images.unsplash.com/photo-1587829191301-dc798b83add3?q=80&w=500",

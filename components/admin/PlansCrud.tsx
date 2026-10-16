@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useMemo, useState } from 'react'
 
 type PlanFormState = {
@@ -250,7 +252,7 @@ export default function PlansCrud() {
                       </td>
                       <td className="py-3 text-slate-700">{plan.type}</td>
                       <td className="py-3 text-slate-700">
-                        {plan.currency} {plan.price.toLocaleString('es-CO')}
+                        {formatPrice(plan.price, plan.currency)}
                       </td>
                       <td className="py-3">
                         <div className="flex flex-wrap gap-2">

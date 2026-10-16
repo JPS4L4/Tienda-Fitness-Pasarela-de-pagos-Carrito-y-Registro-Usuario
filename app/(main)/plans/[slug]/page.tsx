@@ -1,3 +1,4 @@
+import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag, Heart } from 'lucide-react';
 import { getPlanBySlug } from '@/app/src/lib/plans';
@@ -60,9 +61,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   // Seleccionamos los estilos según el tipo
   const style = planStyles[plan.type as keyof typeof planStyles] || planStyles.nutricion;
 
-  const precioFinal = plan.discount && plan.discount > 0
-    ? Math.round(plan.price * (1 - plan.discount / 100))
-    : plan.price;
+  const precioFinal = applyDiscount(plan.price, plan.discount);
 
   return (
     <div className="min-h-screen bg-white">
@@ -153,14 +152,14 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
               {/* Precio */}
               <div className="flex items-baseline gap-4">
                 <p className={`text-4xl md:text-5xl font-black ${style.accent} tracking-tight`}>
-                  ${precioFinal.toLocaleString('es-CO')}
+                  {formatPrice(precioFinal, plan.currency)}
                   <span className="text-xl font-medium text-gray-500 ml-2">
                     {plan.currency}
                   </span>
                 </p>
                 {plan.discount && plan.discount > 0 && (
                   <p className="text-2xl text-gray-500 line-through">
-                    ${plan.price.toLocaleString('es-CO')}
+                    {formatPrice(plan.price, plan.currency)}
                   </p>
                 )}
               </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { formatPrice } from '@/lib/money'
+
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -178,7 +180,7 @@ function SuccessContent() {
                         {item.quantity ? ` x${item.quantity}` : ''}
                       </div>
                       <div className="font-semibold text-slate-700">
-                        ${((item.unit_price ?? item.price) || 0).toLocaleString('es-CO')}
+                        {formatPrice((item.unit_price ?? item.price) || 0)}
                       </div>
                     </li>
                   ))}
@@ -189,7 +191,7 @@ function SuccessContent() {
               <div className="flex items-center justify-between border-t border-slate-200 mt-4 pt-4">
                 <span className="text-sm font-semibold text-slate-700">Total</span>
                 <span className="text-base font-bold text-slate-900">
-                  ${order.totalAmount.toLocaleString('es-CO')}
+                  {formatPrice(order.totalAmount)}
                 </span>
               </div>
             </div>

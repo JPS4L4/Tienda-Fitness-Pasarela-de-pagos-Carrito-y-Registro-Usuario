@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useMemo, useState } from 'react'
 
 type ItemFormState = {
@@ -280,7 +282,7 @@ export default function ItemsCrud() {
                         <p className="text-xs text-slate-500">{item.slug}</p>
                       </td>
                       <td className="py-3 text-slate-700">
-                        {item.currency} {item.price.toLocaleString('es-CO')}
+                        {formatPrice(item.price, item.currency)}
                       </td>
                       <td className="py-3 text-slate-700">{item.stock}</td>
                       <td className="py-3">

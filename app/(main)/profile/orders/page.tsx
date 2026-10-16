@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/money'
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -144,7 +145,7 @@ export default async function OrdersPage({
                             {item.quantity ? ` x${item.quantity}` : ''}
                           </div>
                           <div className="font-semibold text-slate-700">
-                            ${((item.unit_price ?? item.price) || 0).toLocaleString('es-CO')}
+                            {formatPrice((item.unit_price ?? item.price) || 0)}
                           </div>
                         </li>
                       ))}
@@ -155,7 +156,7 @@ export default async function OrdersPage({
                   <div className="flex items-center justify-between border-t border-slate-200 mt-4 pt-4">
                     <span className="text-sm font-semibold text-slate-700">Total</span>
                     <span className="text-base font-bold text-slate-900">
-                      ${order.totalAmount.toLocaleString('es-CO')}
+                      {formatPrice(order.totalAmount)}
                     </span>
                   </div>
                 </div>

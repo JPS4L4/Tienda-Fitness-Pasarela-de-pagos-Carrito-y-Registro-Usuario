@@ -1,5 +1,7 @@
 "use client"
 
+import { formatPrice, applyDiscount } from '@/lib/money'
+
 import { Check, Apple, Dumbbell, ArrowRight, Heart } from "lucide-react"
 import Link from "next/link"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
@@ -73,9 +75,7 @@ export const PlanCard = ({ plan }: { plan: any }) => {
   const style = typeStyles[plan.type as keyof typeof typeStyles] || typeStyles.nutricion
 
 
-  const actualPrice = plan.discount && plan.discount > 0
-    ? `$${Math.round(plan.price * (1 - plan.discount / 100)).toLocaleString()}`
-    : `$${plan.price.toLocaleString()}`
+  const actualPrice = formatPrice(applyDiscount(plan.price, plan.discount), plan.currency)
 
   return (
     <div className={cn(
@@ -114,7 +114,6 @@ export const PlanCard = ({ plan }: { plan: any }) => {
           <span className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
             {actualPrice}
           </span>
-          <span className="text-md font-light text-gray-600">{plan.currency}</span>
           <span className="text-slate-500 text-lg font-light">/ total</span>
           
         </div>
@@ -124,7 +123,7 @@ export const PlanCard = ({ plan }: { plan: any }) => {
               <span className="text-gray-500 text-sm font-medium">
                 Antes 
               <span className="text-gray-500 text-lg line-through mx-2">
-                ${plan.price.toLocaleString()}
+                {formatPrice(plan.price, plan.currency)}
               </span>
               </span>
             ) : null

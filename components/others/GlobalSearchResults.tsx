@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { db } from "@/app/data/data";
@@ -97,7 +99,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
               {result.price && (
                 <span className="text-sm font-bold text-orange-600 ml-2 whitespace-nowrap">
                   {typeof result.price === "number"
-                    ? `$${result.price}`
+                    ? formatPrice(result.price)
                     : result.price}
                 </span>
               )}

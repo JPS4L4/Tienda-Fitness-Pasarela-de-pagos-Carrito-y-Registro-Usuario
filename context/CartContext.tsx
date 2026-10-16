@@ -1,5 +1,6 @@
 "use client";
 
+import { applyDiscount } from "@/lib/money";
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { ItemUI } from "@/app/src/types/item";
@@ -180,9 +181,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getTotalPrice = useCallback(() => {
     return cart.reduce((total, item) => {
-      const price = item.discount 
-        ? Math.round(item.price * (1 - item.discount / 100))
-        : item.price;
+      const price = applyDiscount(item.price, item.discount);
       return total + price * item.quantity;
     }, 0);
   }, [cart]);

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useState } from "react";
 import { Plan } from "@/app/data/data";
 
@@ -68,7 +70,7 @@ export default function PlanSearchAutocomplete({
               </div>
               {plan.price && (
                 <span className="text-xs font-semibold text-blue-600 ml-2 flex-shrink-0">
-                  ${plan.price.toLocaleString()}
+                  Desde {formatPrice(plan.price)}
                 </span>
               )}
             </button>

@@ -1,6 +1,7 @@
 // lib/orders/pricing.ts
 // Los precios SIEMPRE se calculan aquí desde la BD; nunca se confía en montos del cliente.
 import { prisma } from '@/lib/prisma'
+import { applyDiscount } from '@/lib/money'
 
 export class CheckoutError extends Error {
   status: number
@@ -21,9 +22,7 @@ export type PricedLine = {
   discount: number | null
 }
 
-/** Mismo cálculo que muestra el checkout: descuento porcentual redondeado. */
-export const applyDiscount = (price: number, discount?: number | null) =>
-  discount ? Math.round(price * (1 - discount / 100)) : price
+export { applyDiscount }
 
 const MAX_QUANTITY = 99
 

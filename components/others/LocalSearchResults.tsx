@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ItemProps } from "@/app/data/data";
@@ -78,7 +80,7 @@ export default function LocalSearchResults({
                 </p>
               </div>
               <span className="text-sm font-bold text-orange-600 whitespace-nowrap">
-                ${item.price}
+                {formatPrice(item.price)}
               </span>
             </div>
           </button>

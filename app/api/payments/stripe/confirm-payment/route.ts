@@ -3,7 +3,8 @@ import Stripe from 'stripe';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { CURRENCY, ORDER_STATUS, PAYMENT_METHOD } from '@/lib/orders/constants';
-import { StockError, fulfillOrder, toMinorUnits } from '@/lib/orders/fulfillment';
+import { StockError, fulfillOrder } from '@/lib/orders/fulfillment';
+import { toMinorUnits } from '@/lib/money';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret

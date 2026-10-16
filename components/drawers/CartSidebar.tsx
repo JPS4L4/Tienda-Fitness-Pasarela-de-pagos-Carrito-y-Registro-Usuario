@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice, applyDiscount } from '@/lib/money'
+
 import { useCart } from "@/context/CartContext";
 import { X, Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import { SafeImage } from "../others/SafeImage";
@@ -45,9 +47,7 @@ export default function CartSidebar() {
             </div>
           ) : (
             cart.map((item) => {
-              const itemPrice = item.discount
-                ? Math.round(item.price * (1 - item.discount / 100))
-                : item.price;
+              const itemPrice = applyDiscount(item.price, item.discount);
               const subtotal = itemPrice * item.quantity;
 
               return (
@@ -73,7 +73,7 @@ export default function CartSidebar() {
                       </h3>
                       <p className="text-sm text-gray-600">{item.category}</p>
                       <p className="text-lg font-bold text-green-600 mt-2">
-                        ${itemPrice}
+                        {formatPrice(itemPrice)}
                       </p>
                     </div>
                   </div>
@@ -102,7 +102,7 @@ export default function CartSidebar() {
                       </button>
                     </div>
                     <p className="text-sm font-semibold text-gray-700">
-                      Subtotal: ${subtotal}
+                      Subtotal: {formatPrice(subtotal)}
                     </p>
                   </div>
 
@@ -125,7 +125,7 @@ export default function CartSidebar() {
           <div className="border-t border-gray-200 p-6 space-y-4 bg-gray-50">
             <div className="flex items-center justify-between text-lg font-bold">
               <span>Total:</span>
-              <span className="text-2xl text-green-600">${totalPrice}</span>
+              <span className="text-2xl text-green-600">{formatPrice(totalPrice)}</span>
             </div>
             <Link
               href="/checkout?type=cart"

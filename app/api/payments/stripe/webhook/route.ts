@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';
-import { StockError, fulfillOrder, toMinorUnits } from '@/lib/orders/fulfillment';
+import { StockError, fulfillOrder } from '@/lib/orders/fulfillment';
+import { toMinorUnits } from '@/lib/money';
 
 // El webhook solo está activo si existen STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET.
 // Sin ellos responde 503 y no procesa nada (la confirmación directa sigue funcionando).

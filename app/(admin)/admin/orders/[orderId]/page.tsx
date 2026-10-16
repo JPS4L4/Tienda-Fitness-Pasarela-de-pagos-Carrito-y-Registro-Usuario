@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/money'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/requireAdmin'
@@ -70,7 +71,7 @@ export default async function AdminOrderDetailPage({
             </div>
             <div className="flex justify-between">
               <dt>Total</dt>
-              <dd className="font-semibold">${Number(order.totalAmount).toLocaleString('es-CO')}</dd>
+              <dd className="font-semibold">{formatPrice(Number(order.totalAmount))}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Método de pago</dt>

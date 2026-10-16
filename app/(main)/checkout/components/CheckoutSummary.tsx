@@ -1,5 +1,7 @@
 'use client';
 
+import { formatPrice, applyDiscount } from '@/lib/money'
+
 import { Check, Trash2 } from 'lucide-react';
 
 interface CartItem {
@@ -61,9 +63,7 @@ export default function CheckoutSummary({
                 <>
                   <div className="space-y-4">
                     {cartItems.map((item) => {
-                      const itemPrice = item.discount
-                        ? Math.round(item.price * (1 - item.discount / 100))
-                        : item.price;
+                      const itemPrice = applyDiscount(item.price, item.discount);
                       const subtotal = itemPrice * item.quantity;
 
                       return (
@@ -90,7 +90,7 @@ export default function CheckoutSummary({
                               )}
                             </div>
                             <p className="text-xl font-bold text-indigo-600">
-                              ${subtotal.toLocaleString()}
+                              {formatPrice(subtotal)}
                             </p>
                           </div>
                           {/* Botón eliminar */}
@@ -109,7 +109,7 @@ export default function CheckoutSummary({
                   <div className="pt-6 mt-6 border-t-2 border-slate-200">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-slate-600 font-medium">Subtotal</span>
-                      <span className="text-slate-900 font-semibold">${calculateTotal().toLocaleString()}</span>
+                      <span className="text-slate-900 font-semibold">{formatPrice(calculateTotal())}</span>
                     </div>
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
                       <span className="text-slate-600 font-medium">Envío</span>
@@ -117,7 +117,7 @@ export default function CheckoutSummary({
                     </div>
                     <div className="flex justify-between items-center bg-linear-to-r from-indigo-600 to-blue-600 p-4 rounded-2xl">
                       <span className="text-white text-xl font-bold">Total</span>
-                      <span className="text-white text-3xl font-black">${calculateTotal().toLocaleString()}</span>
+                      <span className="text-white text-3xl font-black">{formatPrice(calculateTotal())}</span>
                     </div>
                   </div>
                 </>
@@ -152,7 +152,7 @@ export default function CheckoutSummary({
                   <div>
                     <p className="text-indigo-100 text-sm font-medium mb-1">Total a pagar</p>
                     <span className="text-white text-4xl font-black">
-                      ${calculateTotal().toLocaleString()}
+                      {formatPrice(calculateTotal())}
                     </span>
                   </div>
                   <div className="text-white/80">

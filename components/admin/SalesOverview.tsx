@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPrice } from '@/lib/money'
+
 import { useEffect, useState } from 'react'
 
 type SalesEntry = {
@@ -74,7 +76,7 @@ export default function SalesOverview() {
               <div className="rounded-xl border border-slate-200 p-4">
                 <p className="text-sm text-slate-500">Ingresos totales</p>
                 <p className="mt-1 text-2xl font-semibold text-slate-900">
-                  ${data.totals.totalRevenue.toLocaleString('es-CO')}
+                  {formatPrice(data.totals.totalRevenue)}
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 p-4">
@@ -117,7 +119,7 @@ export default function SalesOverview() {
                       <li key={item.id} className="rounded-lg border border-slate-100 p-3">
                         <p className="font-medium text-slate-900">{item.title || `Item #${item.id}`}</p>
                         <p className="text-xs text-slate-500">Cantidad: {item.quantity}</p>
-                        <p className="text-xs text-slate-500">Revenue: ${item.revenue.toLocaleString('es-CO')}</p>
+                        <p className="text-xs text-slate-500">Revenue: {formatPrice(item.revenue)}</p>
                       </li>
                     ))}
                   </ul>
@@ -134,7 +136,7 @@ export default function SalesOverview() {
                       <li key={plan.id} className="rounded-lg border border-slate-100 p-3">
                         <p className="font-medium text-slate-900">{plan.title || `Plan #${plan.id}`}</p>
                         <p className="text-xs text-slate-500">Cantidad: {plan.quantity}</p>
-                        <p className="text-xs text-slate-500">Revenue: ${plan.revenue.toLocaleString('es-CO')}</p>
+                        <p className="text-xs text-slate-500">Revenue: {formatPrice(plan.revenue)}</p>
                       </li>
                     ))}
                   </ul>
@@ -157,7 +159,7 @@ export default function SalesOverview() {
                           </a>
                         </p>
                         <p className="text-xs text-slate-500">Email: {order.customerEmail || '—'}</p>
-                        <p className="text-xs text-slate-500">Total: ${order.totalAmount.toLocaleString('es-CO')}</p>
+                        <p className="text-xs text-slate-500">Total: {formatPrice(order.totalAmount)}</p>
                         <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleString('es-CO')}</p>
                       </li>
                     ))}
@@ -179,7 +181,7 @@ export default function SalesOverview() {
                           </a>
                         </p>
                         <p className="text-xs text-slate-500">Email: {order.customerEmail || '—'}</p>
-                        <p className="text-xs text-slate-500">Total: ${order.totalAmount.toLocaleString('es-CO')}</p>
+                        <p className="text-xs text-slate-500">Total: {formatPrice(order.totalAmount)}</p>
                         <p className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleString('es-CO')}</p>
                       </li>
                     ))}
