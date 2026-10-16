@@ -1,0 +1,23 @@
+name: tienda-fitness
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tienda-fitness-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tienda
+      POSTGRES_PASSWORD: tienda_local
+      POSTGRES_DB: tienda_fitness
+    ports:
+      - "55434:5432"
+    volumes:
+      - tienda_fitness_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tienda -d tienda_fitness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tienda_fitness_pgdata:
