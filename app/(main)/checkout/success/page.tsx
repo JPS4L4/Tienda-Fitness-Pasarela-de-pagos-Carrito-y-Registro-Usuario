@@ -34,7 +34,8 @@ type OrderData = {
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId');
+  // MercadoPago devuelve external_reference = id de nuestra orden
+  const orderId = searchParams.get('orderId') || searchParams.get('external_reference');
   const paymentId =
     searchParams.get('payment_id') ||
     searchParams.get('paymentId') ||

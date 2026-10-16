@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { ORDER_STATUS } from "@/lib/orders/constants";
 
 export async function GET(request: Request) {
   try {
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
     const orders = await prisma.order.findMany({
       where: {
         userId,
-        status: "COMPLETED",
+        status: ORDER_STATUS.COMPLETED,
       },
       select: { items: true, planId: true },
     });

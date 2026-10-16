@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { toCommentsUIList } from '@/app/src/adapters/commentsAdapter';
 import { auth } from '@/lib/auth';
 import { validateRegisterForm } from '@/lib/validation';
+import { ORDER_STATUS } from '@/lib/orders/constants';
 
 /**
  * GET /api/comments
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
       const orders = await prisma.order.findMany({
         where: {
           userId,
-          status: 'COMPLETED',
+          status: ORDER_STATUS.COMPLETED,
         },
         select: { items: true },
       });
@@ -157,7 +158,7 @@ export async function POST(request: Request) {
       const orders = await prisma.order.findMany({
         where: {
           userId,
-          status: 'COMPLETED',
+          status: ORDER_STATUS.COMPLETED,
         },
         select: { items: true, planId: true },
       });

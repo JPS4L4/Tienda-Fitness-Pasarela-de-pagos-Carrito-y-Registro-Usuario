@@ -89,7 +89,7 @@ export default function SalesOverview() {
               <div className="rounded-xl border border-slate-200 p-4">
                 <p className="text-sm text-slate-500">Pendientes</p>
                 <p className="mt-1 text-xl font-semibold text-slate-900">
-                  {data.statusCounts?.PENDING || data.statusCounts?.pending || 0}
+                  {data.statusCounts?.PENDING || 0}
                 </p>
               </div>
               <div className="rounded-xl border border-slate-200 p-4">

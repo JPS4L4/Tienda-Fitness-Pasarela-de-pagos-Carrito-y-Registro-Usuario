@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { ORDER_STATUS } from '@/lib/orders/constants'
 
 type OrderItem = {
   productId?: number
@@ -29,7 +30,7 @@ export async function GET() {
     }, {})
 
     const orders = await prisma.order.findMany({
-      where: { status: { in: ['COMPLETED', 'paid', 'PAID'] } },
+      where: { status: ORDER_STATUS.COMPLETED },
       select: {
         id: true,
         totalAmount: true,
@@ -42,7 +43,7 @@ export async function GET() {
     })
 
     const pendingOrders = await prisma.order.findMany({
-      where: { status: { in: ['PENDING', 'pending'] } },
+      where: { status: ORDER_STATUS.PENDING },
       orderBy: { createdAt: 'desc' },
       take: 20,
       select: {
