@@ -4,7 +4,7 @@
 
 Tienda en línea de fitness: catálogo de equipamiento, planes de nutrición y entrenamiento por suscripción, carrito, registro de usuarios, pagos con **Stripe** y **Mercado Pago** y un panel de administración. Está pensada como proyecto completo de punta a punta, con foco en la corrección de los pagos y la seguridad.
 
-> **Demo en vivo:** _pendiente de publicar_ (`https://TU-DOMINIO.vercel.app`). Funciona en modo prueba: no se cobra nada.
+> **Demo en vivo:** [tienda-fitness-pasarela-de-pagos-ca.vercel.app](https://tienda-fitness-pasarela-de-pagos-ca.vercel.app). Funciona en modo prueba: no se cobra nada.
 
 ## Capturas
 
