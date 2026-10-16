@@ -44,7 +44,6 @@ export const SafeImage = ({
         className={`transition-transform duration-700 ${className} ${loading ? 'opacity-0' : 'opacity-100'}`}
         onLoadingComplete={() => setLoading(false)}
         onError={() => {
-          console.log('Error cargando imagen:', src)
           setError(true)
         }}
        

@@ -91,7 +91,6 @@ export default function UserPage() {
       }
     } else {
       // Registro
-      console.log("📝 Iniciando registro con datos:", { name: userName, email });
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -105,9 +104,7 @@ export default function UserPage() {
         }),
       })
 
-      console.log("📝 Respuesta del servidor:", res.status, res.statusText);
       const data = await res.json()
-      console.log("📝 Datos de respuesta:", data);
 
       // Manejar rate limiting del servidor
       if (res.status === 429) {

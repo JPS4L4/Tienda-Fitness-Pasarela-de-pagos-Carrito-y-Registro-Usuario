@@ -4,6 +4,5 @@
  * /api/auth/* es automáticamente manejado por NextAuth
  */
 
-console.log("🔐 NextAuth route.ts being imported");
 
 export { GET, POST } from "@/lib/nextAuth";

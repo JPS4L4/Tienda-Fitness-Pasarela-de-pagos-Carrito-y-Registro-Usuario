@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/nextAuth';
 import { prepareCheckout, cancelPendingOrder } from '@/lib/orders/checkout';
 import { CheckoutError } from '@/lib/orders/pricing';
 import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';

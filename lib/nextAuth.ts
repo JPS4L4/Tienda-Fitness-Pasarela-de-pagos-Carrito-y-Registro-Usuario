@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { validateCredentials, registerOAuthUser } from "@/lib/authService"
+import { validateCredentials, registerOAuthUser } from "@/app/api/auth/services/prismaAuthService"
 import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
 import { isAdminEmail } from "@/lib/adminAuth"
@@ -48,7 +48,6 @@ const providers = [
         // Validar formato y detectar ataques
         const validation = validateLoginForm(normalizedIdentifier, sanitizedPassword);
         if (!validation.valid) {
-          console.log("❌ Validación fallida en login:", validation.error);
           return null;
         }
 
@@ -138,7 +137,6 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }: any) {
       // Para OAuth (Google, Facebook), crear o actualizar usuario en BD
       if (account?.provider === "google" || account?.provider === "facebook") {
-        console.log(`[${account.provider}] Login:`, user.email);
         
         if (!user.email) {
           console.error(`❌ No email provided by ${account.provider}`);
@@ -169,7 +167,6 @@ export const authOptions: NextAuthOptions = {
             user.id = result.user.id.toString();
           }
 
-          console.log(`✅ OAuth user processed successfully`);
         } catch (error) {
           console.error(`❌ Exception in signIn callback:`, error);
           return false;
@@ -197,6 +194,6 @@ const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
 
 // Para usar auth() en servidor/middleware
-export function auth(req?: any, res?: any) {
+export function auth() {
   return getServerSession(authOptions)
 }

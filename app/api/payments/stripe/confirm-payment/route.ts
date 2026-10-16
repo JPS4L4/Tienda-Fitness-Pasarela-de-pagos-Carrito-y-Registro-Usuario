@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
 import { CURRENCY, ORDER_STATUS, PAYMENT_METHOD } from '@/lib/orders/constants';
 import { StockError, fulfillOrder } from '@/lib/orders/fulfillment';

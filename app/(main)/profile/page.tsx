@@ -1,5 +1,5 @@
 // app/(main)/profile/page.tsx
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/nextAuth"
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
 import { LogoutButton } from "@/components/buttons/LogoutButton"

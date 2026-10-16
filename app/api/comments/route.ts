@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { toCommentsUIList } from '@/app/src/adapters/commentsAdapter';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/nextAuth';
 import { validateRegisterForm } from '@/lib/validation';
 import { ORDER_STATUS } from '@/lib/orders/constants';
 

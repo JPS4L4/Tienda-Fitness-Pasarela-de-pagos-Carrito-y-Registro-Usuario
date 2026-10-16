@@ -2,7 +2,7 @@ import { formatPrice } from '@/lib/money'
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';

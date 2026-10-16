@@ -2,7 +2,7 @@
 // Prepara el checkout (validación + precio de servidor + orden PENDING) para cualquier pasarela.
 import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/nextAuth'
 import { CheckoutError, priceCart, pricePlan, type PricedLine } from './pricing'
 import { ORDER_STATUS, DEFAULT_SUBSCRIPTION_TYPE, type PaymentMethod } from './constants'
 

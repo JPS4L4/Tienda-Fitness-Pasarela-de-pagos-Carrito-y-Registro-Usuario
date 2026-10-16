@@ -101,10 +101,8 @@ export async function validateCredentials(
  */
 export async function registerUser(payload: RegisterPayload): Promise<AuthResult> {
   try {
-    console.log('🔐 Iniciando registerUser para:', payload.email);
 
     // Verificar si el email ya existe
-    console.log('🔐 Verificando si el email ya existe...');
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -116,25 +114,19 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
 
     if (existingUser) {
       if (existingUser.email === payload.email) {
-        console.log('❌ El email ya está registrado:', payload.email);
         return { success: false, error: 'El email ya está registrado' };
       }
       if (payload.phone && existingUser.phone === payload.phone) {
-        console.log('❌ El teléfono ya está registrado:', payload.phone);
         return { success: false, error: 'El teléfono ya está registrado' };
       }
       return { success: false, error: 'El usuario ya está registrado' };
     }
 
-    console.log('✅ Email disponible');
 
     // Hash de la contraseña
-    console.log('🔐 Hasheando contraseña...');
     const hashedPassword = await bcrypt.hash(payload.password, 10);
-    console.log('✅ Contraseña hasheada');
 
     // Crear usuario y su cuenta en una transacción
-    console.log('🔐 Creando usuario y cuenta...');
     const newUser = await prisma.user.create({
       data: {
         name: payload.name,
@@ -155,7 +147,6 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthResult
       },
     });
 
-    console.log('✅ Usuario creado exitosamente:', newUser.id);
 
     return {
       success: true,
@@ -250,7 +241,6 @@ export async function registerOAuthUser(payload: {
   emailVerified?: boolean;
 }): Promise<AuthResult> {
   try {
-    console.log(`🔐 Procesando login OAuth [${payload.provider}]:`, payload.email);
 
     // Buscar usuario existente por email
     let user = await prisma.user.findUnique({
@@ -261,7 +251,6 @@ export async function registerOAuthUser(payload: {
     });
 
     if (user) {
-      console.log('✅ Usuario existente encontrado:', user.id);
       
       // Verificar si ya tiene una cuenta con este proveedor
       const hasProviderAccount = user.accounts.some(
@@ -274,7 +263,6 @@ export async function registerOAuthUser(payload: {
           console.error('❌ Correo no verificado por el proveedor; no se vincula a la cuenta existente');
           return { success: false, error: 'No se puede vincular la cuenta' };
         }
-        console.log(`🔗 Vinculando cuenta de ${payload.provider} al usuario existente`);
         await prisma.account.create({
           data: {
             userId: user.id,
@@ -303,7 +291,6 @@ export async function registerOAuthUser(payload: {
     }
 
     // Crear nuevo usuario con cuenta OAuth
-    console.log(`✨ Creando nuevo usuario desde ${payload.provider}`);
     const newUser = await prisma.user.create({
       data: {
         email: payload.email,
@@ -324,7 +311,6 @@ export async function registerOAuthUser(payload: {
       },
     });
 
-    console.log('✅ Usuario OAuth creado exitosamente:', newUser.id);
 
     return {
       success: true,

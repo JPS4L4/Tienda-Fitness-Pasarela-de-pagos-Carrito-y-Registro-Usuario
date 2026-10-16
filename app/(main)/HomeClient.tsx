@@ -17,7 +17,7 @@ import { ItemCardSkeleton } from "@/components/skeletons/ItemCardSkeleton";
 import { PlanCardSkeleton } from "@/components/skeletons/PlanCardSkeleton";
 import StateMessage from "@/components/others/StateMessage";
 
-export default function Home() {
+export default function HomeClient() {
 
   const [featuredItems, setFeaturedItems] = useState<ItemUI[]>([]);
   const [featuredPlans, setFeaturedPlans] = useState<PlanUI[]>([]);

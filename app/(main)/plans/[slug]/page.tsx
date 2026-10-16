@@ -10,7 +10,7 @@ import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
 import Link from 'next/link';
 import FitnessProfileGate from '@/components/others/FitnessProfileGate';
 import PlanReviewsSection from '@/components/others/PlanReviewsSection';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/nextAuth';
 import { canViewPlanContent } from '@/lib/planAccess';
 
 // Definimos los estilos por tipo
