@@ -7,7 +7,7 @@ export default function AdminHomePage() {
         <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Dashboard</p>
         <h2 className="text-3xl font-semibold text-slate-900">Panel administrativo</h2>
         <p className="text-slate-600">
-          Desde aquí podrás gestionar items y planes. Este es el primer borrador del CRUD.
+          Gestiona productos, planes, usuarios, órdenes y ventas de la tienda.
         </p>
       </div>
 
