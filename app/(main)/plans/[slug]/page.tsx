@@ -7,6 +7,8 @@ import FavoritePlanButton from '@/components/buttons/FavoritePlanButton';
 import Link from 'next/link';
 import FitnessProfileGate from '@/components/others/FitnessProfileGate';
 import PlanReviewsSection from '@/components/others/PlanReviewsSection';
+import { auth } from '@/lib/auth';
+import { canViewPlanContent } from '@/lib/planAccess';
 
 // Definimos los estilos por tipo
 const planStyles = {
@@ -42,11 +44,18 @@ interface PlanDetailPageProps {
 
 const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   const { slug } = await params;
-  const plan: PlanUI | null = await getPlanBySlug(slug);
+  const session = await auth();
+  // Primero sin contenido; el contenido de pago solo se pide si hay acceso.
+  const publicPlan: PlanUI | null = await getPlanBySlug(slug);
 
-  if (!plan) {
+  if (!publicPlan) {
     notFound();
   }
+
+  const hasContentAccess = await canViewPlanContent(session, publicPlan.id);
+  const plan: PlanUI = hasContentAccess
+    ? (await getPlanBySlug(slug, { includeContent: true })) ?? publicPlan
+    : publicPlan;
 
   // Seleccionamos los estilos según el tipo
   const style = planStyles[plan.type as keyof typeof planStyles] || planStyles.nutricion;
@@ -54,8 +63,6 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
   const precioFinal = plan.discount && plan.discount > 0
     ? Math.round(plan.price * (1 - plan.discount / 100))
     : plan.price;
-
-  console.log('Plan cargado:', { title: plan.title, slug: plan.slug, price: plan.price });
 
   return (
     <div className="min-h-screen bg-white">

@@ -23,7 +23,14 @@ export type PlanFromDB = {
 };
 
 
-export function adaptPlanToPlanUI(plan: PlanFromDB): PlanUI {
+/**
+ * `content` es el material de pago del plan: solo se incluye si el llamador lo pide
+ * explícitamente (tras comprobar que el usuario es suscriptor activo o admin).
+ */
+export function adaptPlanToPlanUI(
+  plan: PlanFromDB,
+  options: { includeContent?: boolean } = {}
+): PlanUI {
   const price = (() => {
     if (typeof plan.price === 'object' && 'toNumber' in plan.price) {
       return plan.price.toNumber();
@@ -44,7 +51,7 @@ export function adaptPlanToPlanUI(plan: PlanFromDB): PlanUI {
     discount: plan.discount ?? 0,
     currency: plan.currency ?? "COP",
     slug: plan.slug,
-    content: plan.content ?? undefined,
+    content: options.includeContent ? plan.content ?? undefined : undefined,
     rating: plan.rating,
     reviewCount: plan.reviewCount,
   };

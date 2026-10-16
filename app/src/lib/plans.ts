@@ -33,7 +33,10 @@ export async function getPlansForUI() {
   })
 }
 
-export async function getPlanBySlug(slug: string): Promise<PlanUI | null> {
+export async function getPlanBySlug(
+  slug: string,
+  options: { includeContent?: boolean } = {}
+): Promise<PlanUI | null> {
   const plan = await prisma.plan.findUnique({
     where: { slug },
   });
@@ -50,5 +53,5 @@ export async function getPlanBySlug(slug: string): Promise<PlanUI | null> {
     ...plan,
     rating: aggregate._avg.rating ?? plan.rating,
     reviewCount: aggregate._count.rating ?? plan.reviewCount,
-  });
+  }, options);
 }
