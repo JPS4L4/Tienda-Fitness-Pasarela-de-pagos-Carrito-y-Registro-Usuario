@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import ItemCard from "@/components/cards/ItemCard";
 import {PlanCard} from "@/components/cards/PlanCard";
@@ -210,9 +211,12 @@ useEffect(() => {
                   
                   {/* Imagen del entrenador */}
                   <div className="relative">
-                    <img 
-                      src="/hernan-salazar.jpg" 
-                      alt="Equipo Fitness - Entrenamiento y nutrición" 
+                    <Image
+                      src="/images/team/entrenador.webp"
+                      alt="Entrenador guiando un ejercicio de plancha a una alumna"
+                      width={384}
+                      height={384}
+                      sizes="(min-width: 1024px) 384px, (min-width: 768px) 320px, 288px"
                       className="w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full object-cover mx-auto shadow-2xl ring-8 ring-white"
                     />
                     

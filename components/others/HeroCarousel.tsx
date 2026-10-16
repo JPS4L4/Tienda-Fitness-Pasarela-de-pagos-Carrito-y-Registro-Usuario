@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -16,14 +16,15 @@ interface HeroSlide {
   subtitle: string
   ctaText: string
   ctaLink: string
-  desktopImage: string
-  mobileImage: string
-  bgColor?: string
+  image: string
+  imageAlt: string
+  /** Capa de color con alfa sobre la foto (legibilidad del texto) */
+  overlay: string
   textColor?: string
 }
 
 /**
- * Data de los slides - Puedes mover esto a un archivo separado o hacerlo dinámico
+ * Slides del hero. Fotos en public/images/hero (créditos en public/images/CREDITS.md)
  */
 const HERO_SLIDES: HeroSlide[] = [
   {
@@ -32,9 +33,9 @@ const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Entrenamiento personalizado para alcanzar tus objetivos",
     ctaText: "Comenzar Ahora",
     ctaLink: "/plans",
-    desktopImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1470&auto=format&fit=crop",
-    mobileImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800&auto=format&fit=crop",
-    bgColor: "from-slate-900 to-slate-800",
+    image: "/images/hero/fuerza.webp",
+    imageAlt: "Persona levantando una barra con discos en un gimnasio",
+    overlay: "from-slate-950/85 via-slate-950/55 to-slate-950/25",
     textColor: "text-white"
   },
   {
@@ -43,9 +44,9 @@ const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Planes de nutrición y ejercicio diseñados para ti",
     ctaText: "Ver Planes",
     ctaLink: "/plans",
-    desktopImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop",
-    mobileImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop",
-    bgColor: "from-indigo-900 to-purple-900",
+    image: "/images/hero/transforma.webp",
+    imageAlt: "Entrenador guiando un ejercicio al aire libre",
+    overlay: "from-indigo-950/85 via-indigo-950/55 to-slate-950/25",
     textColor: "text-white"
   },
   {
@@ -54,9 +55,9 @@ const HERO_SLIDES: HeroSlide[] = [
     subtitle: "50% OFF en tu primer mes - Únete hoy",
     ctaText: "Ver Ofertas",
     ctaLink: "/items?discount=true",
-    desktopImage: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1470&auto=format&fit=crop",
-    mobileImage: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800&auto=format&fit=crop",
-    bgColor: "from-red-900 to-orange-900",
+    image: "/images/hero/ofertas.webp",
+    imageAlt: "Mancuernas y botella sobre una colchoneta de yoga",
+    overlay: "from-rose-950/85 via-slate-950/55 to-slate-950/25",
     textColor: "text-white"
   },
   {
@@ -65,29 +66,16 @@ const HERO_SLIDES: HeroSlide[] = [
     subtitle: "Descubre los mejores productos para tu entrenamiento",
     ctaText: "Ver Tienda",
     ctaLink: "/items",
-    desktopImage: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=1470&auto=format&fit=crop",
-    mobileImage: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=800&auto=format&fit=crop",
-    bgColor: "from-teal-900 to-emerald-900",
+    image: "/images/hero/equipo.webp",
+    imageAlt: "Estante con mancuernas en un gimnasio",
+    overlay: "from-teal-950/85 via-slate-950/55 to-slate-950/25",
     textColor: "text-white"
   }
 ]
 
 export default function HeroCarousel() {
-  const [isMobile, setIsMobile] = useState(false)
   const [isAutoplayPaused, setIsAutoplayPaused] = useState(false)
   const swiperRef = useRef<SwiperType | null>(null)
-
-  // Detectar si es mobile para cargar imágenes apropiadas
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
 
   // Manejar pause/resume del autoplay
   const handleMouseEnter = () => {
@@ -150,18 +138,20 @@ export default function HeroCarousel() {
         }}
         className="w-full h-full"
       >
-        {HERO_SLIDES.map((slide, index) => (
+        {HERO_SLIDES.map((slide, index) => {
+          const Title = index === 0 ? "h1" : "h2"
+          return (
           <SwiperSlide key={slide.id}>
             {/* Contenedor del slide */}
             <div className="relative w-full h-full">
               {/* Imagen de fondo con Next/Image */}
               <div className="absolute inset-0">
                 <Image
-                  src={isMobile ? slide.mobileImage : slide.desktopImage}
-                  alt={slide.title}
+                  src={slide.image}
+                  alt={slide.imageAlt}
                   fill
-                  priority={index === 0} // Priority solo en el primer slide
-                  quality={85}
+                  priority={index === 0}
+                  quality={75}
                   sizes="100vw"
                   className="object-cover"
                   placeholder="blur"
@@ -170,7 +160,7 @@ export default function HeroCarousel() {
                 
                 {/* Overlay con gradiente */}
                 <div 
-                  className={`absolute inset-0 bg-linear-to-r ${slide.bgColor || "from-black/60 to-black/40"}`}
+                  className={`absolute inset-0 bg-slate-950/20 bg-linear-to-r ${slide.overlay}`}
                   aria-hidden="true"
                 />
               </div>
@@ -179,7 +169,7 @@ export default function HeroCarousel() {
               <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto text-center">
                   {/* Título */}
-                  <h1 
+                  <Title 
                     className={`
                       text-4xl sm:text-5xl md:text-6xl lg:text-7xl 
                       font-black ${slide.textColor || "text-white"} 
@@ -191,7 +181,7 @@ export default function HeroCarousel() {
                     `}
                   >
                     {slide.title}
-                  </h1>
+                  </Title>
 
                   {/* Subtítulo */}
                   <p 
@@ -242,7 +232,8 @@ export default function HeroCarousel() {
               </div>
             </div>
           </SwiperSlide>
-        ))}
+          )
+        })}
       </Swiper>
 
       {/* Controles personalizados - Flechas de navegación */}

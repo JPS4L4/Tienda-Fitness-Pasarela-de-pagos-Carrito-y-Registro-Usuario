@@ -30,7 +30,7 @@ const DEFAULT_OFFERS: OfferBanner[] = [
     description: "Únete antes del fin de mes y obtén la mitad de precio en tu primer trimestre.",
     buttonText: "Reclamar Oferta",
     buttonLink: "/items?discount=true",
-    image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=1470&auto=format&fit=crop",
+    image: "/images/offers/verano.webp",
     bgColor: "bg-gradient-to-r from-red-600 to-red-700",
     textColor: "text-white"
   },
@@ -40,7 +40,7 @@ const DEFAULT_OFFERS: OfferBanner[] = [
     description: "Aprovecha esta promoción exclusiva en todos nuestros planes de entrenamiento.",
     buttonText: "Ver Planes",
     buttonLink: "/plans",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1470&auto=format&fit=crop",
+    image: "/images/offers/premium.webp",
     bgColor: "bg-gradient-to-r from-slate-800 to-slate-900",
     textColor: "text-white"
   },
@@ -50,7 +50,7 @@ const DEFAULT_OFFERS: OfferBanner[] = [
     description: "Compra tu equipo de entrenamiento y obtén 3 meses gratis de nuestro plan básico.",
     buttonText: "Ver Packs",
     buttonLink: "/items",
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop",
+    image: "/images/offers/pack.webp",
     bgColor: "bg-gradient-to-r from-indigo-600 to-purple-700",
     textColor: "text-white"
   }
@@ -127,7 +127,7 @@ export default function OffersCarousel({ offers = DEFAULT_OFFERS }: OffersCarous
                 <div className="absolute inset-0 opacity-20">
                   <Image
                     src={offer.image}
-                    alt={offer.title}
+                    alt=""
                     fill
                     className="object-cover"
                     sizes="100vw"

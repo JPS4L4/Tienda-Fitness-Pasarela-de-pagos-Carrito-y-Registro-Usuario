@@ -47,7 +47,7 @@ export const SafeImage = ({
           console.log('Error cargando imagen:', src)
           setError(true)
         }}
-        unoptimized={true}           // temporal para debug de imágenes remotas
+       
         priority={priority}
         sizes={sizes || "100vw"}     // por defecto asume full width
         quality={85}                 // balance entre calidad y velocidad

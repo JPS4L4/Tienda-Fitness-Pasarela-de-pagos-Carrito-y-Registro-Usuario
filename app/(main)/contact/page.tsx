@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { XIcon } from "@/components/others/XIcon"
 import { MapPin, Mail, Phone, Send, Instagram, Facebook, Twitter, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -90,8 +91,8 @@ export default function ContactPage() {
           <div className="flex gap-4 pt-6 border-t border-white/20">
              <SocialLink icon={<Instagram />} />
              <SocialLink icon={<Facebook />} />
-              <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
-                <img className="w-6 h-6 invert hover:invert-0 transition-all" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/logos/x-jvgvt5gje92oz29ez4fgd.png/x-0muuxjzgzvtlpaduv3p4k2s.png?_a=DATAg1AAZAA0" alt="x_icon" />            
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
+                <XIcon />            
               </a>
               
           </div>

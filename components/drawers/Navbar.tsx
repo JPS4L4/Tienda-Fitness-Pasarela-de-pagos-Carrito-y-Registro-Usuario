@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/hooks/useAuthUser";
 import { signOut } from "next-auth/react";
+import { BRAND_NAME } from "@/lib/brand";
 import FavoritesDrawer from "./FavoritesDrawer";
 
 
@@ -57,7 +58,7 @@ export default function Navbar() {
               href="/" 
               className={`font-black text-black uppercase text-2xl tracking-widest hover:text-orange-400 ${pathname == "/" && "text-orange-500"}`}
             >
-              Fitness Studio
+              {BRAND_NAME}
             </Link>
           </div>
 
