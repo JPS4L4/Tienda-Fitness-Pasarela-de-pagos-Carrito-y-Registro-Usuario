@@ -1,10 +1,21 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+import { getAdminSession } from '@/lib/requireAdmin'
 
 async function fetchOrder(orderId: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/orders/${orderId}`, {
-    cache: 'no-store',
+  // Consulta directa en el servidor: un fetch interno no llevaría la cookie de sesión.
+  const admin = await getAdminSession()
+  if (!admin) return { error: 'Acceso restringido' as const, order: null }
+
+  const id = Number(orderId)
+  if (!Number.isInteger(id)) return { error: 'ID inválido' as const, order: null }
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { user: { select: { id: true, name: true, email: true } } },
   })
-  return response.json()
+  if (!order) return { error: 'Orden no encontrada' as const, order: null }
+  return { error: null, order }
 }
 
 export default async function AdminOrderDetailPage({
@@ -15,7 +26,7 @@ export default async function AdminOrderDetailPage({
   const { orderId } = await params
   const data = await fetchOrder(orderId)
 
-  if (data?.error) {
+  if (data.error !== null) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-10">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

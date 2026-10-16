@@ -11,9 +11,6 @@ import { signOut } from "next-auth/react";
 import FavoritesDrawer from "./FavoritesDrawer";
 
 
-const getAdminEmails = () =>
-  process.env.ADMIN_EMAILS?.split(',').map((email) => email.trim()).filter(Boolean) ?? []
-
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -23,8 +20,8 @@ export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useUser();
   const totalItems = getTotalItems();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const adminEmails = getAdminEmails();
-  const isAdmin = adminEmails.length === 0 || (user && adminEmails.includes(user.email || ""));
+  // El rol viene de la sesión (calculado en el servidor); es solo para mostrar el enlace.
+  const isAdmin = user?.role === "admin";
 
 
   return (

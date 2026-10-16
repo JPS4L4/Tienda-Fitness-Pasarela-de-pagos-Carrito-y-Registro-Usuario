@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { validateCredentials, registerOAuthUser } from "@/lib/authService"
 import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
+import { isAdminEmail } from "@/lib/adminAuth"
 
 const nextAuthSecret = process.env.NEXTAUTH_SECRET || "change-me-in-vercel"
 
@@ -102,6 +103,9 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name
         token.phone = user.phone
       }
+
+      // El rol se recalcula en cada lectura a partir del correo (ADMIN_EMAILS)
+      token.role = isAdminEmail(token.email as string | undefined) ? "admin" : "user"
       
       // Para OAuth (Google, Facebook)
       if (account?.provider === "google" || account?.provider === "facebook") {
@@ -118,6 +122,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string
         session.user.name = token.name as string
         session.user.phone = token.phone as string | undefined
+        session.user.role = token.role as string | undefined
 
         if (session.user.id) {
           const dbUser = await prisma.user.findUnique({

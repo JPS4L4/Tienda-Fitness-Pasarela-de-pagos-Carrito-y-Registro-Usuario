@@ -1,5 +1,6 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 // Rutas públicas que no requieren autenticación
 const publicRoutes = [
@@ -21,7 +22,7 @@ const protectedRoutes = [
   "/admin",
 ]
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Excluir rutas de API de autenticación
@@ -29,14 +30,31 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Verificar si hay token de sesión en las cookies
-  const token = request.cookies.get("next-auth.session-token")?.value || 
-                request.cookies.get("__Secure-next-auth.session-token")?.value
+  const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/")
+  const isAdminApi = pathname.startsWith("/api/admin")
+  const needsAuth =
+    isAdminPage || isAdminApi || protectedRoutes.some(route => pathname.startsWith(route))
 
-  // Si la ruta es protegida y no hay token, redirigir a login
-  if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    if (!token) {
+  if (needsAuth) {
+    // Valida la firma del JWT (no basta con que exista la cookie). Sin secreto => sin token.
+    let token = null
+    try {
+      token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    } catch {
+      token = null
+    }
+
+    if (isAdminApi) {
+      if (!token) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+      }
+      if (token.role !== "admin") {
+        return NextResponse.json({ error: "Acceso restringido" }, { status: 403 })
+      }
+    } else if (!token) {
       return NextResponse.redirect(new URL("/login", request.url))
+    } else if (isAdminPage && token.role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url))
     }
   }
 

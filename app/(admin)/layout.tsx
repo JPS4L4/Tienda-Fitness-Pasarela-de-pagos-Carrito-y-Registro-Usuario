@@ -1,9 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/nextAuth'
-
-const getAdminEmails = () =>
-  process.env.ADMIN_EMAILS?.split(',').map((email) => email.trim()).filter(Boolean) ?? []
+import { isAdminEmail } from '@/lib/adminAuth'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -12,10 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/login')
   }
 
-  const adminEmails = getAdminEmails()
-  const isAdmin = adminEmails.length === 0 || adminEmails.includes(session.user.email)
-
-  if (!isAdmin) {
+  if (!isAdminEmail(session.user.email)) {
     return (
       <main className="min-h-screen bg-slate-50">
         <div className="mx-auto max-w-3xl px-6 py-16">
