@@ -111,11 +111,11 @@ const sections = {
 
 export default function LegalPage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-16 px-4">
+    <div className="min-h-screen bg-bg py-16 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-slate-900">Términos y Condiciones</h1>
-          <p className="text-slate-600 mt-3">
+          <h1 className="text-4xl font-extrabold text-fg">Términos y Condiciones</h1>
+          <p className="text-muted mt-3">
             Consulta los términos de uso y la política de privacidad aplicables en Colombia.
           </p>
         </div>
@@ -124,13 +124,13 @@ export default function LegalPage() {
           {sections.terms.map((item, index) => (
             <details
               key={`terms-${index}`}
-              className="group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className="group bg-surface  border border-line  overflow-hidden"
             >
-              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between text-lg font-semibold text-slate-800">
+              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between text-lg font-semibold text-fg">
                 {item.title}
-                <span className="ml-4 text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                <span className="ml-4 text-subtle group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="px-6 pb-5 text-slate-600 leading-relaxed">
+              <div className="px-6 pb-5 text-muted leading-relaxed">
                 {item.content}
               </div>
             </details>
@@ -138,8 +138,8 @@ export default function LegalPage() {
         </div>
 
         <div className="text-center mt-16 mb-8">
-          <h2 className="text-3xl font-extrabold text-slate-900">Política de Privacidad</h2>
-          <p className="text-slate-600 mt-3">
+          <h2 className="text-3xl font-extrabold text-fg">Política de Privacidad</h2>
+          <p className="text-muted mt-3">
             Cumplimos la Ley 1581 de 2012 y normativa vigente de protección de datos.
           </p>
         </div>
@@ -148,13 +148,13 @@ export default function LegalPage() {
           {sections.privacy.map((item, index) => (
             <details
               key={`privacy-${index}`}
-              className="group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+              className="group bg-surface  border border-line  overflow-hidden"
             >
-              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between text-lg font-semibold text-slate-800">
+              <summary className="cursor-pointer list-none px-6 py-4 flex items-center justify-between text-lg font-semibold text-fg">
                 {item.title}
-                <span className="ml-4 text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                <span className="ml-4 text-subtle group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="px-6 pb-5 text-slate-600 leading-relaxed">
+              <div className="px-6 pb-5 text-muted leading-relaxed">
                 {item.content}
               </div>
             </details>

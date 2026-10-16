@@ -3,8 +3,8 @@ import { BRAND_NAME } from '@/lib/brand'
 /** Aviso de entorno de demostración: no se cobra nada; incluye las tarjetas de prueba. */
 export default function TestModeBanner() {
   return (
-    <div role="note" className="border-b border-amber-200 bg-amber-50 px-4 py-4 text-amber-900">
-      <div className="mx-auto max-w-5xl text-sm">
+    <div role="note" className="border-b-2 border-warn bg-warn/10 px-4 py-4 text-warn">
+      <div className="container mx-auto text-sm">
         <p className="font-bold">Modo prueba: no se realiza ningún cobro real.</p>
         <p className="mt-1">
           {BRAND_NAME} es un proyecto de demostración. Usa estas tarjetas de prueba; no ingreses datos reales.

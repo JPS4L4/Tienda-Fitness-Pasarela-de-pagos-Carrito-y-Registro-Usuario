@@ -152,14 +152,14 @@ export default function UserPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-white to-slate-50 px-4 sm:px-6 lg:px-8 py-12">
+    <main className="min-h-screen flex items-center justify-center bg-bg px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all duration-500">
+        <div className="border border-line border-t-4 border-t-accent bg-surface">
           <div className="px-8 pt-10 pb-6 text-center">
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-5xl text-fg">
               {mode === "login" ? "Bienvenido de nuevo" : "Únete a la familia"}
             </h1>
-            <p className="mt-3 text-slate-600 text-lg">
+            <p className="mt-3 text-muted text-lg">
               {mode === "login"
                 ? "Ingresa y sigue entrenando"
                 : "Crea tu cuenta en segundos"}
@@ -171,7 +171,7 @@ export default function UserPage() {
               <div className="space-y-5">
                 {mode === "register" && (
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">
+                    <label htmlFor="name" className="label">
                       Nombre de usuario
                     </label>
                     <input
@@ -180,14 +180,14 @@ export default function UserPage() {
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder="Tu nombre o apodo"
-                      className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                      className="input"
                       required={mode === "register"}
                     />
                   </div>
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="email" className="label">
                     {mode === "login" ? "Correo o teléfono" : "Correo electrónico"}
                   </label>
                   <input
@@ -196,18 +196,18 @@ export default function UserPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={mode === "login" ? "tu@correo.com / +57 300 123 4567" : "tu@correo.com"}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                     required
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="password" className="block text-sm font-medium text-fg-soft">
                       Contraseña
                     </label>
                     {mode === "login" && (
-                      <a href="/forgot-password" className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors">
+                      <a href="/forgot-password" className="text-sm text-accent hover:underline font-medium transition-colors">
                         ¿Olvidaste?
                       </a>
                     )}
@@ -220,28 +220,28 @@ export default function UserPage() {
                     onFocus={() => mode === "register" && setShowPasswordRequirements(true)}
                     onBlur={() => setShowPasswordRequirements(false)}
                     placeholder="••••••••"
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                     required
                   />
                   
                   {/* Requisitos de contraseña */}
                   {mode === "register" && showPasswordRequirements && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
-                      <p className="font-medium text-blue-900 mb-1">La contraseña debe tener:</p>
-                      <ul className="space-y-1 text-blue-700">
-                        <li className={password.length >= 8 ? "text-green-600" : ""}>
+                    <div className="mt-2 p-3 bg-accent/10 border border-accent  text-xs">
+                      <p className="font-medium text-accent mb-1">La contraseña debe tener:</p>
+                      <ul className="space-y-1 text-accent">
+                        <li className={password.length >= 8 ? "text-ok" : ""}>
                           • Mínimo 8 caracteres {password.length >= 8 && "✓"}
                         </li>
-                        <li className={/[A-Z]/.test(password) ? "text-green-600" : ""}>
+                        <li className={/[A-Z]/.test(password) ? "text-ok" : ""}>
                           • Una letra mayúscula {/[A-Z]/.test(password) && "✓"}
                         </li>
-                        <li className={/[a-z]/.test(password) ? "text-green-600" : ""}>
+                        <li className={/[a-z]/.test(password) ? "text-ok" : ""}>
                           • Una letra minúscula {/[a-z]/.test(password) && "✓"}
                         </li>
-                        <li className={/\d/.test(password) ? "text-green-600" : ""}>
+                        <li className={/\d/.test(password) ? "text-ok" : ""}>
                           • Un número {/\d/.test(password) && "✓"}
                         </li>
-                        <li className={/[@$!%*?&]/.test(password) ? "text-green-600" : ""}>
+                        <li className={/[@$!%*?&]/.test(password) ? "text-ok" : ""}>
                           • Un carácter especial (@$!%*?&) {/[@$!%*?&]/.test(password) && "✓"}
                         </li>
                       </ul>
@@ -253,7 +253,7 @@ export default function UserPage() {
                   <>
 
                     <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      <label htmlFor="confirmPassword" className="label">
                         Confirmar contraseña
                       </label>
                       <input
@@ -262,12 +262,12 @@ export default function UserPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                        className="input"
                         required
                       />
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      <label htmlFor="phone" className="label">
                         Teléfono (opcional)
                       </label>
                       <input
@@ -276,7 +276,7 @@ export default function UserPage() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+57 300 123 4567"
-                        className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                        className="input"
                       />
                     </div>
                   </>
@@ -284,40 +284,33 @@ export default function UserPage() {
               </div>
 
               {rateLimitWait > 0 && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
-                  <p className="text-yellow-700 text-sm font-medium">
-                    ⏳ Espera {rateLimitWait} segundos antes de intentar nuevamente
+                <div className="bg-warn/10 border-l-4 border-warn p-4 ">
+                  <p className="text-warn text-sm font-medium">
+                    Espera {rateLimitWait} segundos antes de intentar nuevamente
                   </p>
                 </div>
               )}
 
               {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                  <p className="text-red-700 text-sm">{error}</p>
+                <div className="bg-danger/10 border-l-4 border-danger p-4 ">
+                  <p className="text-danger text-sm">{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-                  <p className="text-green-700 text-sm">{success}</p>
+                <div className="bg-ok/10 border-l-4 border-ok p-4 ">
+                  <p className="text-ok text-sm">{success}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading || rateLimitWait > 0}
-                className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 shadow-lg ${
-                  loading || rateLimitWait > 0
-                    ? "bg-teal-400 cursor-not-allowed"
-                    : "bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02] active:scale-95"
-                }`}
+                className="btn btn-primary btn-lg btn-block"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-                    </svg>
+                    <span className="spinner !h-5 !w-5" aria-hidden="true" />
                     Procesando...
                   </span>
                 ) : mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
@@ -326,10 +319,10 @@ export default function UserPage() {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
+                <div className="w-full border-t border-line"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-500 font-medium">o continuar con</span>
+                <span className="px-4 bg-surface text-muted font-medium">o continuar con</span>
               </div>
             </div>
 
@@ -337,16 +330,16 @@ export default function UserPage() {
               <button
                 onClick={() => handleSocial("google")}
                 disabled={loading}
-                className="flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50"
+                className="btn btn-ghost"
               >
                 <Image src={googleIcon} alt="Google" width={24} height={24} />
-                <span className="font-medium text-slate-700">Google</span>
+                <span className="font-medium text-fg-soft">Google</span>
               </button>
 
               {/* <button
                 onClick={() => handleSocial("facebook")}
                 disabled={loading}
-                className="flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166fe5] text-white transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50"
+                className="btn btn-ghost"
               >
                 <Image src={facebookIcon} alt="Facebook" width={24} height={24} />
                 <span className="font-medium">Facebook</span>
@@ -354,10 +347,10 @@ export default function UserPage() {
             </div>
           </div>
 
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 text-center">
+          <div className="px-8 py-6 bg-surface-2 border-t border-line text-center">
             <button
               onClick={() => setMode(mode === "login" ? "register" : "login")}
-              className="text-teal-600 hover:text-teal-700 font-medium transition-colors"
+              className="text-accent hover:underline font-medium transition-colors"
             >
               {mode === "login"
                 ? "¿No tienes cuenta? Regístrate gratis"
@@ -365,9 +358,9 @@ export default function UserPage() {
             </button>
 
             {mode === "register" && (
-              <p className="mt-4 text-xs text-slate-500">
+              <p className="mt-4 text-xs text-muted">
                 Al registrarte aceptas nuestros{" "}
-                <a href="/legal" className="text-teal-600 hover:underline">
+                <a href="/legal" className="text-accent hover:underline">
                   términos y política de privacidad
                 </a>
                 

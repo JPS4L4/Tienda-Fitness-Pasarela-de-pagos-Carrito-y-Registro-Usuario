@@ -2,7 +2,9 @@
 import { auth } from "@/lib/nextAuth"
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
+import { ArrowRight, ClipboardList, Dumbbell, Settings } from "lucide-react"
 import { LogoutButton } from "@/components/buttons/LogoutButton"
+import { Badge } from "@/components/ui/Badge"
 import Link from "next/link"
 
 // Esta página es dinámica porque depende de la sesión
@@ -13,6 +15,12 @@ export const metadata: Metadata = {
   description: "Perfil del usuario",
 }
 
+const OPTIONS = [
+  { href: "/profile/orders", label: "Mis compras", Icon: ClipboardList },
+  { href: "/profile/plans", label: "Mis planes", Icon: Dumbbell },
+  { href: "/profile/edit", label: "Editar perfil", Icon: Settings },
+]
+
 export default async function ProfilePage() {
   const session = await auth()
 
@@ -21,125 +29,90 @@ export default async function ProfilePage() {
     redirect("/login")
   }
 
+  const info = [
+    { label: "Nombre", value: session.user.name },
+    { label: "Correo electrónico", value: session.user.email, breakAll: true },
+    { label: "Teléfono", value: session.user.phone || "No agregado" },
+    { label: "ID de usuario", value: session.user.id, mono: true },
+  ]
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Card Principal */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-          {/* Header */}
-          <div className="bg-linear-to-r from-teal-500 to-emerald-600 px-8 pt-12 pb-20 relative">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0 bg-grid-pattern"></div>
-            </div>
-
-            <div className="relative z-10 text-center">
-              <div className="w-24 h-24 mx-auto mb-6 bg-white rounded-full flex items-center justify-center shadow-lg">
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || "Usuario"}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-linear-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-white">
-                      {session.user.name?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <h1 className="text-4xl font-extrabold text-white mb-2">
-                {session.user.name || "Usuario"}
-              </h1>
-              <p className="text-teal-100 text-lg">{session.user.email}</p>
-            </div>
-          </div>
-
-          {/* Contenido */}
-          <div className="px-8 py-12">
-            <div className="space-y-8">
-              {/* Información del Usuario */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-900">Información de Cuenta</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-600 mb-1">Nombre</p>
-                    <p className="text-lg font-semibold text-slate-900">{session.user.name}</p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-600 mb-1">Correo Electrónico</p>
-                    <p className="text-lg font-semibold text-slate-900 wrap-break-word">{session.user.email}</p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-600 mb-1">Teléfono</p>
-                    <p className="text-lg font-semibold text-slate-900">
-                      {session.user.phone || "No agregado"}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-600 mb-1">ID de Usuario</p>
-                    <p className="text-lg font-semibold text-slate-900 font-mono break-all">{session.user.id}</p>
-                  </div>
-
-                  <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-600 mb-1">Estado</p>
-                    <p className="text-lg font-semibold">
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        Activo
-                      </span>
-                    </p>
-                  </div>
+    <div className="min-h-screen bg-bg px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="card border-t-4 border-t-accent">
+          {/* Cabecera */}
+          <div className="flex flex-col gap-5 border-b border-line bg-surface-2 p-6 sm:flex-row sm:items-center md:p-8">
+            <div className="media h-24 w-24 shrink-0 bg-accent">
+              {session.user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={session.user.image}
+                  alt={session.user.name || "Usuario"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-accent text-on-accent">
+                  <span className="font-display text-5xl">
+                    {session.user.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
                 </div>
-              </div>
-
-              {/* Opciones de Cuenta */}
-              <div className="border-t border-slate-200 pt-8">
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">Opciones de Cuenta</h2>
-
-                <div className="space-y-3">
-                  <Link
-                    href="/profile/orders"
-                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
-                  >
-                    📋 Mis Compras
-                  </Link>
-                  <Link
-                    href="/profile/plans"
-                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
-                  >
-                    🏋️ Mis Planes
-                  </Link>
-                  <Link
-                    href="/profile/edit"
-                    className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors text-left block"
-                  >
-                    ⚙️ Editar Perfil
-                  </Link>
-                
-                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <h1 className="break-words text-5xl text-fg md:text-6xl">{session.user.name || "Usuario"}</h1>
+              <p className="mt-2 break-all text-lg text-muted">{session.user.email}</p>
+              <div className="mt-3">
+                <Badge tone="ok">Cuenta activa</Badge>
               </div>
             </div>
           </div>
 
-          {/* Footer con Logout */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200">
+          <div className="space-y-10 p-6 md:p-8">
+            {/* Información de la cuenta */}
+            <section>
+              <h2 className="mb-5 text-3xl">Información de cuenta</h2>
+              <dl className="grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2">
+                {info.map((row) => (
+                  <div key={row.label} className="bg-surface p-5">
+                    <dt className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-muted">{row.label}</dt>
+                    <dd
+                      className={`text-lg font-semibold text-fg ${row.mono ? "font-mono" : ""} ${row.breakAll ? "break-all" : "break-words"}`}
+                    >
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            {/* Opciones */}
+            <section>
+              <h2 className="mb-5 text-3xl">Opciones de cuenta</h2>
+              <div className="grid gap-3">
+                {OPTIONS.map(({ href, label, Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="group flex items-center gap-4 border border-line bg-surface-2 px-5 py-4 font-extrabold uppercase tracking-[0.1em] text-fg transition-colors hover:border-accent hover:text-accent"
+                  >
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                    {label}
+                    <ArrowRight className="ml-auto h-5 w-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="border-t border-line bg-surface-2 p-6 md:px-8">
             <LogoutButton />
           </div>
         </div>
 
-        {/* Nota informativa */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <p className="text-sm text-blue-800">
-            <span className="font-semibold">💡 Nota:</span> Este es tu perfil de usuario. Aquí puedes ver tu información y
-            gestionar tu cuenta. Para cambiar tu contraseña o información personal, usa las opciones disponibles arriba.
-          </p>
-        </div>
+        <p className="mt-6 border-l-4 border-accent bg-surface p-5 text-sm leading-relaxed text-fg-soft">
+          <b className="text-fg">Nota:</b> este es tu perfil de usuario. Aquí puedes ver tu información y gestionar tu
+          cuenta. Para cambiar tu contraseña o información personal, usa las opciones disponibles arriba.
+        </p>
       </div>
     </div>
   )

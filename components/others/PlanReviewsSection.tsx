@@ -38,12 +38,12 @@ export default function PlanReviewsSection({ planId }: PlanReviewsSectionProps) 
   }, [planId]);
 
   return (
-    <section className="mt-16 bg-slate-50 rounded-3xl p-8 sm:p-10 border border-slate-100">
+    <section className="mt-16 bg-surface-2  p-8 sm:p-10 border border-line">
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-3">
+        <h2 className="text-3xl font-black text-fg uppercase tracking-normal mb-3">
           Reseñas del plan
         </h2>
-        <p className="text-slate-600 text-lg">
+        <p className="text-muted text-lg">
           Comparte tu experiencia si ya compraste este plan.
         </p>
       </div>
@@ -55,7 +55,7 @@ export default function PlanReviewsSection({ planId }: PlanReviewsSectionProps) 
 
         <div className="space-y-6">
           {loading ? (
-            <div className="text-slate-400 text-center w-full py-8">Cargando reseñas...</div>
+            <div className="text-subtle text-center w-full py-8">Cargando reseñas...</div>
           ) : comments.length > 0 ? (
             <div className="flex flex-col gap-4">
               {comments.map((review) => (
@@ -63,7 +63,7 @@ export default function PlanReviewsSection({ planId }: PlanReviewsSectionProps) 
               ))}
             </div>
           ) : (
-            <div className="text-slate-400 text-center w-full py-8">
+            <div className="text-subtle text-center w-full py-8">
               Aún no hay reseñas para este plan.
             </div>
           )}

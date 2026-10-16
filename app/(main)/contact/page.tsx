@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Image from "next/image";
 import { XIcon } from "@/components/others/XIcon"
 import { Mail, Phone, Send, Instagram, Facebook, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
@@ -56,29 +57,25 @@ export default function ContactPage() {
 
   return (
     // Usamos 'flex-col md:flex-row' para que en celular sea columna y en PC sea fila
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-surface">
       
       {/* ---------------------------------------------------------
           COLUMNA IZQUIERDA: VISUAL E INFO (40% del ancho en PC)
          --------------------------------------------------------- */}
-      <div className="relative w-full md:w-5/12 lg:w-2/5 bg-gray-900 text-white flex flex-col justify-between p-12 overflow-hidden">
+      <div className="relative w-full md:w-5/12 lg:w-2/5 bg-bg text-fg flex flex-col justify-between p-12 overflow-hidden">
         
         {/* Imagen de Fondo (Con overlay oscuro para que se lea el texto) */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gray-900/60 z-10"></div> {/* Capa oscura */}
-          <img 
-            src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" 
-            alt="Fitness Background" 
-            className="w-full h-full object-cover opacity-90 grayscale hover:grayscale-0 transition-all duration-700"
-          />
+          <div className="absolute inset-0 bg-bg/75 z-10"></div> {/* Capa oscura */}
+          <Image src="/images/hero/equipo.webp" alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover grayscale" />
         </div>
 
         {/* Contenido sobre la imagen (z-20) */}
         <div className="relative z-20 mt-10">
-          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-6">
+          <h2 className="text-6xl md:text-7xl mb-6">
             Hablemos <br/> de tu meta
           </h2>
-          <p className="text-gray-200 text-lg font-light max-w-sm">
+          <p className="text-fg-soft text-lg font-light max-w-sm">
             Ya sea que busques un plan personalizado o tengas dudas sobre la tienda, estamos listos para escucharte.
           </p>
         </div>
@@ -93,7 +90,7 @@ export default function ContactPage() {
           <div className="flex gap-4 pt-6 border-t border-white/20">
              <SocialLink icon={<Instagram />} />
              <SocialLink icon={<Facebook />} />
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X" className="w-10 h-10 flex items-center justify-center  border-2 border-line-strong text-fg hover:border-accent hover:bg-accent hover:text-on-accent transition-all">
                 <XIcon />            
               </a>
               
@@ -105,20 +102,20 @@ export default function ContactPage() {
       {/* ---------------------------------------------------------
           COLUMNA DERECHA: FORMULARIO (60% del ancho en PC)
          --------------------------------------------------------- */}
-      <div className="w-full md:w-7/12 lg:w-3/5 bg-white flex items-center justify-center p-8 md:p-24">
+      <div className="w-full md:w-7/12 lg:w-3/5 bg-surface flex items-center justify-center p-8 md:p-24">
         
         <div className="w-full max-w-lg">
           {success ? (
             // ESTADO DE ÉXITO
             <div className="text-center py-20 animate-fade-in">
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-ok/10 text-ok  flex items-center justify-center mx-auto mb-6">
                 <Send className="w-10 h-10" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">¡Recibido!</h3>
-              <p className="text-gray-500 mb-8">Tu mensaje ya está con nuestro equipo.</p>
+              <h3 className="text-3xl font-bold text-fg mb-2">¡Recibido!</h3>
+              <p className="text-muted mb-8">Tu mensaje ya está con nuestro equipo.</p>
               <button 
                 onClick={() => setSuccess(false)}
-                className="text-indigo-600 font-bold hover:text-indigo-800 flex items-center justify-center gap-2 mx-auto"
+                className="text-accent font-bold hover:text-accent flex items-center justify-center gap-2 mx-auto"
               >
                 Enviar otro <ArrowRight className="w-4 h-4" />
               </button>
@@ -127,8 +124,8 @@ export default function ContactPage() {
             // FORMULARIO
             <>
               <div className="mb-10">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Envíanos un mensaje</h3>
-                <p className="text-gray-500">Te responderemos en menos de 24 horas.</p>
+                <h3 className="text-4xl text-fg mb-2">Envíanos un mensaje</h3>
+                <p className="text-muted">Te responderemos en menos de 24 horas.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,7 +158,7 @@ export default function ContactPage() {
                 />
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">¿Cómo podemos ayudarte?</label>
+                  <label className="label">¿Cómo podemos ayudarte?</label>
                   <textarea 
                     required
                     name="message"
@@ -169,14 +166,14 @@ export default function ContactPage() {
                     onChange={handleChange}
                     rows={5}
                     placeholder="Cuéntanos más..."
-                    className="w-full bg-gray-50 border-b-2 border-gray-200 text-gray-700 focus:border-indigo-600 px-4 py-3 outline-none transition-colors resize-none placeholder:text-gray-400"
+                    className="input resize-none"
                   ></textarea>
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full bg-black text-white font-bold py-4 px-8 mt-4 hover:bg-gray-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="btn btn-primary btn-lg btn-block mt-4"
                 >
                   {loading ? "ENVIANDO..." : "ENVIAR MENSAJE"}
                   {!loading && <ArrowRight className="w-5 h-5" />}
@@ -197,12 +194,12 @@ export default function ContactPage() {
 function ContactItem({ icon, title, detail }: { icon: ReactNode, title: string, detail: string }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm shrink-0">
+      <div className="p-3 bg-surface/10   shrink-0">
         {icon}
       </div>
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{title}</p>
-        <p className="text-lg font-medium text-white">{detail}</p>
+        <p className="text-xs font-bold text-subtle uppercase tracking-wider mb-1">{title}</p>
+        <p className="text-lg font-medium text-fg">{detail}</p>
       </div>
     </div>
   );
@@ -226,7 +223,7 @@ function InputClean({
 }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <label className="label">{label}</label>
       <input 
         required
         type={type} 
@@ -234,7 +231,7 @@ function InputClean({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full bg-gray-50 border-b-2 text-gray-700 border-gray-200 focus:border-indigo-600 px-4 py-3 outline-none transition-colors placeholder:text-gray-400"
+        className="input"
       />
     </div>
   );
@@ -243,7 +240,7 @@ function InputClean({
 // 3. Botón Redes
 function SocialLink({ icon }: { icon: ReactNode }) {
   return (
-    <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
+    <a href="#" className="w-10 h-10 flex items-center justify-center  border-2 border-line-strong text-fg hover:border-accent hover:bg-accent hover:text-on-accent transition-all">
       <div className="w-5 h-5">{icon}</div>
     </a>
   );

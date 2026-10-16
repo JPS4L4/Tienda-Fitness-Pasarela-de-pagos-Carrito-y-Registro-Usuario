@@ -143,10 +143,10 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
   // Si no está autenticado, mostrar mensaje
   if (status === "loading") {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-8">
+      <div className="bg-surface   p-8">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-20 bg-gray-200 rounded mb-4"></div>
+          <div className="h-6 bg-surface-3  w-1/3 mb-4"></div>
+          <div className="h-20 bg-surface-3  mb-4"></div>
         </div>
       </div>
     )
@@ -154,20 +154,20 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
 
   if (!session) {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-slate-100 rounded-2xl shadow-lg p-8 border border-slate-200">
+      <div className="panel">
         <div className="text-center">
-          <div className="inline-block p-4 bg-indigo-100 rounded-full mb-4">
-            <Star className="w-8 h-8 text-indigo-600" />
+          <div className="inline-block p-4 bg-accent/10  mb-4">
+            <Star className="w-8 h-8 text-accent" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">
+          <h3 className="text-xl font-bold text-fg mb-2">
             ¿Quieres dejar una reseña?
           </h3>
-          <p className="text-slate-600 mb-6">
+          <p className="text-muted mb-6">
             Inicia sesión para compartir tu experiencia con nuestra comunidad
           </p>
           <a
             href="/login"
-            className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+            className="btn btn-primary"
           >
             Iniciar Sesión
           </a>
@@ -178,15 +178,15 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
 
   if (eligibilityChecked && !canReview) {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-slate-100 rounded-2xl shadow-lg p-8 border border-slate-200">
+      <div className="panel">
         <div className="text-center">
-          <div className="inline-block p-4 bg-indigo-100 rounded-full mb-4">
-            <Star className="w-8 h-8 text-indigo-600" />
+          <div className="inline-block p-4 bg-accent/10  mb-4">
+            <Star className="w-8 h-8 text-accent" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">
+          <h3 className="text-xl font-bold text-fg mb-2">
             Reseñas disponibles tras la compra
           </h3>
-          <p className="text-slate-600">
+          <p className="text-muted">
             {eligibilityMessage || `No tienes acceso para calificar este ${targetType}`}
           </p>
         </div>
@@ -195,15 +195,15 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
-      <h3 className="text-2xl font-bold text-slate-900 mb-6">
+    <div className="panel">
+      <h3 className="text-2xl font-bold text-fg mb-6">
         Comparte tu experiencia
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Calificación con estrellas */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <label className="label">
             Tu calificación
           </label>
           <div className="flex gap-2">
@@ -219,27 +219,27 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
                 <Star
                   className={`w-10 h-10 ${
                     star <= (hoveredRating || rating)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300"
+                      ? "fill-accent text-accent"
+                      : "text-subtle"
                   }`}
                 />
               </button>
             ))}
           </div>
           {rating > 0 && (
-            <p className="text-sm text-slate-600 mt-2">
-              {rating === 1 && "😞 Muy insatisfecho"}
-              {rating === 2 && "😕 Insatisfecho"}
-              {rating === 3 && "😐 Neutral"}
-              {rating === 4 && "😊 Satisfecho"}
-              {rating === 5 && "🤩 Muy satisfecho"}
+            <p className="text-sm text-muted mt-2">
+              {rating === 1 && "Muy insatisfecho"}
+              {rating === 2 && "Insatisfecho"}
+              {rating === 3 && "Neutral"}
+              {rating === 4 && "Satisfecho"}
+              {rating === 5 && "Muy satisfecho"}
             </p>
           )}
         </div>
 
         {/* Texto de la reseña */}
         <div>
-          <label htmlFor="review-content" className="block text-sm font-semibold text-slate-700 mb-2">
+          <label htmlFor="review-content" className="label">
             Tu reseña
           </label>
           <textarea
@@ -248,14 +248,14 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
             onChange={(e) => setContent(e.target.value)}
             placeholder="Cuéntanos sobre tu experiencia..."
             rows={5}
-            className="w-full px-4 py-3 text-slate-900 border border-slate-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
+            className="input resize-none"
             maxLength={500}
           />
           <div className="flex justify-between items-center mt-2">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
               Mínimo 10 caracteres
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
               {content.length}/500
             </p>
           </div>
@@ -263,14 +263,14 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
 
         {/* Mensajes de error y éxito */}
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-            <p className="text-red-700 text-sm font-medium">{error}</p>
+          <div className="bg-danger/10 border-l-4 border-danger p-4 ">
+            <p className="text-danger text-sm font-medium">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-            <p className="text-green-700 text-sm font-medium">
+          <div className="bg-ok/10 border-l-4 border-ok p-4 ">
+            <p className="text-ok text-sm font-medium">
               ¡Gracias por tu reseña! Se ha publicado correctamente.
             </p>
           </div>
@@ -280,18 +280,11 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
         <button
           type="submit"
           disabled={loading || rating === 0 || content.trim().length < 10}
-          className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 shadow-lg ${
-            loading || rating === 0 || content.trim().length < 10
-              ? "bg-slate-400 cursor-not-allowed"
-              : "bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 hover:shadow-xl hover:scale-[1.02] active:scale-95"
-          }`}
+          className="btn btn-primary btn-lg btn-block"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-              </svg>
+              <span className="spinner !h-5 !w-5" aria-hidden="true" />
               Enviando...
             </span>
           ) : (
@@ -300,10 +293,10 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
         </button>
 
         {/* Info del usuario */}
-        <div className="pt-4 border-t border-slate-200">
-          <p className="text-sm text-slate-600">
+        <div className="pt-4 border-t border-line">
+          <p className="text-sm text-muted">
             Publicando como:{" "}
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-fg">
               {session.user?.name || session.user?.email}
             </span>
           </p>

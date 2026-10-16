@@ -40,38 +40,38 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4 sm:px-6 lg:px-8 py-12">
+    <main className="min-h-screen flex items-center justify-center bg-bg px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div className="border border-line border-t-4 border-t-accent bg-surface">
           <div className="px-8 pt-10 pb-6 text-center">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-5xl text-fg">
               ¿Olvidaste tu Contraseña?
             </h1>
-            <p className="mt-3 text-slate-600 text-lg">
+            <p className="mt-3 text-muted text-lg">
               Te enviaremos un email con instrucciones para resetearla
             </p>
           </div>
 
           <div className="px-8 pb-10">
             {status === 'success' ? (
-              <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
+              <div className="bg-ok/10 border-l-4 border-ok p-6 ">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-6 w-6 text-ok" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-green-800 font-semibold text-lg">¡Éxito!</h3>
-                    <p className="text-green-700 mt-1">{message}</p>
-                    <p className="text-green-700 text-sm mt-2">Revisa también la carpeta de spam.</p>
+                    <h3 className="text-ok font-semibold text-lg">¡Éxito!</h3>
+                    <p className="text-ok mt-1">{message}</p>
+                    <p className="text-ok text-sm mt-2">Revisa también la carpeta de spam.</p>
                   </div>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="email" className="label">
                     Email
                   </label>
                   <input
@@ -80,32 +80,25 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="tu@email.com"
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                     required
                   />
                 </div>
 
                 {status === 'error' && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                    <p className="text-red-700 text-sm">{message}</p>
+                  <div className="bg-danger/10 border-l-4 border-danger p-4 ">
+                    <p className="text-danger text-sm">{message}</p>
                   </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg transition-all duration-300 shadow-lg ${
-                    status === 'loading'
-                      ? 'bg-teal-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02] active:scale-95'
-                  }`}
+                  className="btn btn-primary btn-lg btn-block"
                 >
                   {status === 'loading' ? (
                     <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-                      </svg>
+                      <span className="spinner !h-5 !w-5" aria-hidden="true" />
                       Enviando...
                     </span>
                   ) : (
@@ -116,10 +109,10 @@ export default function ForgotPasswordPage() {
             )}
           </div>
 
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 text-center">
+          <div className="px-8 py-6 bg-surface-2 border-t border-line text-center">
             <Link
               href="/login"
-              className="text-teal-600 hover:text-teal-700 font-medium transition-colors"
+              className="text-accent hover:underline font-medium transition-colors"
             >
               Volver al Login
             </Link>

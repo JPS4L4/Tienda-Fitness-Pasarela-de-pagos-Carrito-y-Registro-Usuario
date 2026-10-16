@@ -478,22 +478,19 @@ const CheckoutForm = ({
   };
 
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg py-10 px-4 sm:px-6 lg:px-8 md:py-14">
       {type === 'plan' && <FitnessProfileGate forceComplete />}
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-3">
-            Finalizar Compra
-          </h1>
-          <p className="text-slate-600 text-lg">
-            Completa tu pedido de forma segura y rápida
-          </p>
-          <div className="w-24 h-1 bg-linear-to-r from-indigo-600 to-blue-600 mx-auto mt-4 rounded-full"></div>
+        <div className="mb-10">
+          <div className="section-heading">
+            <h1 className="text-5xl md:text-7xl">Finalizar compra</h1>
+          </div>
+          <p className="mt-4 text-lg text-muted">Completa tu pedido de forma segura y rápida.</p>
         </div>
 
         {type === 'plan' && requiresFitnessProfile && (
-          <div className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-amber-900">
+          <div className="mb-10 border border-warn bg-warn/10 px-6 py-5 text-warn">
             <p className="text-sm font-semibold">
               Antes de continuar, completa tu perfil fitness para que el instructor pueda crear tu plan.
             </p>
@@ -569,7 +566,15 @@ const CheckoutPage = () => {
     ? {
         clientSecret: stripeClientSecret,
         appearance: {
-          theme: 'stripe' as const,
+          theme: 'night' as const,
+          variables: {
+            colorPrimary: '#ff4d14',
+            colorBackground: '#1a1a1d',
+            colorText: '#f5f3ef',
+            colorDanger: '#ff6161',
+            borderRadius: '0px',
+            fontFamily: 'Barlow, system-ui, sans-serif',
+          },
         },
       }
     : undefined;
@@ -598,10 +603,10 @@ const CheckoutPage = () => {
 export default function Page() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando checkout...</p>
+          <div className="spinner mx-auto"></div>
+          <p className="mt-4 text-muted">Cargando checkout...</p>
         </div>
       </div>
     }>

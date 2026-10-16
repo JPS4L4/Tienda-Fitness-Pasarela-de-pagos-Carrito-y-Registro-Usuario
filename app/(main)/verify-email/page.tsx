@@ -44,22 +44,19 @@ function VerifyEmailContent() {
   }, [token, router])
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4 sm:px-6 lg:px-8 py-12">
+    <main className="min-h-screen flex items-center justify-center bg-bg px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div className="border border-line border-t-4 border-t-accent bg-surface">
           <div className="px-8 pt-10 pb-6 text-center">
             {status === 'loading' && (
               <>
                 <div className="flex justify-center mb-4">
-                  <svg className="animate-spin h-12 w-12 text-teal-500" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-                  </svg>
+                  <span className="spinner !h-5 !w-5" aria-hidden="true" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="text-5xl text-fg">
                   Verificando tu email
                 </h1>
-                <p className="mt-3 text-slate-600 text-lg">
+                <p className="mt-3 text-muted text-lg">
                   Un momento, estamos confirmando tu dirección de email...
                 </p>
               </>
@@ -68,19 +65,19 @@ function VerifyEmailContent() {
             {status === 'success' && (
               <>
                 <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16  bg-ok/10 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-ok" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="text-5xl text-fg">
                   ¡Éxito!
                 </h1>
-                <p className="mt-3 text-slate-600 text-lg">
+                <p className="mt-3 text-muted text-lg">
                   {message}
                 </p>
-                <p className="mt-4 text-slate-500 text-sm">
+                <p className="mt-4 text-muted text-sm">
                   Redirigiendo a login en unos momentos...
                 </p>
               </>
@@ -89,16 +86,16 @@ function VerifyEmailContent() {
             {status === 'error' && (
               <>
                 <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16  bg-danger/10 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="text-5xl text-fg">
                   Oops
                 </h1>
-                <p className="mt-3 text-slate-600 text-lg">
+                <p className="mt-3 text-muted text-lg">
                   {message}
                 </p>
               </>
@@ -109,7 +106,7 @@ function VerifyEmailContent() {
             <div className="px-8 pb-8">
               <Link
                 href="/login"
-                className="block w-full py-3 px-6 rounded-xl font-bold text-white text-center bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 transition-all duration-300"
+                className="btn btn-primary btn-lg btn-block"
               >
                 Volver al Login
               </Link>
@@ -124,15 +121,12 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 px-4">
+      <main className="min-h-screen flex items-center justify-center bg-bg px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+          <div className="border border-line border-t-4 border-t-accent bg-surface">
             <div className="px-8 pt-10 pb-6 text-center">
-              <svg className="animate-spin h-12 w-12 text-teal-500 mx-auto mb-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-              </svg>
-              <h1 className="text-3xl font-extrabold text-slate-900">Cargando...</h1>
+              <span className="spinner !h-5 !w-5" aria-hidden="true" />
+              <h1 className="text-3xl font-extrabold text-fg">Cargando...</h1>
             </div>
           </div>
         </div>

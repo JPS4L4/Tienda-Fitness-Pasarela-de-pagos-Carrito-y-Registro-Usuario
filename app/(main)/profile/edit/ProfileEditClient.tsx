@@ -119,24 +119,24 @@ export default function ProfileEditClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-white to-slate-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-          <div className="bg-linear-to-r from-teal-500 to-emerald-600 px-8 pt-10 pb-12 text-center">
-            <h1 className="text-3xl font-extrabold text-white">Editar Perfil</h1>
-            <p className="text-teal-100 mt-2">Actualiza tu información de contacto</p>
+        <div className="border border-line border-t-4 border-t-accent bg-surface">
+          <div className="border-b border-line bg-surface-2 px-8 py-8">
+            <h1 className="text-5xl text-fg">Editar Perfil</h1>
+            <p className="mt-2 text-muted">Actualiza tu información de contacto</p>
           </div>
 
           <form onSubmit={handleSubmit} className="px-8 py-10 space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="name" className="label">
                 Nombre
               </label>
               <input
@@ -146,12 +146,12 @@ export default function ProfileEditClient() {
                 value={form.name || ""}
                 onChange={handleChange}
                 placeholder="Tu nombre"
-                className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="email" className="label">
                 Correo electrónico
               </label>
               <input
@@ -160,12 +160,12 @@ export default function ProfileEditClient() {
                 type="email"
                 value={form.email || ""}
                 disabled
-                className="w-full px-5 py-3.5 rounded-xl text-gray-500 border border-slate-200 bg-slate-100 cursor-not-allowed"
+                className="input cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="phone" className="label">
                 Teléfono
               </label>
               <input
@@ -175,15 +175,15 @@ export default function ProfileEditClient() {
                 value={form.phone || ""}
                 onChange={handleChange}
                 placeholder="+57 300 123 4567"
-                className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                className="input"
               />
             </div>
 
-            <div className="pt-6 border-t border-slate-200">
-              <h2 className="text-xl font-semibold text-slate-800 mb-4">Perfil fitness</h2>
+            <div className="pt-6 border-t border-line">
+              <h2 className="text-3xl text-fg mb-4">Perfil fitness</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="weightKg" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="weightKg" className="label">
                     Peso (kg)
                   </label>
                   <input
@@ -195,11 +195,11 @@ export default function ProfileEditClient() {
                     step="0.1"
                     value={form.weightKg || ""}
                     onChange={handleChange}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                   />
                 </div>
                 <div>
-                  <label htmlFor="heightCm" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="heightCm" className="label">
                     Altura (cm)
                   </label>
                   <input
@@ -211,11 +211,11 @@ export default function ProfileEditClient() {
                     step="0.1"
                     value={form.heightCm || ""}
                     onChange={handleChange}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                   />
                 </div>
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="age" className="label">
                     Edad
                   </label>
                   <input
@@ -226,14 +226,14 @@ export default function ProfileEditClient() {
                     max="100"
                     value={form.age || ""}
                     onChange={handleChange}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                    className="input"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label htmlFor="trainingTime" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="trainingTime" className="label">
                     Tiempo entrenando
                   </label>
                   <select
@@ -241,7 +241,7 @@ export default function ProfileEditClient() {
                     name="trainingTime"
                     value={form.trainingTime || ""}
                     onChange={handleChange}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                    className="input"
                   >
                     <option value="">Selecciona una opción</option>
                     <option value="0-6 meses">0-6 meses</option>
@@ -251,7 +251,7 @@ export default function ProfileEditClient() {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="goal" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label htmlFor="goal" className="label">
                     Objetivo principal
                   </label>
                   <select
@@ -259,7 +259,7 @@ export default function ProfileEditClient() {
                     name="goal"
                     value={form.goal || ""}
                     onChange={handleChange}
-                    className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                    className="input"
                   >
                     <option value="">Selecciona una opción</option>
                     <option value="Bajar de peso">Bajar de peso</option>
@@ -272,7 +272,7 @@ export default function ProfileEditClient() {
               </div>
 
               <div className="mt-4">
-                <label htmlFor="equipmentAvailability" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="equipmentAvailability" className="label">
                   Disponibilidad de equipos
                 </label>
                 <select
@@ -280,7 +280,7 @@ export default function ProfileEditClient() {
                   name="equipmentAvailability"
                   value={form.equipmentAvailability || ""}
                   onChange={handleChange}
-                  className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all bg-slate-50/50"
+                  className="input"
                 >
                   <option value="">Selecciona una opción</option>
                   <option value="Sin equipo">Sin equipo</option>
@@ -291,7 +291,7 @@ export default function ProfileEditClient() {
               </div>
 
               <div className="mt-4">
-                <label htmlFor="healthCondition" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="healthCondition" className="label">
                   Condición médica (opcional)
                 </label>
                 <textarea
@@ -301,20 +301,20 @@ export default function ProfileEditClient() {
                   value={form.healthCondition || ""}
                   onChange={handleChange}
                   placeholder="Indícanos si tienes alguna lesión, enfermedad o condición relevante"
-                  className="w-full px-5 py-3.5 rounded-xl text-gray-800 border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 outline-none transition-all placeholder-slate-400 bg-slate-50/50"
+                  className="input"
                 />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p className="text-red-700 text-sm">{error}</p>
+              <div className="bg-danger/10 border-l-4 border-danger p-4 ">
+                <p className="text-danger text-sm">{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-                <p className="text-green-700 text-sm">{success}</p>
+              <div className="bg-ok/10 border-l-4 border-ok p-4 ">
+                <p className="text-ok text-sm">{success}</p>
               </div>
             )}
 
@@ -322,18 +322,14 @@ export default function ProfileEditClient() {
               <button
                 type="button"
                 onClick={() => router.push("/profile")}
-                className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors"
+                className="btn btn-ghost btn-block"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className={`w-full px-6 py-3 rounded-xl font-semibold text-white transition-colors ${
-                  saving
-                    ? "bg-teal-300 cursor-not-allowed"
-                    : "bg-linear-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700"
-                }`}
+                className="btn btn-primary btn-block"
               >
                 {saving ? "Guardando..." : "Guardar cambios"}
               </button>

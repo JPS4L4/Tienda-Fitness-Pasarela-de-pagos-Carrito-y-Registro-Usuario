@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import toast from "react-hot-toast"
+import { LifeBuoy } from "lucide-react"
 import { errorMessage } from "@/lib/utils";
 
 const Support = () => {
@@ -16,7 +17,7 @@ const Support = () => {
   const [loading, setLoading] = useState(false)
 
   // Clase reutilizable para todos los inputs (incluye tu petición del placeholder indigo)
-  const inputClass = "w-full p-2.5 mt-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-gray-500 transition-shadow"
+  const inputClass = "input mt-1.5"
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const list = e.target.files ? Array.from(e.target.files) : []
@@ -70,20 +71,20 @@ const Support = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-stretch bg-white text-black font-sans">
+    <div className="min-h-screen flex items-stretch bg-surface text-fg font-sans">
       
       {/* SECCIÓN IZQUIERDA: FORMULARIO */}
       <main className="flex-1 flex items-center justify-center p-8 md:p-16">
         <form onSubmit={handleSubmit} className="w-full max-w-3xl">
-          <h1 className="text-3xl font-bold mb-4 text-gray-900">Soporte</h1>
-          <p className="text-gray-500 mb-8">
+          <h1 className="text-3xl font-bold mb-4 text-fg">Soporte</h1>
+          <p className="text-muted mb-8">
             Cuenta brevemente tu problema y adjunta imágenes si es necesario.
           </p>
 
           {/* Grid de Nombre y Correo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700">Nombre *</label>
+              <label className="block text-sm font-semibold text-fg-soft">Nombre *</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -93,7 +94,7 @@ const Support = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700">Correo electrónico *</label>
+              <label className="block text-sm font-semibold text-fg-soft">Correo electrónico *</label>
               <input
                 type="email"
                 value={email}
@@ -106,7 +107,7 @@ const Support = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700">Asunto *</label>
+            <label className="block text-sm font-semibold text-fg-soft">Asunto *</label>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -117,7 +118,7 @@ const Support = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700">Número de orden (opcional)</label>
+            <label className="block text-sm font-semibold text-fg-soft">Número de orden (opcional)</label>
             <input
               value={order}
               onChange={(e) => setOrder(e.target.value)}
@@ -127,7 +128,7 @@ const Support = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700">Mensaje *</label>
+            <label className="block text-sm font-semibold text-fg-soft">Mensaje *</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -140,18 +141,18 @@ const Support = () => {
 
           {/* Input de Archivo Estilizado */}
           <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Adjuntar imágenes</label>
+            <label className="label">Adjuntar imágenes</label>
             <input
               type="file"
               accept="image/*"
               multiple
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500
+              className="block w-full text-sm text-muted
                 file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
+                file: file:border-0
                 file:text-sm file:font-semibold
-                file:bg-indigo-50 file:text-indigo-700
-                hover:file:bg-indigo-100 transition-colors cursor-pointer"
+                file:bg-accent/10 file:text-accent
+                hover:file:bg-accent/10 transition-colors cursor-pointer"
             />
             {previews.length > 0 && (
               <div className="flex gap-2 mt-4 flex-wrap">
@@ -160,7 +161,7 @@ const Support = () => {
                     key={i}
                     src={p}
                     alt={`preview-${i}`}
-                    className="w-24 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                    className="w-24 h-20 object-cover  border border-line "
                   />
                 ))}
               </div>
@@ -171,12 +172,12 @@ const Support = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-indigo-500/20"
+              className="btn btn-primary"
             >
               {loading ? "Enviando..." : "Enviar mensaje"}
             </button>
             {status && (
-              <p className={`text-sm font-medium ${status.includes("error") ? "text-red-600" : "text-emerald-600"}`}>
+              <p className={`text-sm font-medium ${status.includes("error") ? "text-danger" : "text-ok"}`}>
                 {status}
               </p>
             )}
@@ -185,23 +186,12 @@ const Support = () => {
       </main>
 
       {/* SECCIÓN DERECHA: ASIDE (Oculto en celular, visible en pantallas grandes lg:flex) */}
-      <aside className="hidden lg:flex w-[520px] bg-linear-to-b from-indigo-50 to-white items-center justify-center p-8 border-l border-gray-100">
+      <aside className="hidden lg:flex w-[520px] bg-surface items-center justify-center p-8 border-l border-line">
         <div className="text-center">
-          {/* SVG con clases Tailwind */}
-          <svg className="w-56 h-56 mx-auto text-slate-900 mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M12 20v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4.93 4.93l1.41 1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M17.66 17.66l1.41 1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 12h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M20 12h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4.93 19.07l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-          
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Asistencia rápida</h2>
-          <p className="text-gray-500 max-w-xs mx-auto leading-relaxed">
+          <LifeBuoy className="mx-auto mb-6 h-32 w-32 text-accent" strokeWidth={1.25} aria-hidden="true" />
+
+          <h2 className="text-4xl text-fg mb-3">Asistencia rápida</h2>
+          <p className="text-muted max-w-xs mx-auto leading-relaxed">
             Adjunta imágenes y describe tu problema. Nuestro equipo revisará tu caso y responderá a tu correo.
           </p>
         </div>

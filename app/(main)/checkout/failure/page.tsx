@@ -7,13 +7,13 @@ export default function FailurePage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-orange-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
+    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full border border-line border-t-8 border-t-danger bg-surface p-6 md:p-12 text-center">
         {/* Ícono de error */}
         <div className="mb-8 flex justify-center">
-          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center">
+          <div className="w-24 h-24 bg-danger/10 flex items-center justify-center">
             <svg
-              className="w-12 h-12 text-red-600"
+              className="w-12 h-12 text-danger"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -28,37 +28,37 @@ export default function FailurePage() {
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">
+        <h1 className="text-5xl md:text-7xl text-fg mb-4">
           Pago Rechazado
         </h1>
         
-        <p className="text-xl text-slate-600 mb-8">
+        <p className="text-xl text-muted mb-8">
           Tu pago no pudo ser procesado
         </p>
 
-        <div className="bg-red-50 rounded-2xl p-6 mb-8 border-2 border-red-200">
-          <p className="text-red-700 font-medium">
+        <div className="bg-danger/10  p-6 mb-8 border-2 border-danger">
+          <p className="text-danger font-medium">
             Por favor, verifica tus datos de pago e intenta nuevamente
           </p>
         </div>
 
         <div className="space-y-4 mb-8 text-left max-w-md mx-auto">
-          <p className="text-slate-700 font-medium mb-3">Posibles razones:</p>
-          <ul className="space-y-2 text-slate-600">
+          <p className="text-fg-soft font-medium mb-3">Posibles razones:</p>
+          <ul className="space-y-2 text-muted">
             <li className="flex items-start gap-3">
-              <span className="text-red-500 mt-1">•</span>
+              <span className="text-danger mt-1">•</span>
               <span>Fondos insuficientes en la tarjeta</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-500 mt-1">•</span>
+              <span className="text-danger mt-1">•</span>
               <span>Datos de tarjeta incorrectos</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-500 mt-1">•</span>
+              <span className="text-danger mt-1">•</span>
               <span>Tarjeta expirada o bloqueada</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-500 mt-1">•</span>
+              <span className="text-danger mt-1">•</span>
               <span>Límite de transacciones excedido</span>
             </li>
           </ul>
@@ -67,23 +67,23 @@ export default function FailurePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => router.back()}
-            className="px-8 py-4 bg-linear-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg"
+            className="btn btn-primary btn-lg"
           >
             Intentar de nuevo
           </button>
           
           <Link
             href="/"
-            className="px-8 py-4 bg-white border-2 border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all"
+            className="btn btn-secondary btn-lg"
           >
             Volver al inicio
           </Link>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-200">
-          <p className="text-sm text-slate-500">
+        <div className="mt-8 pt-8 border-t border-line">
+          <p className="text-sm text-muted">
             ¿Necesitas ayuda? {' '}
-            <Link href="/support" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            <Link href="/support" className="text-accent hover:underline font-medium">
               Contáctanos
             </Link>
           </p>

@@ -129,11 +129,11 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div className="bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-10 text-white">
-          <h2 className="text-2xl sm:text-3xl font-bold">Completa tu perfil fitness</h2>
-          <p className="mt-2 text-emerald-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 overflow-y-auto">
+      <div className="w-full max-w-2xl border-2 border-accent bg-surface">
+        <div className="border-b border-line bg-surface-2 px-8 py-8">
+          <h2 className="text-4xl text-fg">Completa tu perfil fitness</h2>
+          <p className="mt-2 text-muted">
             Esta información nos ayuda a recomendarte el plan ideal.
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
         <form onSubmit={handleSubmit} className="px-8 py-8 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Peso (kg)</label>
+              <label className="label">Peso (kg)</label>
               <input
                 name="weightKg"
                 type="number"
@@ -150,12 +150,12 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
                 step="0.1"
                 value={form.weightKg}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 text-slate-600 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                className="input"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Altura (cm)</label>
+              <label className="label">Altura (cm)</label>
               <input
                 name="heightCm"
                 type="number"
@@ -164,12 +164,12 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
                 step="0.1"
                 value={form.heightCm}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 text-slate-600 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                className="input"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Edad</label>
+              <label className="label">Edad</label>
               <input
                 name="age"
                 type="number"
@@ -177,7 +177,7 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
                 max="100"
                 value={form.age}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 text-slate-600 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                className="input"
                 required
               />
             </div>
@@ -185,12 +185,12 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tiempo entrenando</label>
+              <label className="label">Tiempo entrenando</label>
               <select
                 name="trainingTime"
                 value={form.trainingTime}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 text-slate-600 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                className="input"
                 required
               >
                 <option value="">Selecciona una opción</option>
@@ -201,12 +201,12 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Objetivo principal</label>
+              <label className="label">Objetivo principal</label>
               <select
                 name="goal"
                 value={form.goal}
                 onChange={handleChange}
-                className="w-full rounded-xl border text-slate-600 border-slate-200 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                className="input"
                 required
               >
                 <option value="">Selecciona una opción</option>
@@ -220,12 +220,12 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Disponibilidad de equipos</label>
+            <label className="label">Disponibilidad de equipos</label>
             <select
               name="equipmentAvailability"
               value={form.equipmentAvailability}
               onChange={handleChange}
-              className="w-full rounded-xl text-slate-600 border border-slate-200 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+              className="input"
               required
             >
               <option value="">Selecciona una opción</option>
@@ -236,26 +236,26 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Condición médica (opcional)</label>
+            <label className="label">Condición médica (opcional)</label>
             <textarea
               name="healthCondition"
               value={form.healthCondition}
               onChange={handleChange}
               rows={3}
               placeholder="Indícanos si tienes alguna lesión, enfermedad o condición relevante"
-              className="w-full rounded-xl border border-slate-200 text-slate-600 px-4 py-2.5 bg-slate-50/60 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+              className="input"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
+            <div className="bg-danger/10 border-l-4 border-danger p-4 ">
+              <p className="text-danger text-sm">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-              <p className="text-green-700 text-sm">{success}</p>
+            <div className="bg-ok/10 border-l-4 border-ok p-4 ">
+              <p className="text-ok text-sm">{success}</p>
             </div>
           )}
 
@@ -264,7 +264,7 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-full px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold transition-colors"
+                className="btn btn-ghost btn-block"
               >
                 Ahora no
               </button>
@@ -272,11 +272,7 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
             <button
               type="submit"
               disabled={saving}
-              className={`w-full px-6 py-3 rounded-xl font-semibold text-white transition-colors ${
-                saving
-                  ? "bg-emerald-300 cursor-not-allowed"
-                  : "bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-              }`}
+              className="btn btn-primary btn-block"
             >
               {saving ? "Guardando..." : "Guardar y continuar"}
             </button>

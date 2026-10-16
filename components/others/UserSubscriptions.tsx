@@ -79,7 +79,7 @@ export default function UserSubscriptions() {
   if (status === "loading" || loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="spinner"></div>
       </div>
     );
   }
@@ -87,10 +87,10 @@ export default function UserSubscriptions() {
   if (status === "unauthenticated") {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 mb-4">Debes iniciar sesión para ver tus suscripciones</p>
+        <p className="text-muted mb-4">Debes iniciar sesión para ver tus suscripciones</p>
         <Link
           href="/login"
-          className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="inline-block bg-accent text-on-accent px-6 py-2  hover:bg-accent-hover transition"
         >
           Iniciar Sesión
         </Link>
@@ -101,18 +101,18 @@ export default function UserSubscriptions() {
   if (subscriptions.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-          <Calendar className="w-10 h-10 text-gray-400" />
+        <div className="bg-surface-2  w-20 h-20 flex items-center justify-center mx-auto mb-4">
+          <Calendar className="w-10 h-10 text-subtle" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <h3 className="text-xl font-semibold text-fg mb-2">
           No tienes suscripciones activas
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted mb-6">
           Explora nuestros planes y encuentra el perfecto para ti
         </p>
         <Link
           href="/plans"
-          className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
+          className="inline-block bg-accent text-on-accent px-6 py-3  hover:bg-accent-hover transition"
         >
           Ver Planes
         </Link>
@@ -122,7 +122,7 @@ export default function UserSubscriptions() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Mis Suscripciones</h2>
+      <h2 className="text-2xl font-bold text-fg mb-6">Mis Suscripciones</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {subscriptions.map((subscription) => {
@@ -132,10 +132,10 @@ export default function UserSubscriptions() {
           return (
             <div
               key={subscription.id}
-              className={`bg-white rounded-xl border-2 p-6 transition-all hover:shadow-lg ${
+              className={`bg-surface  border-2 p-6 transition-all  ${
                 subscription.isValid && subscription.status === "active"
-                  ? "border-green-200"
-                  : "border-gray-200 opacity-75"
+                  ? "border-ok"
+                  : "border-line opacity-75"
               }`}
             >
               {/* Header con tipo de plan */}
@@ -143,21 +143,21 @@ export default function UserSubscriptions() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                      className={`px-3 py-1  text-xs font-bold uppercase ${
                         subscription.plan.type === "nutricion"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-ok/10 text-ok"
+                          : "bg-accent/10 text-accent"
                       }`}
                     >
                       {subscription.plan.type}
                     </span>
                     {subscription.isValid && subscription.status === "active" ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-ok" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-600" />
+                      <XCircle className="w-5 h-5 text-danger" />
                     )}
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-fg">
                     {subscription.plan.title}
                   </h3>
                 </div>
@@ -165,12 +165,12 @@ export default function UserSubscriptions() {
 
               {/* Fechas */}
               <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-muted">
                   <Calendar className="w-4 h-4 mr-2" />
                   <span>Inicio: {formatDate(subscription.startDate)}</span>
                 </div>
                 {subscription.endDate && (
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center text-sm text-muted">
                     <Calendar className="w-4 h-4 mr-2" />
                     <span>Vence: {formatDate(subscription.endDate)}</span>
                   </div>
@@ -180,10 +180,10 @@ export default function UserSubscriptions() {
               {/* Días restantes */}
               {daysRemaining !== null && subscription.isValid && (
                 <div
-                  className={`mb-4 px-3 py-2 rounded-lg text-sm font-medium ${
+                  className={`mb-4 px-3 py-2  text-sm font-medium ${
                     isExpiringSoon
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-green-100 text-green-700"
+                      ? "bg-accent/10 text-accent"
+                      : "bg-ok/10 text-ok"
                   }`}
                 >
                   {daysRemaining > 0
@@ -195,12 +195,12 @@ export default function UserSubscriptions() {
               {/* Estado */}
               <div className="mb-4">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                  className={`inline-block px-3 py-1  text-xs font-bold ${
                     subscription.status === "active" && subscription.isValid
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-ok/10 text-ok"
                       : subscription.status === "expired"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-gray-100 text-gray-700"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-surface-2 text-fg-soft"
                   }`}
                 >
                   {subscription.status === "active" && subscription.isValid
@@ -213,22 +213,22 @@ export default function UserSubscriptions() {
 
               {/* Token de acceso */}
               {subscription.isValid && subscription.status === "active" && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="mb-4 p-3 bg-surface-2 ">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Key className="w-4 h-4 text-gray-600" />
-                      <span className="text-xs font-medium text-gray-600">
+                      <Key className="w-4 h-4 text-muted" />
+                      <span className="text-xs font-medium text-muted">
                         Token de Acceso
                       </span>
                     </div>
                     <button
                       onClick={() => copyToken(subscription.accessToken)}
-                      className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                      className="text-xs text-accent hover:text-accent font-medium"
                     >
                       Copiar
                     </button>
                   </div>
-                  <code className="text-xs text-gray-800 font-mono block mt-2 break-all">
+                  <code className="text-xs text-fg font-mono block mt-2 break-all">
                     {subscription.accessToken.substring(0, 32)}...
                   </code>
                 </div>
@@ -238,7 +238,7 @@ export default function UserSubscriptions() {
               <div className="flex gap-2">
                 <Link
                   href={`/plans/${subscription.plan.slug}`}
-                  className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-center text-sm font-medium flex items-center justify-center gap-2"
+                  className="flex-1 bg-accent text-on-accent px-4 py-2  hover:bg-accent-hover transition text-center text-sm font-medium flex items-center justify-center gap-2"
                 >
                   Ver Plan
                   <ExternalLink className="w-4 h-4" />
@@ -246,7 +246,7 @@ export default function UserSubscriptions() {
                 {!subscription.isValid && (
                   <Link
                     href={`/checkout?type=plan&planId=${subscription.planId}`}
-                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-center text-sm font-medium"
+                    className="flex-1 bg-ok text-on-accent px-4 py-2  hover:bg-ok transition text-center text-sm font-medium"
                   >
                     Renovar
                   </Link>
