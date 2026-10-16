@@ -5,7 +5,6 @@ import { Dialog, Transition } from '@headlessui/react'
 import { X, Heart } from 'lucide-react'
 import { useFavoritesStore } from '@/lib/stores/favoritesStore' // ajusta ruta
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 
 interface FavoritesDrawerProps {
   isOpen: boolean

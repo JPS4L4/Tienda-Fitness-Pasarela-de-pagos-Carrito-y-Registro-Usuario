@@ -25,7 +25,7 @@ const ItemCard = ({
   stock
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
-  const isInCart = cart.some((item: any) => item.id === id)
+  const isInCart = cart.some((item) => item.id === id)
   const isOutOfStock = (stock ?? 0) <= 0
   // price es el precio de lista: el cobro aplica el descuento (mismo cálculo que el servidor)
   const finalPrice = applyDiscount(price, discount)

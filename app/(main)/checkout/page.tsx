@@ -13,6 +13,7 @@ import CheckoutSummary from './components/CheckoutSummary';
 import CheckoutPaymentForm from './components/CheckoutPaymentForm';
 import { ItemUI } from '@/app/src/types/item';
 import FitnessProfileGate from '@/components/others/FitnessProfileGate';
+import { errorMessage } from "@/lib/utils";
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
@@ -137,7 +138,7 @@ const CheckoutForm = ({
         const data = await res.json();
         if (!active) return;
         setRequiresFitnessProfile(!Boolean(data?.user?.fitnessProfileCompleted));
-      } catch (error) {
+      } catch {
         if (active) {
           setRequiresFitnessProfile(true);
         }
@@ -468,8 +469,8 @@ const CheckoutForm = ({
         // Redirigir a MercadoPago
         window.location.href = redirectUrl;
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Error al procesar el pago');
+    } catch (error) {
+      toast.error(errorMessage(error, 'Error al procesar el pago'));
       console.error(error);
     } finally {
       setLoading(false);

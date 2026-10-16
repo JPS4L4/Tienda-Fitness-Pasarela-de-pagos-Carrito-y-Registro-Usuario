@@ -2,7 +2,6 @@
 
 import { Search as SearchIcon, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 export interface SearchResult {
   id: number;
@@ -24,11 +23,6 @@ export default function SearchBar({
   isLocalSearch = false,
 }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
-  const pathname = usePathname();
-
-  // Determinar si estamos en una página de búsqueda local
-  const isLocalSearchPage = pathname === "/items" || pathname === "/plans";
 
   useEffect(() => {
     if (onSearch && !isLocalSearch) {
@@ -47,8 +41,6 @@ export default function SearchBar({
         placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setTimeout(() => setIsFocused(false), 200)}
         className="bg-white text-sm text-gray-800 rounded-full pl-3 pr-8 py-1.5 border border-black focus:outline-none hover:border-orange-500 ease-in duration-100 focus:border-orange-500 w-40 transition-all focus:w-52"
       />
       {searchQuery ? (

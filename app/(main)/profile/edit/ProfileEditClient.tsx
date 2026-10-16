@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { errorMessage } from "@/lib/utils";
 
 interface ProfileData {
   name: string | null;
@@ -55,8 +56,8 @@ export default function ProfileEditClient() {
           equipmentAvailability: data.user?.equipmentAvailability ?? "",
           healthCondition: data.user?.healthCondition ?? "",
         });
-      } catch (err: any) {
-        setError(err.message || "Error cargando el perfil");
+      } catch (err) {
+        setError(errorMessage(err, "Error cargando el perfil"));
       } finally {
         setLoading(false);
       }
@@ -109,8 +110,8 @@ export default function ProfileEditClient() {
       }
       setSuccess("Perfil actualizado correctamente");
       setTimeout(() => router.push("/profile"), 1000);
-    } catch (err: any) {
-      setError(err.message || "Error al guardar");
+    } catch (err) {
+      setError(errorMessage(err, "Error al guardar"));
     } finally {
       setSaving(false);
     }

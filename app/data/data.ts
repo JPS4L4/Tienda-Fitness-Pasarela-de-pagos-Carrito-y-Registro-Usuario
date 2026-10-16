@@ -32,7 +32,7 @@ export interface Plan {
 
 // Definimos la estructura global de la "DB"
 interface Database {
-  users: any[]; // Puedes definir una interfaz User más adelante
+  users: unknown[];
   plans: Plan[];
   items: ItemProps[];
   comments: CommentsProps[];

@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
 import toast from "react-hot-toast"
 import { cn } from "@/lib/utils" // si no tienes cn, agrégalo (ver abajo)
+import type { PlanUI } from "@/app/src/types/plan"
 
 const typeStyles = {
   nutricion: {
@@ -71,7 +72,7 @@ const FavoriteButton = ({
   )
 }
 
-export const PlanCard = ({ plan }: { plan: any }) => {
+export const PlanCard = ({ plan }: { plan: PlanUI }) => {
   const style = typeStyles[plan.type as keyof typeof typeStyles] || typeStyles.nutricion
 
 

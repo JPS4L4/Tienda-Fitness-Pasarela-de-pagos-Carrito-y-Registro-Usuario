@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { errorMessage } from "@/lib/utils";
 
 interface FitnessProfileForm {
   weightKg: string;
@@ -116,8 +117,8 @@ export default function FitnessProfileGate({ forceComplete = false }: { forceCom
 
       setSuccess("Formulario guardado correctamente");
       setOpen(false);
-    } catch (err: any) {
-      setError(err.message || "Error al guardar el formulario");
+    } catch (err) {
+      setError(errorMessage(err, "Error al guardar el formulario"));
     } finally {
       setSaving(false);
     }

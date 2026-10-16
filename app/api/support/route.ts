@@ -30,13 +30,11 @@ export async function POST(request: Request) {
       for (const file of all) {
         // In Next's runtime a file will be a File object
         // We'll only collect metadata here (no persistent storage)
-        // @ts-ignore
-        if (file && typeof file === 'object' && 'name' in file) {
-          // @ts-ignore
+        if (typeof file !== 'string') {
           images.push({ name: file.name, size: file.size, type: file.type })
         }
       }
-    } catch (e) {
+    } catch {
       // ignore if no files
     }
 
@@ -63,8 +61,8 @@ export async function POST(request: Request) {
       message: 'Ticket de soporte enviado correctamente. Te responderemos pronto.', 
       data: payload 
     })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error en /api/support:', err);
-    return NextResponse.json({ ok: false, message: err?.message || 'Error interno' }, { status: 500 })
+    return NextResponse.json({ ok: false, message: 'Error interno' }, { status: 500 })
   }
 }

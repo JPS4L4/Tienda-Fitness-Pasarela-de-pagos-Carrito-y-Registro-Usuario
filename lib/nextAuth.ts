@@ -56,11 +56,11 @@ const providers = [
         
         if (result.success && result.user && result.user.email) {
           return {
-            id: result.user.id,
+            id: String(result.user.id),
             email: result.user.email,
             name: result.user.name || "",
             phone: result.user.phone || null,
-          } as any
+          }
         }
         
         return null
@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // Callback jwt: se ejecuta cuando se crea o actualiza el token
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user, account }) {
       // user solo existe la primera vez (cuando se autentica)
       if (user) {
         token.id = user.id
@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback session: lo que ve el frontend en useSession()
-    async session({ session, token }: any) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
         session.user.email = token.email as string
@@ -134,7 +134,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback sign-in: se ejecuta cuando alguien intenta iniciar sesión
-    async signIn({ user, account, profile }: any) {
+    async signIn({ user, account, profile }) {
       // Para OAuth (Google, Facebook), crear o actualizar usuario en BD
       if (account?.provider === "google" || account?.provider === "facebook") {
         
@@ -143,15 +143,16 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
+        const oauthProfile = profile as { email_verified?: boolean; name?: string; picture?: string } | undefined
         // Google declara si el correo está verificado; Facebook no da esa garantía.
         // Sin verificación no se vincula a una cuenta existente (ver registerOAuthUser).
-        const emailVerified = account.provider === "google" && profile?.email_verified === true;
+        const emailVerified = account.provider === "google" && oauthProfile?.email_verified === true;
 
         try {
           const result = await registerOAuthUser({
             email: user.email,
-            name: user.name || profile?.name || null,
-            image: user.image || profile?.picture || null,
+            name: user.name || oauthProfile?.name || null,
+            image: user.image || oauthProfile?.picture || null,
             provider: account.provider,
             providerAccountId: account.providerAccountId || user.id,
             emailVerified,
@@ -177,7 +178,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback redirect: después de login exitoso
-    async redirect({ url, baseUrl }: any) {
+    async redirect({ url, baseUrl }) {
       // Redirige a "/" si no hay callback URL
       if (url.startsWith("/")) return `${baseUrl}${url}`
       return baseUrl

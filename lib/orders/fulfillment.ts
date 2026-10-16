@@ -65,7 +65,7 @@ export async function fulfillOrder(
           },
         })
       } else {
-        const lines = Array.isArray(current.items) ? (current.items as any[]) : []
+        const lines = Array.isArray(current.items) ? (current.items as Array<{ productId?: unknown; id?: unknown; quantity?: unknown } | null>) : []
         for (const line of lines) {
           const productId = Number(line?.productId ?? line?.id)
           const quantity = Number(line?.quantity || 0)

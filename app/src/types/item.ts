@@ -19,5 +19,5 @@ export type ItemUI = {
   stock?: number
   rating?: number
   reviewCount?: number
-  specs?: any
+  specs?: Record<string, unknown> | null
 }

@@ -54,7 +54,7 @@ export async function sendVerificationEmail(
       return false
     }
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
       subject: `Verifica tu email - ${BRAND_NAME}`,
@@ -125,7 +125,7 @@ export async function sendPasswordResetEmail(
       return false
     }
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: getFromEmail(),
       to: email,
       subject: `Resetea tu contraseña - ${BRAND_NAME}`,

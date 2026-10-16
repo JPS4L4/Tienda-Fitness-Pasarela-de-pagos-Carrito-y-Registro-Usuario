@@ -54,7 +54,7 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
         setCanReview(true)
         setEligibilityMessage(null)
       }
-    } catch (err) {
+    } catch {
       setCanReview(false)
       setEligibilityMessage("No fue posible validar tu compra")
     } finally {

@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import googleIcon from '../../../images/icons/google_icon.webp'
-import facebookIcon from '../../../images/icons/facebook_icon.webp'
 import { 
   validateLoginForm, 
   validateRegisterForm, 

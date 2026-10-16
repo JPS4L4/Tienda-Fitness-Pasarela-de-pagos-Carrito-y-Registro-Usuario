@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/nextAuth";
 import { prisma } from "@/lib/prisma";
 import { sanitizeInput, validateName, validatePhone } from "@/lib/validation";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   const session = await auth();
@@ -167,8 +168,8 @@ export async function PATCH(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, user: updated });
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ success: false, message: "El teléfono ya está registrado" }, { status: 409 });
     }
 

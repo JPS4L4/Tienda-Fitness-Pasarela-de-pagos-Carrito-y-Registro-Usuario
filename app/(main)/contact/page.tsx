@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { XIcon } from "@/components/others/XIcon"
-import { MapPin, Mail, Phone, Send, Instagram, Facebook, Twitter, ArrowRight } from "lucide-react";
+import { Mail, Phone, Send, Instagram, Facebook, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { BRAND_CONTACT_EMAIL } from "@/lib/brand";
+import { errorMessage } from "@/lib/utils";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -45,9 +46,9 @@ export default function ContactPage() {
       setSuccess(true);
       setFormData({ name: "", lastName: "", email: "", message: "" });
       toast.success("¡Mensaje enviado! Te responderemos pronto.", { duration: 5000 });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error:", error);
-      toast.error(error.message || "Error al enviar el mensaje. Por favor intenta de nuevo.", { duration: 4000 });
+      toast.error(errorMessage(error, "Error al enviar el mensaje. Por favor intenta de nuevo."), { duration: 4000 });
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,7 @@ export default function ContactPage() {
 // --- SUB-COMPONENTES PARA ESTILO ---
 
 // 1. Item de contacto (Icono + Texto)
-function ContactItem({ icon, title, detail }: { icon: any, title: string, detail: string }) {
+function ContactItem({ icon, title, detail }: { icon: ReactNode, title: string, detail: string }) {
   return (
     <div className="flex items-start gap-4">
       <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm shrink-0">
@@ -240,7 +241,7 @@ function InputClean({
 }
 
 // 3. Botón Redes
-function SocialLink({ icon }: { icon: any }) {
+function SocialLink({ icon }: { icon: ReactNode }) {
   return (
     <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all">
       <div className="w-5 h-5">{icon}</div>

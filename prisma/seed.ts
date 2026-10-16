@@ -61,7 +61,7 @@ async function main() {
     },
   });
 
-  const products = await prisma.item.createMany({
+  await prisma.item.createMany({
     data: [
       // ---------- Deportes / Equipamiento ----------
       {
@@ -363,7 +363,7 @@ async function main() {
     ],
   });
 
-  const plans = await prisma.plan.createMany({
+  await prisma.plan.createMany({
     data: [
       // ---------- Nutrición ----------
       {

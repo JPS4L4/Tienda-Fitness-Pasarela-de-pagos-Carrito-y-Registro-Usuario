@@ -44,6 +44,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       : `${STORAGE_PREFIX}-cart:guest`;
 
     const loadCart = async () => {
+      migrateLegacyStorageKey(userKey, userKey.replace(STORAGE_PREFIX, LEGACY_STORAGE_PREFIX));
+      migrateLegacyStorageKey(`${STORAGE_PREFIX}-cart:guest`, `${LEGACY_STORAGE_PREFIX}-cart:guest`);
       setIsHydrated(false);
       setStorageKey(userKey);
 

@@ -16,7 +16,7 @@ export const CommentsCard = ({ name, role, content, avatar, rating = 5 }: Commen
 
         {/* Contenido del testimonio */}
         <p className="text-slate-600 italic mb-8 leading-relaxed">
-          "{content}"
+          &ldquo;{content}&rdquo;
         </p>
       </div>
 

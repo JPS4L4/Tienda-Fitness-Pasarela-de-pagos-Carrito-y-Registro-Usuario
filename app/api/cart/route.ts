@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest) {
     const incomingItems = Array.isArray(body?.items) ? body.items : [];
 
     const sanitizedItems = incomingItems
-      .map((item: any) => ({
+      .map((item: { id?: unknown; quantity?: unknown }) => ({
         id: Number(item.id),
         quantity: Number(item.quantity || 0),
       }))

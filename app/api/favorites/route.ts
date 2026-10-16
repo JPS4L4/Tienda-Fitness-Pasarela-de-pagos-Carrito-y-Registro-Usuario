@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest) {
       ...(allFavorites.length
         ? [
             prisma.favorite.createMany({
-              data: allFavorites.map((fav: any) => ({
+              data: allFavorites.map((fav: { type?: string; id: number | string }) => ({
                 userId,
                 productId: fav.type === "item" ? Number(fav.id) : null,
                 planId: fav.type === "plan" ? Number(fav.id) : null,

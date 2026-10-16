@@ -24,7 +24,7 @@ interface Subscription {
 }
 
 export default function UserSubscriptions() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -12,7 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Scripts sueltos de depuración (se limpian en la fase de portafolio).
+    "test-*.ts",
   ]),
+  {
+    // Scripts de mantenimiento en CommonJS.
+    files: ["scripts/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
+    // Regla nueva de React 19 muy estricta: los efectos que cargan datos en el cliente
+    // (búsquedas, carruseles, carga inicial) son un patrón aceptado en este proyecto.
+    rules: { "react-hooks/set-state-in-effect": "warn" },
+  },
 ]);
 
 export default eslintConfig;

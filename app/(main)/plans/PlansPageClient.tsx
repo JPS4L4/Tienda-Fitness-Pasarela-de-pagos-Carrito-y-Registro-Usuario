@@ -11,7 +11,7 @@ type PlansPageClientProps = {
 
 export default function PlansPageClient({ plans }: PlansPageClientProps) {
   const [selectedSection, setSelectedSection] = useState<"nutricion" | "entrenamiento">("nutricion");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
 
   const filtered = useMemo(() => {
     let result = plans.filter((p) => p.type === selectedSection);

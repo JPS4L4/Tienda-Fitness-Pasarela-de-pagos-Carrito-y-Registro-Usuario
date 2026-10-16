@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Guardar token en la base de datos
     try {
-      const updated = await prisma.user.update({
+      await prisma.user.update({
         where: { email: sanitizedEmail },
         data: {
           emailVerificationToken: verificationToken,

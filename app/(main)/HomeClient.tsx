@@ -135,7 +135,7 @@ useEffect(() => {
       <section className="py-20 container mx-auto px-4">
         <div className="flex justify-between items-end mb-10">
           <h2 className="text-3xl font-bold uppercase tracking-widest">Tienda</h2>
-          <a href="/items" className="text-indigo-600 hover:underline text-sm font-medium">Ver todo →</a>
+          <Link href="/items" className="text-indigo-600 hover:underline text-sm font-medium">Ver todo →</Link>
         </div>
 
         {errorItems ? (

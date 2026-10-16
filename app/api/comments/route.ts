@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { toCommentsUIList } from '@/app/src/adapters/commentsAdapter';
 import { auth } from '@/lib/nextAuth';
-import { validateRegisterForm } from '@/lib/validation';
 import { ORDER_STATUS } from '@/lib/orders/constants';
+import type { Prisma } from "@prisma/client";
+type OrderLine = { productId?: unknown; planId?: unknown; id?: unknown } | null;
 
 // Solo los campos públicos del autor: nunca password ni tokens
 const USER_PUBLIC_SELECT = { id: true, name: true, email: true, image: true } as const;
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     const planId = searchParams.get('planId');
 
     // Construir filtros dinámicamente
-    const where: any = {};
+    const where: Prisma.ReviewWhereInput = {};
     if (productId) {
       where.productId = parseInt(productId);
     }
@@ -130,8 +131,8 @@ export async function POST(request: Request) {
       });
 
       const hasPurchased = orders.some((order) => {
-        const items = Array.isArray(order.items) ? order.items : [];
-        return items.some((item: any) => {
+        const items = (Array.isArray(order.items) ? order.items : []) as OrderLine[];
+        return items.some((item) => {
           const itemProductId = item?.productId ?? item?.id;
           return Number(itemProductId) === parsedProductId;
         });
@@ -170,8 +171,8 @@ export async function POST(request: Request) {
         if (Number(order.planId) === parsedPlanId) {
           return true;
         }
-        const items = Array.isArray(order.items) ? order.items : [];
-        return items.some((item: any) => {
+        const items = (Array.isArray(order.items) ? order.items : []) as OrderLine[];
+        return items.some((item) => {
           const itemPlanId = item?.planId ?? item?.id;
           return Number(itemPlanId) === parsedPlanId;
         });

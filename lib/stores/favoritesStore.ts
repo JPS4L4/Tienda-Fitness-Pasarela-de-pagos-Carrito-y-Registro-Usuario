@@ -74,7 +74,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       version: 1,
       partialize: state => ({ favorites: state.favorites }),
       migrate: (persistedState) => {
-        const state = persistedState as FavoritesState & { favorites?: any[] }
+        const state = persistedState as FavoritesState & { favorites?: Array<Favorite & { type: string }> }
         const favorites = Array.isArray(state.favorites)
           ? state.favorites.map((fav) => ({
               ...fav,

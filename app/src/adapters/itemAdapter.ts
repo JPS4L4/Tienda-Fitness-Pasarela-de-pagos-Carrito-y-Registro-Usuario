@@ -21,7 +21,7 @@ export type ItemFromDB = {
   stock: number
   rating: number
   reviewCount: number
-  specs: any
+  specs: unknown
   createdAt: Date
   updatedAt: Date
 }
@@ -61,7 +61,7 @@ export function adaptItemToItemUI(item: ItemFromDB): ItemUI {
     stock: item.stock,
     rating: item.rating,
     reviewCount: item.reviewCount,
-    specs: item.specs,
+    specs: (item.specs ?? undefined) as ItemUI['specs'],
   };
 }
 

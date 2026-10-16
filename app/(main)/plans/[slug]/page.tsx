@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { BRAND_NAME } from '@/lib/brand';
 import { formatPrice, applyDiscount } from '@/lib/money'
 import { notFound } from 'next/navigation';
-import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag, Heart } from 'lucide-react';
+import { CheckCircle, Sparkles, Apple, Dumbbell, Star, Tag } from 'lucide-react';
 import { getPlanBySlug } from '@/app/src/lib/plans';
 import { PlanUI } from '@/app/src/types/plan';
 import { SafeImage } from '@/components/others/SafeImage';

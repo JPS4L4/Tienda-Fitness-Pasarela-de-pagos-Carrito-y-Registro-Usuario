@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/nextAuth";
 import { ORDER_STATUS } from "@/lib/orders/constants";
+type OrderLine = { productId?: unknown; planId?: unknown; id?: unknown } | null;
 
 export async function GET(request: Request) {
   try {
@@ -55,9 +56,9 @@ export async function GET(request: Request) {
     });
 
     const hasPurchased = orders.some((order) => {
-      const items = Array.isArray(order.items) ? order.items : [];
+      const items = (Array.isArray(order.items) ? order.items : []) as OrderLine[];
       if (productId) {
-        return items.some((item: any) => {
+        return items.some((item) => {
           const itemProductId = item?.productId ?? item?.id;
           return Number(itemProductId) === productId;
         });
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
         const directPlanMatch = Number(order.planId) === planId;
         if (directPlanMatch) return true;
 
-        return items.some((item: any) => {
+        return items.some((item) => {
           const itemPlanId = item?.planId ?? item?.id;
           return Number(itemPlanId) === planId;
         });

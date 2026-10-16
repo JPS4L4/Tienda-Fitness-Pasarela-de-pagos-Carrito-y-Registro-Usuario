@@ -2,18 +2,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
-// Rutas públicas que no requieren autenticación
-const publicRoutes = [
-  "/",
-  "/login",
-  "/items",
-  "/plans",
-  "/contact",
-  "/support",
-  "/privacidad",
-  "/terminos",
-]
-
 // Rutas que requieren autenticación
 const protectedRoutes = [
   "/dashboard",

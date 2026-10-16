@@ -3,11 +3,6 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
 interface RegisterPayload {
   name: string;
   email: string;
@@ -243,7 +238,7 @@ export async function registerOAuthUser(payload: {
   try {
 
     // Buscar usuario existente por email
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: payload.email },
       include: {
         accounts: true,

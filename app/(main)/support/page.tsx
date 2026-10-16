@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import toast from "react-hot-toast"
+import { errorMessage } from "@/lib/utils";
 
 const Support = () => {
   const [name, setName] = useState("")
@@ -59,8 +60,8 @@ const Support = () => {
       setMessage("")
       setFiles([])
       setPreviews([])
-    } catch (err: any) {
-      const errorMsg = err?.message || "Error en el envío"
+    } catch (err) {
+      const errorMsg = errorMessage(err, "Error en el envío")
       setStatus(errorMsg)
       toast.error(errorMsg, { duration: 4000 })
     } finally {
