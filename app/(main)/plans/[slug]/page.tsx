@@ -109,7 +109,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
             )}
 
             {/* Badge de descuento */}
-            {plan.discount && plan.discount > 0 && (
+            {(plan.discount ?? 0) > 0 && (
               <div className="absolute top-4 right-4 z-10">
                 <span className="bg-red-500 text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-lg">
                   -{plan.discount}% OFF
@@ -173,7 +173,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
                     {plan.currency}
                   </span>
                 </p>
-                {plan.discount && plan.discount > 0 && (
+                {(plan.discount ?? 0) > 0 && (
                   <p className="text-2xl text-gray-500 line-through">
                     {formatPrice(plan.price, plan.currency)}
                   </p>

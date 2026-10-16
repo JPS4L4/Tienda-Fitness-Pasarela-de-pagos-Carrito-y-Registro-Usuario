@@ -69,7 +69,7 @@ export default function LocalSearchResults({
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   {item.category}
-                  {item.discount && (
+                  {(item.discount ?? 0) > 0 && (
                     <>
                       <span className="mx-1">•</span>
                       <span className="text-orange-600 font-semibold">
