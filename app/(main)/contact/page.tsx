@@ -4,6 +4,7 @@ import { useState } from "react";
 import { XIcon } from "@/components/others/XIcon"
 import { MapPin, Mail, Phone, Send, Instagram, Facebook, Twitter, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { BRAND_CONTACT_EMAIL } from "@/lib/brand";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,7 @@ export default function ContactPage() {
         {/* Datos de Contacto (Abajo) */}
         <div className="relative z-20 space-y-8 mb-10 md:mb-0">
           <ContactItem icon={<Phone className="w-6 h-6"/>} title="Llámanos" detail="+57 (300) 123-4567" />
-          <ContactItem icon={<Mail className="w-6 h-6"/>} title="Escríbenos" detail="contacto@nansalazar.com" />
+          <ContactItem icon={<Mail className="w-6 h-6"/>} title="Escríbenos" detail={BRAND_CONTACT_EMAIL} />
           {/* <ContactItem icon={<MapPin className="w-6 h-6"/>} title="Visítanos" detail="Calle 100 # 15-20, Bogotá" /> */}
           
           {/* Redes Sociales */}

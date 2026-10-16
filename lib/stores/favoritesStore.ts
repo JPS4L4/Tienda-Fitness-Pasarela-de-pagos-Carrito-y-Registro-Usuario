@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { STORAGE_PREFIX } from "@/lib/brand"
 
 interface Favorite {
   id: number | string
@@ -18,7 +19,7 @@ interface FavoritesState {
   clearFavorites: () => void
 }
 
-const USER_KEY_STORAGE = "nan-salazar-user-email"
+const USER_KEY_STORAGE = `${STORAGE_PREFIX}-user-email`
 
 const getUserKey = () => {
   if (typeof window === "undefined") return "guest"

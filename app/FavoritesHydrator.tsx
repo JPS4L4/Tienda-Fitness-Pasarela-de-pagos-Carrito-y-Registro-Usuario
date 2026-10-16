@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useFavoritesStore } from "@/lib/stores/favoritesStore";
+import { LEGACY_STORAGE_PREFIX, STORAGE_PREFIX, migrateLegacyStorageKey } from "@/lib/brand";
 
-const USER_KEY_STORAGE = "nan-salazar-user-email";
+const USER_KEY_STORAGE = `${STORAGE_PREFIX}-user-email`;
 const FAVORITES_STORAGE_KEY = "favorites-storage";
 const GUEST_STORAGE_KEY = `${FAVORITES_STORAGE_KEY}:guest`;
 
@@ -20,6 +21,7 @@ export default function FavoritesHydrator() {
     if (status === "loading") return;
 
     const hydrate = async () => {
+      migrateLegacyStorageKey(USER_KEY_STORAGE, `${LEGACY_STORAGE_PREFIX}-user-email`);
       const email = session?.user?.email || "guest";
       if (typeof window !== "undefined") {
         localStorage.setItem(USER_KEY_STORAGE, email);

@@ -4,6 +4,7 @@ import { applyDiscount } from "@/lib/money";
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { ItemUI } from "@/app/src/types/item";
+import { LEGACY_STORAGE_PREFIX, STORAGE_PREFIX, migrateLegacyStorageKey } from "@/lib/brand";
 
 export interface CartItem extends ItemUI {
   quantity: number;
@@ -28,7 +29,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [storageKey, setStorageKey] = useState("nan-salazar-cart:guest");
+  const [storageKey, setStorageKey] = useState(`${STORAGE_PREFIX}-cart:guest`);
   const { data: session, status } = useSession();
   const initializedRef = useRef(false);
   const syncingRef = useRef(false);
@@ -39,8 +40,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     if (status === "loading") return;
 
     const userKey = session?.user?.email
-      ? `nan-salazar-cart:${session.user.email}`
-      : "nan-salazar-cart:guest";
+      ? `${STORAGE_PREFIX}-cart:${session.user.email}`
+      : `${STORAGE_PREFIX}-cart:guest`;
 
     const loadCart = async () => {
       setIsHydrated(false);
@@ -48,7 +49,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         if (status === "authenticated" && session?.user?.email) {
-          const guestKey = "nan-salazar-cart:guest";
+          const guestKey = `${STORAGE_PREFIX}-cart:guest`;
           const guestRaw = localStorage.getItem(guestKey);
           const guestItems: CartItem[] = guestRaw ? JSON.parse(guestRaw) : [];
 

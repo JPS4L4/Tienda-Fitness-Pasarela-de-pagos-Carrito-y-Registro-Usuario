@@ -1,7 +1,7 @@
 // lib/emailService.ts
 import { Resend } from 'resend'
 import crypto from 'crypto'
-import { BRAND_NAME } from '@/lib/brand'
+import { BRAND_NAME, BRAND_CONTACT_EMAIL } from '@/lib/brand'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const resendEnabled = Boolean(resendApiKey)
@@ -198,7 +198,7 @@ export async function sendContactEmail(
   message: string
 ): Promise<boolean> {
   try {
-    const adminEmail = getAdminEmail('admin@nansalazar.com');
+    const adminEmail = getAdminEmail(BRAND_CONTACT_EMAIL);
 
     if (!resend) {
       logEmail(adminEmail, `Nuevo mensaje de contacto - ${name} ${lastName}`)
@@ -309,7 +309,7 @@ export async function sendSupportEmail(
   orderNumber?: string
 ): Promise<boolean> {
   try {
-    const adminEmail = getAdminEmail('soporte@fitnessStudio.com');
+    const adminEmail = getAdminEmail(BRAND_CONTACT_EMAIL);
 
     if (!resend) {
       logEmail(adminEmail, `[SOPORTE] ${subject}`)
@@ -442,7 +442,7 @@ export async function sendPlanInstructorEmail(params: {
   fitnessProfileData: Record<string, unknown> | null;
 }): Promise<boolean> {
   try {
-    const instructorEmail = getInstructorEmail('instructor@nansalazar.com');
+    const instructorEmail = getInstructorEmail(BRAND_CONTACT_EMAIL);
     const resolvedUserName = params.userName || 'Usuario';
     const resolvedUserEmail = params.userEmail || 'sin-email';
     const profileJson = JSON.stringify(params.fitnessProfileData ?? {}, null, 2);
