@@ -1,108 +1,429 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Sistema visual "Fitness Studio": oscuro, contundente, esquinas rectas.
+   - Un solo radio: 0 (los tokens --radius-* de Tailwind se anulan abajo).
+   - Titulares en Anton (condensada, mayúsculas); cuerpo en Barlow.
+   - Acento único: naranja-rojo #ff4d14 con texto negro encima (AA).
+   ========================================================================== */
+
+@theme {
+  /* Superficies */
+  --color-bg: #0a0a0b;
+  --color-surface: #121214;
+  --color-surface-2: #1a1a1d;
+  --color-surface-3: #242428;
+
+  /* Líneas */
+  --color-line: #2e2e33;
+  --color-line-strong: #4a4a52;
+
+  /* Texto (contraste AA sobre bg y surface) */
+  --color-fg: #f5f3ef;
+  --color-fg-soft: #d4d2cd;
+  --color-muted: #a9a9b1;
+  --color-subtle: #8b8b94;
+
+  /* Marca */
+  --color-accent: #ff4d14;
+  --color-accent-hover: #ff6b38;
+  --color-accent-deep: #c93408;
+  --color-on-accent: #0a0a0b;
+
+  /* Estados */
+  --color-ok: #3ddc84;
+  --color-danger: #ff6161;
+  --color-warn: #ffc23d;
+
+  /* Tipografía */
+  --font-display: var(--font-anton), Impact, "Arial Narrow", sans-serif;
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Radio único: recto. Cualquier rounded-* de Tailwind resuelve a 0. */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* Sombras duras (sin blur) */
+  --shadow-hard: 4px 4px 0 0 var(--color-accent);
+  --shadow-hard-light: 4px 4px 0 0 var(--color-fg);
+  --shadow-hard-sm: 3px 3px 0 0 var(--color-accent);
+  --shadow-panel: 0 24px 48px -24px rgb(0 0 0 / 0.8);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+  --cut: 14px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    background: var(--color-bg);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  input,
+  select,
+  textarea {
+    accent-color: var(--color-accent);
+  }
+
+  /* Autofill sin fondo blanco */
+  input:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-fg);
+    box-shadow: 0 0 0 1000px var(--color-surface-2) inset;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* ---------- Botones ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    border: 2px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      transform 120ms cubic-bezier(0.2, 0, 0, 1),
+      box-shadow 120ms cubic-bezier(0.2, 0, 0, 1),
+      background-color 120ms linear,
+      color 120ms linear,
+      border-color 120ms linear;
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+    box-shadow: none;
+    transform: none;
+  }
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0 1rem;
+    font-size: 0.8125rem;
+  }
+  .btn-lg {
+    min-height: 3.5rem;
+    padding: 0 2rem;
+    font-size: 1.0625rem;
+  }
+  .btn-block {
+    display: flex;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-hard-light);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-fg);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--color-fg);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-fg);
+    border-color: var(--color-fg);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+
+  .btn-ghost {
+    background: var(--color-surface-2);
+    color: var(--color-fg);
+    border-color: var(--color-line);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger);
+    color: var(--color-on-accent);
+  }
+
+  .btn-ok {
+    background: var(--color-ok);
+    color: var(--color-on-accent);
+    border-color: var(--color-ok);
+  }
+
+  /* ---------- Campos ---------- */
+  .input {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-surface-2);
+    color: var(--color-fg);
+    border: 2px solid var(--color-line-strong);
+    font-size: 1rem;
+    transition: border-color 120ms linear;
+  }
+  .input::placeholder {
+    color: var(--color-subtle);
+  }
+  .input:hover:not(:disabled) {
+    border-color: var(--color-muted);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+  .input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  .label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-fg-soft);
+  }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    background: var(--color-surface-3);
+    color: var(--color-fg);
+  }
+  .badge-accent {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+  .badge-ok {
+    background: color-mix(in srgb, var(--color-ok) 16%, transparent);
+    color: var(--color-ok);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ok) 50%, transparent);
+  }
+  .badge-warn {
+    background: color-mix(in srgb, var(--color-warn) 16%, transparent);
+    color: var(--color-warn);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-warn) 50%, transparent);
+  }
+  .badge-danger {
+    background: color-mix(in srgb, var(--color-danger) 16%, transparent);
+    color: var(--color-danger);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 50%, transparent);
+  }
+  .badge-outline {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    color: var(--color-fg-soft);
+  }
+
+  /* ---------- Superficies ---------- */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    padding: 1.5rem;
+  }
+
+  /* Corte diagonal (solo en superficies no interactivas) */
+  .cut-br {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+  }
+  .cut-tl {
+    clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+  }
+  .cut-both {
+    clip-path: polygon(
+      var(--cut) 0,
+      100% 0,
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      0 100%,
+      0 var(--cut)
+    );
+  }
+
+  /* ---------- Tipografía de ayuda ---------- */
+  .eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .price {
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  /* Cabecera de sección: titular con barra de acento */
+  .section-heading {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .section-heading::before {
+    content: "";
+    width: 0.5rem;
+    flex: none;
+    background: var(--color-accent);
+  }
+
+  /* Contenedor de imagen con proporción fija */
+  .media {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface-2);
+  }
+  /* Tratamiento uniforme de fotografía: contraste y saturación contenidos */
+  .media img {
+    filter: contrast(1.06) saturate(0.92);
+  }
+
+  /* Cortes diagonales de bloques grandes */
+  .hero-cut {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), 0 100%);
+  }
+  .offer-media {
+    clip-path: none;
+  }
+  @media (min-width: 768px) {
+    .hero-cut {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 56px), 0 100%);
+    }
+    .offer-media {
+      clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  /* Spinner cuadrado (sin círculos) */
+  .spinner {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 3px solid var(--color-line-strong);
+    border-top-color: var(--color-accent);
+    animation: spin-square 0.8s steps(8, end) infinite;
+  }
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes spin-square {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes heartbeat {
   0% {
     transform: scale(1);
   }
-
   50% {
     transform: scale(1.3);
   }
-
   100% {
     transform: scale(1);
   }
 }
 
 .animate-heartbeat {
-  animation: heartbeat 0.5s ease-in-out;
-}
-/* ============================================ */
-/* Efectos de gradiente animado para botones */
-/* ============================================ */
-
-.bg-size-200 {
-  background-size: 200%;
+  animation: heartbeat 0.4s ease-out;
 }
 
-.bg-pos-0 {
-  background-position: 0%;
-}
-
-.bg-pos-100 {
-  background-position: 100%;
-}
-
-/* ============================================ */
-/* Estilos para HeroCarousel - Swiper */
-/* ============================================ */
-
-/* Dots de paginación personalizados */
-.swiper-pagination-bullet-custom {
-  width: 10px;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 1;
-}
-
-.swiper-pagination-bullet-custom:hover {
-  background: rgba(255, 255, 255, 0.8);
-  transform: scale(1.2);
-}
-
-.swiper-pagination-bullet-active-custom {
-  width: 32px;
-  border-radius: 6px;
-  background: white;
-}
-
-/* Responsive dots para mobile */
-@media (min-width: 640px) {
-  .swiper-pagination-bullet-custom {
-    width: 12px;
-    height: 12px;
-  }
-
-  .swiper-pagination-bullet-active-custom {
-    width: 40px;
-  }
-}
-
-/* Animaciones fade-in-up para contenido del carousel */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -110,20 +431,19 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
+  animation: fade-in-up 0.5s cubic-bezier(0.2, 0, 0, 1) forwards;
 }
 
 .animation-delay-200 {
-  animation-delay: 0.2s;
+  animation-delay: 0.12s;
   opacity: 0;
 }
 
 .animation-delay-400 {
-  animation-delay: 0.4s;
+  animation-delay: 0.24s;
   opacity: 0;
 }
 
-/* Ocultar scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -133,41 +453,91 @@ body {
   scrollbar-width: none;
 }
 
-/* ============================================ */
-/* Estilos para OffersCarousel */
-/* ============================================ */
-
-/* Dots de paginación para ofertas */
+/* ---------- Swiper: paginación en barras rectas ---------- */
+.swiper-pagination-bullet-custom,
 .offers-pagination-bullet {
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 1;
   display: inline-block;
-  margin: 0 4px;
+  width: 28px;
+  height: 4px;
+  margin: 0 3px;
+  background: rgb(245 243 239 / 0.35);
+  cursor: pointer;
+  opacity: 1;
+  transition: background-color 150ms linear, width 150ms linear;
 }
 
+.swiper-pagination-bullet-custom:hover,
 .offers-pagination-bullet:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: scale(1.2);
+  background: rgb(245 243 239 / 0.7);
 }
 
+.swiper-pagination-bullet-active-custom {
+  background: var(--color-accent);
+}
+.swiper-pagination-bullet-active-custom,
 .offers-pagination-bullet-active {
-  width: 24px;
-  border-radius: 4px;
-  background: white;
+  width: 56px;
+}
+
+.offers-pagination-bullet {
+  background: rgb(10 10 11 / 0.3);
+}
+.offers-pagination-bullet:hover {
+  background: rgb(10 10 11 / 0.6);
+}
+.offers-pagination-bullet-active {
+  background: var(--color-bg);
 }
 
 @media (min-width: 640px) {
+  .swiper-pagination-bullet-custom,
   .offers-pagination-bullet {
-    width: 10px;
-    height: 10px;
+    height: 5px;
   }
-
+  .swiper-pagination-bullet-active-custom,
   .offers-pagination-bullet-active {
-    width: 32px;
+    width: 72px;
   }
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animation-delay-200,
+  .animation-delay-400 {
+    opacity: 1;
+  }
+  .btn-primary:hover:not(:disabled),
+  .btn-primary:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Anton solo existe en peso 400: evita el falso negrita de utilidades font-bold/black */
+h1,
+h2,
+h3,
+.font-display,
+.price {
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
