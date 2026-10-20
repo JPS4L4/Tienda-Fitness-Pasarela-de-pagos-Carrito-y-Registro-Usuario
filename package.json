@@ -4,10 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start",
     "postinstall": "prisma generate",
-    "postbuild": "prisma migrate deploy",
     "db:up": "docker compose up -d",
     "db:seed": "prisma db seed",
     "lint": "eslint .",
