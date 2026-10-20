@@ -3,10 +3,10 @@
 // Idempotente: solo la primera llamada que pasa la orden de PENDING a COMPLETED aplica efectos
 // (stock, suscripción, correo). El UPDATE condicional hace de cerrojo, sin migración.
 import { prisma } from '@/lib/prisma'
-import { sendPlanInstructorEmail } from '@/lib/emailService'
 import { generateAccessToken, calculateExpirationDate } from '@/lib/tokenService'
 import {
   ORDER_STATUS,
+  PAYMENT_METHOD,
   SUBSCRIPTION_STATUS,
   DEFAULT_SUBSCRIPTION_TYPE,
   type PaymentMethod,
@@ -82,7 +82,12 @@ export async function fulfillOrder(
     })
 
     if (fulfilledNow && order.planId && order.userId) {
-      await notifyInstructor(order.userId, order.planId)
+      // Pago demo: el aviso al instructor es simulado (ver simulatedEmail.ts); nunca se carga Resend.
+      if (payment.method === PAYMENT_METHOD.DEMO) {
+        console.log(`[DEMO] Aviso al instructor simulado para la orden #${order.id} (sin enviar correo)`)
+      } else {
+        await notifyInstructor(order.userId, order.planId)
+      }
     }
     return { order, alreadyFulfilled: !fulfilledNow }
   } catch (error) {
@@ -158,6 +163,7 @@ async function notifyInstructor(userId: number, planId: number) {
         }
       : null
 
+    const { sendPlanInstructorEmail } = await import('@/lib/emailService')
     await sendPlanInstructorEmail({
       userName: user?.name ?? null,
       userEmail: user?.email ?? null,

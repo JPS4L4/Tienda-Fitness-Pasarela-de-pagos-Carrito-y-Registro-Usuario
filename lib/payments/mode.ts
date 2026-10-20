@@ -22,3 +22,9 @@ export function requireLiveMode(): NextResponse | null {
     { status: 404 }
   )
 }
+
+/** Guarda para las rutas del pago simulado: fuera del modo demo no existen. */
+export function requireDemoMode(): NextResponse | null {
+  if (isDemoMode()) return null
+  return NextResponse.json({ error: 'El pago simulado solo existe en modo demo' }, { status: 404 })
+}

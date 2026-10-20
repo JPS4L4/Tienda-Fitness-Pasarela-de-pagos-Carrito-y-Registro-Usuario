@@ -39,6 +39,17 @@ describe('fulfillOrder', () => {
     tx.item.updateMany.mockResolvedValue({ count: 1 })
   })
 
+  it('never emails the instructor for a DEMO payment (no external API in demo mode)', async () => {
+    tx.order.updateMany.mockResolvedValue({ count: 1 })
+    tx.order.findUniqueOrThrow.mockResolvedValue(planOrder)
+    vi.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    await fulfillOrder(2, { method: 'DEMO', paymentId: 'demo_abc_4242' })
+
+    expect(emailMock.sendPlanInstructorEmail).not.toHaveBeenCalled()
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled()
+  })
+
   it('claims a PENDING order once and decrements stock for each product line', async () => {
     tx.order.updateMany.mockResolvedValue({ count: 1 })
     tx.order.findUniqueOrThrow.mockResolvedValue(productOrder)
