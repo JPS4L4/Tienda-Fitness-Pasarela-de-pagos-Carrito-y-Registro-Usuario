@@ -1,3 +1,4 @@
+import { requireLiveMode } from '@/lib/payments/mode';
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
@@ -33,6 +34,10 @@ function isValidSignature(request: NextRequest, dataId: string, secret: string) 
 }
 
 export async function POST(request: NextRequest) {
+  // Pasarela real: solo con PAYMENT_MODE=live. En modo demo no se llama a ninguna API externa.
+  const demoBlock = requireLiveMode();
+  if (demoBlock) return demoBlock;
+
   let paymentId: string | undefined;
   try {
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;

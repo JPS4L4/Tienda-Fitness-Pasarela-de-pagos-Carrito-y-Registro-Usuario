@@ -12,6 +12,8 @@ export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
 export const PAYMENT_METHOD = {
   STRIPE: 'STRIPE',
   MERCADOPAGO: 'MERCADOPAGO',
+  /** Pago simulado (PAYMENT_MODE=demo): no usa ninguna pasarela externa. */
+  DEMO: 'DEMO',
 } as const
 export type PaymentMethod = (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD]
 

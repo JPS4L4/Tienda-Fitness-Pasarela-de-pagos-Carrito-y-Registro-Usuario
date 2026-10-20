@@ -1,3 +1,4 @@
+import { requireLiveMode } from '@/lib/payments/mode';
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { auth } from '@/lib/nextAuth';
@@ -6,6 +7,10 @@ import { CheckoutError } from '@/lib/orders/pricing';
 import { CURRENCY, PAYMENT_METHOD } from '@/lib/orders/constants';
 
 export async function POST(request: NextRequest) {
+  // Pasarela real: solo con PAYMENT_MODE=live. En modo demo no se llama a ninguna API externa.
+  const demoBlock = requireLiveMode();
+  if (demoBlock) return demoBlock;
+
   let orderId: number | null = null;
   try {
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;

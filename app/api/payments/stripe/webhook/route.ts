@@ -1,3 +1,4 @@
+import { requireLiveMode } from '@/lib/payments/mode';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
@@ -8,6 +9,10 @@ import { toMinorUnits } from '@/lib/money';
 // El webhook solo está activo si existen STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET.
 // Sin ellos responde 503 y no procesa nada (la confirmación directa sigue funcionando).
 export async function POST(request: NextRequest) {
+  // Pasarela real: solo con PAYMENT_MODE=live. En modo demo no se llama a ninguna API externa.
+  const demoBlock = requireLiveMode();
+  if (demoBlock) return demoBlock;
+
   const stripeSecret = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!stripeSecret || !webhookSecret) {

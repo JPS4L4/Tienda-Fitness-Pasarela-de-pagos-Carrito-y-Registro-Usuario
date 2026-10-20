@@ -1,3 +1,4 @@
+import { requireLiveMode } from '@/lib/payments/mode';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { auth } from '@/lib/nextAuth';
@@ -12,6 +13,10 @@ const stripe = stripeSecret
   : null;
 
 export async function POST(request: NextRequest) {
+  // Pasarela real: solo con PAYMENT_MODE=live. En modo demo no se llama a ninguna API externa.
+  const demoBlock = requireLiveMode();
+  if (demoBlock) return demoBlock;
+
   try {
     if (!stripe) {
       return NextResponse.json(

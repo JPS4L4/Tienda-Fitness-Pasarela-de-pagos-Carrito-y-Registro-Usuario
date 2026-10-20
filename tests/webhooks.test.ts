@@ -48,6 +48,7 @@ const succeededEvent = (amount = 12990000, currency = 'cop') => ({
 
 describe('Stripe webhook', () => {
   beforeEach(() => {
+    vi.stubEnv('PAYMENT_MODE', 'live')
     vi.stubEnv('STRIPE_SECRET_KEY', STRIPE_SECRET)
     vi.stubEnv('STRIPE_WEBHOOK_SECRET', STRIPE_WEBHOOK_SECRET)
     prismaMock.order.findFirst.mockReset()
@@ -116,6 +117,7 @@ function mpRequest(options: { secret?: boolean; tamper?: boolean } = {}) {
 
 describe('MercadoPago webhook', () => {
   beforeEach(() => {
+    vi.stubEnv('PAYMENT_MODE', 'live')
     vi.stubEnv('MERCADOPAGO_ACCESS_TOKEN', 'TEST-token')
     vi.stubEnv('MERCADOPAGO_WEBHOOK_SECRET', MP_WEBHOOK_SECRET)
     prismaMock.order.findFirst.mockReset()
@@ -169,5 +171,21 @@ describe('MercadoPago webhook', () => {
     vi.stubEnv('MERCADOPAGO_ACCESS_TOKEN', '')
     const response = await mercadopagoWebhook(mpRequest())
     expect(response.status).toBe(503)
+  })
+})
+
+describe('demo mode', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('disables the real gateway webhooks without touching the database or any API', async () => {
+    vi.stubEnv('PAYMENT_MODE', 'demo')
+    vi.stubEnv('STRIPE_SECRET_KEY', STRIPE_SECRET)
+    vi.stubEnv('STRIPE_WEBHOOK_SECRET', STRIPE_WEBHOOK_SECRET)
+    const stripeResponse = await stripeWebhook(stripeRequest(succeededEvent()))
+    expect(stripeResponse.status).toBe(404)
+    expect(prismaMock.order.findFirst).not.toHaveBeenCalled()
+    expect(fulfillMock.fulfillOrder).not.toHaveBeenCalled()
   })
 })
