@@ -89,7 +89,7 @@ npm run db:seed               # datos y cuentas de demostración (borra datos; s
 npm run dev                   # http://localhost:3000
 ```
 
-En `.env` son obligatorias `DATABASE_URL` (ya apunta al contenedor), `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL` y `NEXT_PUBLIC_APP_URL`. Pon `ADMIN_EMAILS="admin@fitness-studio.example"` para usar el panel con la cuenta demo. Las claves de Stripe (`sk_test_` / `pk_test_`) y de Mercado Pago son opcionales, pero sin ellas no se puede pagar. Todas las variables están comentadas en [.env.example](.env.example).
+En `.env` son obligatorias `DATABASE_URL` (ya apunta al contenedor), `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL` y `NEXT_PUBLIC_APP_URL`. Pon `ADMIN_EMAILS="admin@fitness-studio.example"` para usar el panel con la cuenta demo. Por defecto la tienda corre en **modo demo** (`PAYMENT_MODE="demo"`): pagos, correos y envíos son simulados y no hacen falta claves de Stripe, Mercado Pago ni Resend. Con `PAYMENT_MODE="live"` se activan las pasarelas reales y entonces sí se necesitan sus claves de prueba (`sk_test_` / `pk_test_`, Mercado Pago). Todas las variables están comentadas en [.env.example](.env.example).
 
 ## Cuentas demo
 
@@ -103,6 +103,10 @@ El seed crea estas cuentas (contraseña de ambas: `Prueba123!`):
 ## Tarjetas de prueba
 
 El checkout muestra un aviso de **modo prueba**; no se realiza ningún cobro real.
+
+- **Modo demo (por defecto):** `4242 4242 4242 4242` aprueba; `4000 0000 0000 0002` rechaza (fondos insuficientes); `4000 0000 0000 9995` rechaza (banco); cualquier otro número válido aprueba. Con fecha futura y CVC de 3 dígitos. Detalle en [docs/payments.md](docs/payments.md).
+
+Con `PAYMENT_MODE="live"`:
 
 - **Stripe:** `4242 4242 4242 4242`, cualquier fecha futura y cualquier CVC de 3 dígitos ([documentación](https://docs.stripe.com/testing)).
 - **Mercado Pago (Colombia):** Mastercard `5254 1336 7440 3564` o Visa `4013 5406 8274 6260`, vencimiento `11/30`, CVV `123`, titular `APRO` y documento `123456789` ([documentación](https://www.mercadopago.com.co/developers/es/docs/checkout-pro/additional-content/your-integrations/test/cards)).

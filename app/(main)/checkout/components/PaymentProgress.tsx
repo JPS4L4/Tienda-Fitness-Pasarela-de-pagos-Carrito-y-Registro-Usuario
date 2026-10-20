@@ -154,7 +154,7 @@ export default function PaymentProgress({ stage, amount, onRetry }: PaymentProgr
             {declined && (
               <div className="mt-6 space-y-4">
                 <p role="alert" className="border border-danger bg-danger/10 p-3 text-sm text-danger">
-                  {stage.reason || 'No se pudo autorizar el pago.'} Tu pedido sigue pendiente: puedes probar con otra
+                  {stage.reason || 'No se pudo autorizar el pago'}. Tu pedido sigue pendiente: puedes probar con otra
                   tarjeta.
                 </p>
                 <button ref={retryRef} type="button" onClick={onRetry} className="btn btn-primary btn-block">

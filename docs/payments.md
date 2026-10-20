@@ -1,6 +1,21 @@
 # Pagos
 
-La tienda cobra en COP con dos pasarelas, siempre en **modo prueba** en este proyecto. Las claves van en `.env` (ver `.env.example`).
+La tienda cobra en COP y tiene dos modos, elegidos con `PAYMENT_MODE` (ver `.env.example`):
+
+| Modo | Qué hace |
+|---|---|
+| `demo` (por defecto, también si la variable falta) | Todo simulado: tarjeta de prueba con animación por pasos, correo de confirmación en pantalla y seguimiento de envío derivado del tiempo. **No se llama a Stripe, Mercado Pago ni Resend**; las rutas de las pasarelas responden 404. |
+| `live` | Pagos reales con Stripe / Mercado Pago (siempre con claves de **prueba** en este proyecto), descritos abajo. |
+
+## Modo demo
+
+- `POST /api/payments/demo/create-order` crea la orden `PENDING` (precio calculado en el servidor) y, si es de invitado, devuelve un token firmado (`HMAC` con `NEXTAUTH_SECRET`, 7 días) que da acceso a esa orden.
+- `POST /api/payments/demo/confirm` valida la tarjeta (Luhn, vencimiento, CVC) y simula el resultado; si se aprueba reutiliza `fulfillOrder` con el método `DEMO` (stock y suscripción como en el modo live). La tarjeta no se guarda: solo los 4 últimos dígitos, dentro del `paymentId` (`demo_<aleatorio>_<4 dígitos>`).
+- Tarjetas de prueba: `4242 4242 4242 4242` aprobada; `4000 0000 0000 0002` rechazada (fondos insuficientes); `4000 0000 0000 9995` rechazada por el banco; cualquier otro número válido se aprueba. Un rechazo deja la orden `PENDING` para reintentar.
+- El envío (guía, etapas, entrega estimada) se calcula en `lib/orders/shipping.ts` desde el id y la hora del pago, sin escribir en la base de datos; los planes muestran "Acceso activado".
+- El comprobante de invitados se abre con `/checkout/success?orderId=…&t=<token>`; sin token válido la orden responde 404.
+
+## Modo live
 
 ## Variables
 
