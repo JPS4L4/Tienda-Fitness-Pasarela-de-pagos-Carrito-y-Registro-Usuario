@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Heart, ShoppingCart, Check, Plus } from "lucide-react"
 import toast from "react-hot-toast"
-import { formatPrice, applyDiscount } from "@/lib/money"
+import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from "@/lib/money"
 import { SafeImage } from "../others/SafeImage"
 import { Badge } from "@/components/ui/Badge"
 import { useCart } from "@/context/CartContext"
@@ -27,16 +27,20 @@ const ItemCard = ({
 }: ItemUI) => {
   const { cart, addToCart, removeFromCart } = useCart()
   const isInCart = cart.some((item) => item.id === id)
-  const isOutOfStock = (stock ?? 0) <= 0
   // price es el precio de lista: el cobro aplica el descuento (mismo cálculo que el servidor)
-  const finalPrice = applyDiscount(price, discount)
-  const previousPrice = discount ? price : originalPrice
+  const { valid: hasValidPrice, final: finalPrice, previous: previousPrice, badge } = getPriceDisplay({
+    price,
+    discount,
+    originalPrice,
+  })
+  const isOutOfStock = (stock ?? 0) <= 0
+  const isUnavailable = isOutOfStock || !hasValidPrice
 
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore()
   const isFav = isFavorite(id, "item")
 
   const handleToggleCart = () => {
-    if (isOutOfStock) return
+    if (isUnavailable) return
     if (isInCart) {
       removeFromCart(id)
       toast.success("Eliminado del carrito", { duration: 3000 })
@@ -101,11 +105,15 @@ const ItemCard = ({
 
         <div className="mt-auto pt-2">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="price text-3xl text-fg">{formatPrice(finalPrice, currency)}</span>
-            {discount && discount > 0 ? <Badge tone="accent">-{discount}%</Badge> : null}
+            {hasValidPrice ? (
+              <span className="price text-3xl text-fg">{formatPrice(finalPrice, currency)}</span>
+            ) : (
+              <span className="text-base font-bold text-muted">{PRICE_UNAVAILABLE}</span>
+            )}
+            {badge ? <Badge tone="accent">-{badge}%</Badge> : null}
           </div>
           <div className="mt-1 min-h-5 text-sm text-muted">
-            {previousPrice && previousPrice > finalPrice ? (
+            {previousPrice ? (
               <span className="mr-2 line-through">{formatPrice(previousPrice, currency)}</span>
             ) : null}
             {installments && installments > 1 ? (
@@ -121,11 +129,13 @@ const ItemCard = ({
         <button
           type="button"
           onClick={handleToggleCart}
-          disabled={isOutOfStock}
+          disabled={isUnavailable}
           className={cn("btn btn-block", isInCart ? "btn-ghost" : "btn-primary")}
         >
           {isOutOfStock ? (
             "Agotado"
+          ) : !hasValidPrice ? (
+            "No disponible"
           ) : isInCart ? (
             <>
               <Check className="h-5 w-5" aria-hidden="true" />

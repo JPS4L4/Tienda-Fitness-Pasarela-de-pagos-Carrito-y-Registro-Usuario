@@ -57,6 +57,24 @@ describe('priceCart', () => {
     await expect(priceCart([{ id: 9, quantity: 1 }])).rejects.toMatchObject({ status: 404 })
   })
 
+  it.each([0, -100, Number.NaN])('rejects a line whose unit price is %s', async (price) => {
+    prismaMock.item.findMany.mockResolvedValue([
+      { id: 1, title: 'Mancuernas', price, discount: null, stock: 5 },
+      { id: 2, title: 'Banda', price: 20000, discount: null, stock: 5 },
+    ])
+    const error = await priceCart([{ id: 1, quantity: 1 }, { id: 2, quantity: 1 }]).catch((e) => e)
+    expect(error).toBeInstanceOf(CheckoutError)
+    expect(error.status).toBe(409)
+  })
+
+  it('never prices a discounted line at zero', async () => {
+    prismaMock.item.findMany.mockResolvedValue([
+      { id: 1, title: 'Mancuernas', price: 50000, discount: 100, stock: 5 },
+    ])
+    const { lines } = await priceCart([{ id: 1, quantity: 1 }])
+    expect(lines[0].price).toBe(5000)
+  })
+
   it('fails with 409 when stock is insufficient', async () => {
     prismaMock.item.findMany.mockResolvedValue([
       { id: 1, title: 'Mancuernas', price: 100000, discount: null, stock: 1 },
@@ -74,6 +92,11 @@ describe('pricePlan', () => {
     })
     const { total } = await pricePlan('2')
     expect(total).toBe(150000)
+  })
+
+  it('rejects a plan with a non-positive price', async () => {
+    prismaMock.plan.findUnique.mockResolvedValue({ id: 3, title: 'Plan', price: 0, discount: null, currency: 'COP' })
+    await expect(pricePlan(3)).rejects.toBeInstanceOf(CheckoutError)
   })
 
   it('rejects an invalid plan id and an unknown plan', async () => {

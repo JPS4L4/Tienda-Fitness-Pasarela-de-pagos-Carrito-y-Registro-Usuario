@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma"
 import { adaptPlanToPlanUI } from "../adapters/planAdapter"
 import { PlanUI } from "../types/plan"
+import { isValidPrice } from "@/lib/money"
 
 export async function getPlansForUI() {
   const plans = await prisma.plan.findMany()
@@ -23,14 +24,17 @@ export async function getPlansForUI() {
     }
   })
 
-  return plans.map((plan) => {
-    const ratingData = ratingsMap.get(plan.id)
-    return adaptPlanToPlanUI({
-      ...plan,
-      rating: ratingData?.avg ?? plan.rating,
-      reviewCount: ratingData?.count ?? plan.reviewCount,
+  return plans
+    .map((plan) => {
+      const ratingData = ratingsMap.get(plan.id)
+      return adaptPlanToPlanUI({
+        ...plan,
+        rating: ratingData?.avg ?? plan.rating,
+        reviewCount: ratingData?.count ?? plan.reviewCount,
+      })
     })
-  })
+    // Un plan sin precio válido no se lista
+    .filter((plan) => isValidPrice(plan.price))
 }
 
 export async function getPlanBySlug(

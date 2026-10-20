@@ -45,6 +45,7 @@ export default async function PlansPage() {
       planId: order.planId || planItem?.planId,
       title: planItem?.title || 'Plan de entrenamiento',
       subscriptionType: order.subscriptionType || planItem?.subscriptionType,
+      // Monto realmente cobrado en la orden (con descuento aplicado), no el precio de lista del plan
       price: order.totalAmount,
       status: order.status,
       createdAt: order.createdAt,
@@ -103,9 +104,9 @@ export default async function PlansPage() {
                   </p>
                 </div>
                 <div className="bg-surface-2  p-4 border border-line">
-                  <p className="text-xs text-muted">Monto</p>
+                  <p className="text-xs text-muted">Monto pagado</p>
                   <p className="text-sm font-semibold text-fg-soft">
-                    {formatPrice(plan.price)}
+                    {formatPrice(Number(plan.price))}
                   </p>
                 </div>
               </div>

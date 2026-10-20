@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice, applyDiscount } from '@/lib/money'
+import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from '@/lib/money'
 
 import { useCart } from "@/context/CartContext";
 import { X, Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
@@ -50,7 +50,7 @@ export default function CartSidebar() {
             </div>
           ) : (
             cart.map((item) => {
-              const itemPrice = applyDiscount(item.price, item.discount);
+              const { valid, final: itemPrice, previous } = getPriceDisplay(item);
               const subtotal = itemPrice * item.quantity;
 
               return (
@@ -64,7 +64,16 @@ export default function CartSidebar() {
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate font-sans text-base font-bold normal-case tracking-normal text-fg">{item.title}</h3>
                       <p className="text-sm text-muted">{item.category}</p>
-                      <p className="price mt-1 text-2xl text-fg">{formatPrice(itemPrice)}</p>
+                      {valid ? (
+                        <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+                          <span className="price text-2xl text-fg">{formatPrice(itemPrice)}</span>
+                          {previous ? (
+                            <span className="text-sm text-muted line-through">{formatPrice(previous)}</span>
+                          ) : null}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-sm font-bold text-danger">{PRICE_UNAVAILABLE}: elimínalo para continuar</p>
+                      )}
                     </div>
                   </div>
 
@@ -88,7 +97,7 @@ export default function CartSidebar() {
                         <Plus className="h-4 w-4" />
                       </button>
                     </div>
-                    <p className="text-sm font-semibold text-fg-soft">Subtotal: {formatPrice(subtotal)}</p>
+                    <p className="text-sm font-semibold text-fg-soft">Subtotal: {valid ? formatPrice(subtotal) : PRICE_UNAVAILABLE}</p>
                   </div>
 
                   <button

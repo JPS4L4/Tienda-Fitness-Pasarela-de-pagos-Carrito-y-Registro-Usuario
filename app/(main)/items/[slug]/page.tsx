@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { BRAND_NAME } from '@/lib/brand';
-import { formatPrice, applyDiscount } from '@/lib/money'
+import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { CreditCard, Star, Truck, Package, Tag } from 'lucide-react';
 import { SafeImage } from '@/components/others/SafeImage';
@@ -35,9 +35,8 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
     notFound();
   }
 
-  const precioFinal = applyDiscount(item.price, item.discount);
   // Con descuento, el precio de lista tachado es item.price; sin descuento, el precio original (si existe)
-  const precioAnterior = item.discount ? item.price : item.originalPrice;
+  const { valid: hasValidPrice, final: precioFinal, previous: precioAnterior, badge } = getPriceDisplay(item);
 
   return (
     <div className="min-h-screen bg-bg">
@@ -95,14 +94,18 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
             {/* Precio */}
             <div className="border-y border-line py-5">
               <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, item.currency)}</p>
-                {item.discount && item.discount > 0 ? (
+                {hasValidPrice ? (
+                  <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, item.currency)}</p>
+                ) : (
+                  <p className="text-3xl font-bold text-muted">{PRICE_UNAVAILABLE}</p>
+                )}
+                {badge ? (
                   <Badge tone="accent" className="px-3 py-2 text-base">
-                    -{item.discount}% OFF
+                    -{badge}% OFF
                   </Badge>
                 ) : null}
               </div>
-              {precioAnterior && precioAnterior > precioFinal && (
+              {precioAnterior && (
                 <p className="mt-2 text-xl text-muted line-through">{formatPrice(precioAnterior, item.currency)}</p>
               )}
               <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base">
@@ -145,7 +148,7 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
               </div>
             )}
 
-            <ItemClient producto={item} precioFinal={precioFinal} />
+            <ItemClient producto={item} precioFinal={precioFinal} hasValidPrice={hasValidPrice} />
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from '@/lib/money'
+import { formatFinalPrice } from '@/lib/money'
 
 import { useEffect, useState } from "react";
 import { Plan } from "@/app/data/data";
@@ -68,9 +68,9 @@ export default function PlanSearchAutocomplete({
                   {typeLabels[plan.type] || plan.type}
                 </p>
               </div>
-              {plan.price && (
+              {plan.price !== undefined && (
                 <span className="text-xs font-semibold text-accent ml-2 flex-shrink-0">
-                  Desde {formatPrice(plan.price)}
+                  Desde {formatFinalPrice(plan)}
                 </span>
               )}
             </button>

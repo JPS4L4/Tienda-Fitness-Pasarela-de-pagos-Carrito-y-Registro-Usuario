@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { ItemUI } from "@/app/src/types/item";
+import { isValidPrice } from "@/lib/money";
 
 interface AddToCartButtonProps {
   product: ItemUI;
@@ -15,9 +16,10 @@ export default function AddToCartButton({ product, quantity, onQuantityChange }:
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
   const isOutOfStock = (product.stock ?? 0) <= 0;
+  const isUnavailable = isOutOfStock || !isValidPrice(product.price);
 
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isUnavailable) return;
     addToCart(product, quantity);
     setIsAdded(true);
 
@@ -61,11 +63,11 @@ export default function AddToCartButton({ product, quantity, onQuantityChange }:
       <button
         onClick={handleAddToCart}
         type="button"
-        disabled={isOutOfStock}
+        disabled={isUnavailable}
         className={isAdded ? "btn btn-ok btn-lg btn-block" : "btn btn-primary btn-lg btn-block"}
       >
         <ShoppingCart className="h-6 w-6" aria-hidden="true" />
-        {isOutOfStock ? "Agotado" : isAdded ? "Agregado" : "Agregar al carrito"}
+        {isOutOfStock ? "Agotado" : isUnavailable ? "No disponible" : isAdded ? "Agregado" : "Agregar al carrito"}
       </button>
     </div>
   );

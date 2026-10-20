@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma"
 import { adaptItemToItemUI } from "../adapters/itemAdapter"
 import { ItemUI } from "../types/item";
+import { isValidPrice } from "@/lib/money"
 
 export async function getItemsForUI() {
   const items = await prisma.item.findMany()
@@ -23,14 +24,17 @@ export async function getItemsForUI() {
     }
   })
 
-  return items.map((item) => {
-    const ratingData = ratingsMap.get(item.id)
-    return adaptItemToItemUI({
-      ...item,
-      rating: ratingData?.avg ?? item.rating,
-      reviewCount: ratingData?.count ?? item.reviewCount,
+  return items
+    .map((item) => {
+      const ratingData = ratingsMap.get(item.id)
+      return adaptItemToItemUI({
+        ...item,
+        rating: ratingData?.avg ?? item.rating,
+        reviewCount: ratingData?.count ?? item.reviewCount,
+      })
     })
-  })
+    // Un producto sin precio válido no se lista (nunca se muestra ni se vende "en $ 0")
+    .filter((item) => isValidPrice(item.price))
 }
 
 export async function getItemBySlug(slug: string): Promise<ItemUI | null> {

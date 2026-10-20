@@ -1,7 +1,7 @@
 // lib/orders/pricing.ts
 // Los precios SIEMPRE se calculan aquí desde la BD; nunca se confía en montos del cliente.
 import { prisma } from '@/lib/prisma'
-import { applyDiscount } from '@/lib/money'
+import { applyDiscount, isValidPrice } from '@/lib/money'
 
 export class CheckoutError extends Error {
   status: number
@@ -56,11 +56,16 @@ export async function priceCart(rawItems: unknown): Promise<{ lines: PricedLine[
     if (product.stock < quantity) {
       throw new CheckoutError(`Stock insuficiente para "${product.title}"`, 409)
     }
+    // Nunca se vende una línea con precio inválido (0, negativo, NaN)
+    const price = applyDiscount(product.price, product.discount)
+    if (!isValidPrice(product.price) || !isValidPrice(price)) {
+      throw new CheckoutError(`El producto "${product.title}" no tiene un precio válido`, 409)
+    }
     return {
       productId: product.id,
       title: product.title,
       quantity,
-      price: applyDiscount(product.price, product.discount),
+      price,
       originalPrice: product.price,
       discount: product.discount,
     }
@@ -82,6 +87,6 @@ export async function pricePlan(rawPlanId: unknown) {
   if (!plan) throw new CheckoutError('Plan no encontrado', 404)
 
   const total = applyDiscount(plan.price, plan.discount)
-  if (!(total > 0)) throw new CheckoutError('Monto inválido')
+  if (!isValidPrice(plan.price) || !isValidPrice(total)) throw new CheckoutError('Monto inválido')
   return { plan, total }
 }

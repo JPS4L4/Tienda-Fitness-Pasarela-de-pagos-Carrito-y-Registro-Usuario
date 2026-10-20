@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from '@/lib/money'
+import { formatFinalPrice } from '@/lib/money'
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
@@ -71,9 +71,9 @@ export default function PlanSearchResults({
                   {plan.type === "nutricion" ? "Nutrición" : "Entrenamiento"}
                 </p>
               </div>
-              {plan.price && (
+              {plan.price !== undefined && (
                 <span className="text-sm font-bold text-accent whitespace-nowrap">
-                  Desde {formatPrice(plan.price)}
+                  Desde {formatFinalPrice(plan)}
                 </span>
               )}
             </div>

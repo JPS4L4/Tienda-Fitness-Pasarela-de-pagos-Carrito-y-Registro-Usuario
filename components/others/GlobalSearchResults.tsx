@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from '@/lib/money'
+import { formatFinalPrice } from '@/lib/money'
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -12,6 +12,7 @@ export interface GlobalSearchResult {
   title: string;
   type: "item" | "plan";
   price?: string | number;
+  discount?: number;
   category?: string;
 }
 
@@ -45,6 +46,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
         title: item.title,
         type: "item" as const,
         price: item.price,
+        discount: item.discount,
         category: item.category,
       }))
       .slice(0, 3);
@@ -60,6 +62,7 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
         title: plan.title,
         type: "plan" as const,
         price: plan.price,
+        discount: plan.discount,
         category: plan.type,
       }))
       .slice(0, 3);
@@ -96,10 +99,10 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
                   {result.category}
                 </p>
               </div>
-              {result.price && (
+              {result.price !== undefined && (
                 <span className="text-sm font-bold text-accent ml-2 whitespace-nowrap">
                   {typeof result.price === "number"
-                    ? formatPrice(result.price)
+                    ? formatFinalPrice({ price: result.price, discount: result.discount })
                     : result.price}
                 </span>
               )}

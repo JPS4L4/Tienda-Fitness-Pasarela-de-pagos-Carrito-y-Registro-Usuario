@@ -180,7 +180,7 @@ function SuccessContent() {
                         {item.quantity ? ` x${item.quantity}` : ''}
                       </div>
                       <div className="font-semibold text-fg-soft">
-                        {formatPrice((item.unit_price ?? item.price) || 0)}
+                        {formatPrice(item.unit_price ?? item.price)}
                       </div>
                     </li>
                   ))}

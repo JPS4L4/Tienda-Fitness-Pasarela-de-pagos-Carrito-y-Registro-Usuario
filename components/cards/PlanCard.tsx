@@ -1,6 +1,6 @@
 "use client"
 
-import { formatPrice, applyDiscount } from "@/lib/money"
+import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from "@/lib/money"
 import { Check, Apple, Dumbbell, ArrowRight, Heart } from "lucide-react"
 import Link from "next/link"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
@@ -54,8 +54,8 @@ const FavoriteButton = ({
 
 export const PlanCard = ({ plan }: { plan: PlanUI }) => {
   const Icon = TYPE_ICON[plan.type as keyof typeof TYPE_ICON] ?? Dumbbell
-  const actualPrice = formatPrice(applyDiscount(plan.price, plan.discount), plan.currency)
-  const hasDiscount = !!plan.discount && plan.discount > 0
+  const { valid: hasValidPrice, final, previous, badge } = getPriceDisplay(plan)
+  const actualPrice = hasValidPrice ? formatPrice(final, plan.currency) : PRICE_UNAVAILABLE
 
   return (
     <article className="group relative flex h-full w-full flex-col border border-line bg-surface transition-colors duration-150 hover:border-accent">
@@ -75,7 +75,7 @@ export const PlanCard = ({ plan }: { plan: PlanUI }) => {
             <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             {plan.type}
           </Badge>
-          {hasDiscount && <Badge className="bg-bg text-fg">-{plan.discount}%</Badge>}
+          {badge && <Badge className="bg-bg text-fg">-{badge}%</Badge>}
         </div>
       </div>
 
@@ -85,11 +85,13 @@ export const PlanCard = ({ plan }: { plan: PlanUI }) => {
         <div className="mb-5">
           <div className="flex flex-wrap items-baseline gap-x-3">
             <span className="price text-4xl text-fg md:text-5xl">{actualPrice}</span>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted">total</span>
+            {hasValidPrice && (
+              <span className="text-sm font-semibold uppercase tracking-wider text-muted">total</span>
+            )}
           </div>
-          {hasDiscount && (
+          {previous && (
             <p className="mt-1 text-sm text-muted">
-              Antes <span className="line-through">{formatPrice(plan.price, plan.currency)}</span>
+              Antes <span className="line-through">{formatPrice(previous, plan.currency)}</span>
             </p>
           )}
         </div>

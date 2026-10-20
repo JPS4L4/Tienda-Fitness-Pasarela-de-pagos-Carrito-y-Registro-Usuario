@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { BRAND_NAME } from '@/lib/brand';
-import { formatPrice, applyDiscount } from '@/lib/money'
+import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from '@/lib/money'
 import { notFound } from 'next/navigation';
 import { Check, ArrowRight, Apple, Dumbbell, Star, Tag } from 'lucide-react';
 import { getPlanBySlug } from '@/app/src/lib/plans';
@@ -54,8 +54,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
 
   const meta = TYPE_META[plan.type as keyof typeof TYPE_META] || TYPE_META.nutricion;
   const { Icon } = meta;
-  const precioFinal = applyDiscount(plan.price, plan.discount);
-  const hasDiscount = (plan.discount ?? 0) > 0;
+  const { valid: hasValidPrice, final: precioFinal, previous: precioAnterior, badge } = getPriceDisplay(plan);
 
   return (
     <div className="min-h-screen bg-bg">
@@ -77,9 +76,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {meta.typeLabel}
               </Badge>
-              {hasDiscount && (
-                <Badge className="bg-bg px-3 py-2 text-sm text-fg">-{plan.discount}% OFF</Badge>
-              )}
+              {badge && <Badge className="bg-bg px-3 py-2 text-sm text-fg">-{badge}% OFF</Badge>}
             </div>
           </div>
 
@@ -112,11 +109,17 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
 
             <div className="mb-6 border-y border-line py-5">
               <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, plan.currency)}</p>
-                <span className="text-sm font-bold uppercase tracking-[0.14em] text-muted">{plan.currency} total</span>
+                {hasValidPrice ? (
+                  <>
+                    <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, plan.currency)}</p>
+                    <span className="text-sm font-bold uppercase tracking-[0.14em] text-muted">{plan.currency} total</span>
+                  </>
+                ) : (
+                  <p className="text-3xl font-bold text-muted">{PRICE_UNAVAILABLE}</p>
+                )}
               </div>
-              {hasDiscount && (
-                <p className="mt-2 text-xl text-muted line-through">{formatPrice(plan.price, plan.currency)}</p>
+              {precioAnterior && (
+                <p className="mt-2 text-xl text-muted line-through">{formatPrice(precioAnterior, plan.currency)}</p>
               )}
             </div>
 
@@ -143,10 +146,16 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
               </ul>
             </div>
 
-            <Link href={`/checkout?type=plan&planId=${plan.id}`} className="btn btn-primary btn-lg w-full sm:w-auto">
-              Contratar plan ahora
-              <ArrowRight className="h-6 w-6" aria-hidden="true" />
-            </Link>
+            {hasValidPrice ? (
+              <Link href={`/checkout?type=plan&planId=${plan.id}`} className="btn btn-primary btn-lg w-full sm:w-auto">
+                Contratar plan ahora
+                <ArrowRight className="h-6 w-6" aria-hidden="true" />
+              </Link>
+            ) : (
+              <button type="button" disabled className="btn btn-primary btn-lg w-full sm:w-auto">
+                No disponible
+              </button>
+            )}
 
             <p className="mt-5 text-sm text-muted">Comienza tu transformación hoy. Soporte personalizado incluido.</p>
 

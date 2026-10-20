@@ -1,6 +1,6 @@
 "use client";
 
-import { applyDiscount } from "@/lib/money";
+import { applyDiscount, isValidPrice } from "@/lib/money";
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { ItemUI } from "@/app/src/types/item";
@@ -17,11 +17,16 @@ interface CartContextType {
   removeFromCart: (itemId: number) => void;
   updateQuantity: (itemId: number, quantity: number) => void;
   clearCart: () => void;
+  /** Actualiza precio de lista y descuento de los productos del carrito con los valores del servidor */
+  syncPrices: (prices: { id: number; price: number; discount: number | null }[]) => void;
   openCart: () => void;
   closeCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
 }
+
+// Un producto sin precio válido (0, NaN…) nunca entra ni permanece en el carrito
+const withValidPrice = (items: CartItem[]) => items.filter((item) => isValidPrice(item.price));
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -70,14 +75,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           const response = await fetch("/api/cart");
           const data = await response.json();
           if (response.ok && Array.isArray(data.items)) {
-            setCart(data.items);
+            setCart(withValidPrice(data.items));
           } else {
             setCart([]);
           }
         } else {
           const savedCart = localStorage.getItem(userKey);
           if (savedCart) {
-            setCart(JSON.parse(savedCart));
+            setCart(withValidPrice(JSON.parse(savedCart)));
           } else {
             setCart([]);
           }
@@ -131,6 +136,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cart, isHydrated, status]);
 
   const addToCart = useCallback((item: ItemUI, quantity: number = 1) => {
+    if (!isValidPrice(item.price)) return;
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
 
@@ -170,6 +176,24 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCart([]);
   }, []);
 
+  const syncPrices = useCallback(
+    (prices: { id: number; price: number; discount: number | null }[]) => {
+      setCart((prevCart) => {
+        let changed = false;
+        const next = prevCart.map((item) => {
+          const fresh = prices.find((current) => current.id === item.id);
+          if (!fresh) return item;
+          const discount = fresh.discount ?? 0;
+          if (item.price === fresh.price && (item.discount ?? 0) === discount) return item;
+          changed = true;
+          return { ...item, price: fresh.price, discount };
+        });
+        return changed ? next : prevCart;
+      });
+    },
+    []
+  );
+
   const openCart = useCallback(() => {
     setIsOpen(true);
   }, []);
@@ -198,6 +222,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         removeFromCart,
         updateQuantity,
         clearCart,
+        syncPrices,
         openCart,
         closeCart,
         getTotalItems,

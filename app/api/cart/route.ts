@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/nextAuth";
 import { adaptItemToItemUI } from "@/app/src/adapters/itemAdapter";
+import { isValidPrice } from "@/lib/money";
 
 const getUserId = (id?: string | null) => (id ? Number(id) : null);
 
@@ -96,22 +97,16 @@ export async function PUT(request: NextRequest) {
       select: { id: true, price: true },
     });
 
+    // Solo productos con precio válido (> 0) entran al carrito; los demás se descartan
     const priceMap = new Map<number, number>();
     for (const product of products) {
-      const price = typeof product.price === "object" && "toNumber" in product.price
-        ? product.price
-        : Number(product.price);
-      priceMap.set(product.id, price);
+      if (isValidPrice(product.price)) priceMap.set(product.id, product.price);
     }
 
-    const itemsToSave = Array.from(quantityMap.entries())
-      .filter(([productId]) => priceMap.has(productId))
-      .map(([productId, quantity]) => ({
-        cartId: cart.id,
-        productId,
-        quantity,
-        price: priceMap.get(productId) || 0,
-      }));
+    const itemsToSave = Array.from(quantityMap.entries()).flatMap(([productId, quantity]) => {
+      const price = priceMap.get(productId);
+      return price === undefined ? [] : [{ cartId: cart.id, productId, quantity, price }];
+    });
 
     await prisma.$transaction([
       prisma.cartItem.deleteMany({ where: { cartId: cart.id } }),

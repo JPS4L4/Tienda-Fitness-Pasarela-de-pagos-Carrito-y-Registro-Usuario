@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from '@/lib/money'
+import { formatFinalPrice } from '@/lib/money'
 
 import { useEffect, useState } from "react";
 import { ItemUI } from "@/app/src/types/item";
@@ -63,7 +63,7 @@ export default function LocalSearchAutocomplete({
                   <p className="text-xs text-muted">{item.category}</p>
                 </div>
                 <span className="text-xs font-semibold text-accent ml-2 flex-shrink-0">
-                  {formatPrice(item.price)}
+                  {formatFinalPrice(item, item.currency)}
                 </span>
               </button>
             </li>

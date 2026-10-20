@@ -1,7 +1,5 @@
 'use client';
 
-import { applyDiscount } from '@/lib/money'
-
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -80,12 +78,14 @@ const CheckoutForm = ({
 }) => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { cart: contextCart, clearCart, removeFromCart } = useCart();
+  const { cart: contextCart, clearCart, removeFromCart, syncPrices } = useCart();
   const stripe = useStripe();
   const elements = useElements();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
+  // Total calculado por el servidor: es el único que se muestra y se cobra
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'mercadopago'>('stripe');
   const isBuyNow = Boolean(buyNowItemId);
@@ -207,18 +207,87 @@ const CheckoutForm = ({
     fetchData();
   }, [type, planId, contextCart, buyNowItemId, buyNowQuantity]);
 
-  // Calcular total
-  const totalAmount = useMemo(() => {
-    if (type === 'cart') {
-      return cartItems.reduce((sum, item) => {
-        const itemPrice = applyDiscount(item.price, item.discount);
-        return sum + itemPrice * item.quantity;
-      }, 0);
-    }
-    if (!plan) return 0;
-    // Mismo cálculo que el servidor (que es quien fija el monto real a cobrar)
-    return applyDiscount(plan.price, plan.discount);
+  // Solo cambia cuando cambian los productos o cantidades (no por actualizaciones de precio)
+  const quoteKey = useMemo(() => {
+    if (type === 'plan') return plan ? `plan:${plan.id}` : null;
+    if (cartItems.length === 0) return null;
+    return cartItems.map((item) => `${item.id}x${item.quantity}`).join(',');
   }, [type, cartItems, plan]);
+
+  // Cotizar con el servidor: sus precios y total mandan; si difieren de los del cliente se corrigen
+  useEffect(() => {
+    if (!quoteKey) {
+      setServerTotal(null);
+      return;
+    }
+    let active = true;
+    setServerTotal(null);
+
+    const loadQuote = async () => {
+      try {
+        const response = await fetch('/api/checkout/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            type === 'plan'
+              ? { type, planId }
+              : { type, items: cartItems.map((item) => ({ id: item.id, quantity: item.quantity })) }
+          ),
+        });
+        const data = await response.json();
+        if (!active) return;
+        if (!response.ok) {
+          toast.error(data.error || 'No se pudo calcular el total');
+          return;
+        }
+
+        let priceChanged = false;
+        if (data.type === 'plan') {
+          const serverPlan = data.plan as { price: number; discount: number | null };
+          if (plan && (plan.price !== serverPlan.price || (plan.discount ?? 0) !== (serverPlan.discount ?? 0))) {
+            priceChanged = true;
+            setPlan({ ...plan, price: serverPlan.price, discount: serverPlan.discount });
+          }
+        } else {
+          const fresh = (data.lines as { productId: number; listPrice: number; discount: number | null }[]).map(
+            (line) => ({ id: line.productId, price: line.listPrice, discount: line.discount })
+          );
+          priceChanged = cartItems.some((item) => {
+            const current = fresh.find((line) => line.id === item.id);
+            return !!current && (current.price !== item.price || (current.discount ?? 0) !== (item.discount ?? 0));
+          });
+          if (priceChanged) {
+            setCartItems((items) =>
+              items.map((item) => {
+                const current = fresh.find((line) => line.id === item.id);
+                return current ? { ...item, price: current.price, discount: current.discount ?? 0 } : item;
+              })
+            );
+            if (!isBuyNow) syncPrices(fresh);
+          }
+        }
+        if (priceChanged) {
+          toast('Actualizamos algunos precios de tu pedido', { icon: 'ℹ️' });
+        }
+        setServerTotal(data.total);
+      } catch (error) {
+        if (active) {
+          console.error(error);
+          toast.error('No se pudo calcular el total');
+        }
+      }
+    };
+
+    loadQuote();
+    return () => {
+      active = false;
+    };
+    // cartItems/plan solo se leen para armar la petición; quoteKey ya identifica su contenido
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quoteKey, type, planId, isBuyNow, syncPrices]);
+
+  // 0 mientras el servidor no responde: no se inicia ningún pago sin un total válido
+  const totalAmount = serverTotal ?? 0;
 
   // Variable para moneda
   const currency = 'COP';
@@ -505,7 +574,7 @@ const CheckoutForm = ({
               cartItems={cartItems}
               plan={plan}
               onRemoveItem={isBuyNow ? () => undefined : removeFromCart}
-              calculateTotal={() => totalAmount}
+              calculateTotal={() => serverTotal}
             />
           </div>
 
@@ -519,6 +588,7 @@ const CheckoutForm = ({
               cartItemsCount={cartItems.length}
               hasPlan={!!plan}
               totalAmount={totalAmount}
+              totalReady={serverTotal !== null}
               currency={currency}
               hasStripeElements={!!(stripe && elements)}
               stripeAvailable={!!stripeKey}

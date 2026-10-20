@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from '@/lib/money'
+import { formatFinalPrice, getPriceDisplay } from '@/lib/money'
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
@@ -69,18 +69,18 @@ export default function LocalSearchResults({
                 </p>
                 <p className="text-xs text-muted mt-1">
                   {item.category}
-                  {(item.discount ?? 0) > 0 && (
+                  {getPriceDisplay(item).badge && (
                     <>
                       <span className="mx-1">•</span>
                       <span className="text-accent font-semibold">
-                        -{item.discount}%
+                        -{getPriceDisplay(item).badge}%
                       </span>
                     </>
                   )}
                 </p>
               </div>
               <span className="text-sm font-bold text-accent whitespace-nowrap">
-                {formatPrice(item.price)}
+                {formatFinalPrice(item)}
               </span>
             </div>
           </button>

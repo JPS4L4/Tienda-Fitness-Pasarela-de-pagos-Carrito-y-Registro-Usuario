@@ -27,6 +27,7 @@ export interface Plan {
   title: string;
   coverage: string[];
   price?: number; // COP
+  discount?: number;
   slug?: string;
 }
 

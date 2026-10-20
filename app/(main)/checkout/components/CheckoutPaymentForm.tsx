@@ -27,6 +27,8 @@ interface CheckoutPaymentFormProps {
   cartItemsCount: number;
   hasPlan: boolean;
   totalAmount: number;
+  /** false mientras el servidor calcula el total: no se puede pagar */
+  totalReady: boolean;
   currency: string;
   hasStripeElements: boolean;
   stripeAvailable: boolean;
@@ -45,6 +47,7 @@ export default function CheckoutPaymentForm({
   cartItemsCount,
   hasPlan,
   totalAmount,
+  totalReady,
   currency,
   hasStripeElements,
   stripeAvailable,
@@ -333,6 +336,7 @@ export default function CheckoutPaymentForm({
               disabled={
                 loading ||
                 (paymentMethod === 'stripe' && (!hasStripeElements || stripeIntentLoading || !stripeClientSecret)) ||
+                !totalReady ||
                 (type === 'cart' && cartItemsCount === 0) ||
                 (type === 'plan' && !hasPlan)
               }
@@ -348,7 +352,7 @@ export default function CheckoutPaymentForm({
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Pagar {formatPrice(totalAmount, currency)}
+                  {totalReady ? `Pagar ${formatPrice(totalAmount, currency)}` : 'Calculando total...'}
                 </span>
               )}
             </button>

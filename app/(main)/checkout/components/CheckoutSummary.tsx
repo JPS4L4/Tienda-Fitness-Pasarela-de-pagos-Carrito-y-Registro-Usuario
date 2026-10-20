@@ -1,6 +1,6 @@
 'use client';
 
-import { formatPrice, applyDiscount } from '@/lib/money'
+import { formatPrice, getPriceDisplay } from '@/lib/money'
 
 import { Check, Trash2, ShoppingBag } from 'lucide-react';
 import { SafeImage } from '@/components/others/SafeImage';
@@ -29,7 +29,8 @@ interface CheckoutSummaryProps {
   cartItems: CartItem[];
   plan: Plan | null;
   onRemoveItem: (itemId: number) => void;
-  calculateTotal: () => number;
+  /** Total calculado por el servidor; null mientras se calcula */
+  calculateTotal: () => number | null;
 }
 
 export default function CheckoutSummary({
@@ -39,6 +40,9 @@ export default function CheckoutSummary({
   onRemoveItem,
   calculateTotal,
 }: CheckoutSummaryProps) {
+  const total = calculateTotal();
+  const totalLabel = total === null ? 'Calculando...' : formatPrice(total);
+
   return (
     <div className="order-2 lg:order-1">
       <div className="card sticky top-24 overflow-hidden">
@@ -59,7 +63,7 @@ export default function CheckoutSummary({
                 <>
                   <div className="space-y-3">
                     {cartItems.map((item) => {
-                      const itemPrice = applyDiscount(item.price, item.discount);
+                      const { valid, final: itemPrice, badge } = getPriceDisplay(item);
                       const subtotal = itemPrice * item.quantity;
 
                       return (
@@ -73,9 +77,9 @@ export default function CheckoutSummary({
                             <h3 className="mb-1 truncate font-sans text-lg font-bold normal-case tracking-normal text-fg">{item.title}</h3>
                             <div className="mb-2 flex items-center gap-2">
                               <Badge tone="outline">Cant. {item.quantity}</Badge>
-                              {item.discount ? <Badge tone="accent">-{item.discount}%</Badge> : null}
+                              {badge ? <Badge tone="accent">-{badge}%</Badge> : null}
                             </div>
-                            <p className="price text-2xl text-fg">{formatPrice(subtotal)}</p>
+                            <p className="price text-2xl text-fg">{valid ? formatPrice(subtotal) : 'Precio no disponible'}</p>
                           </div>
                           <button
                             onClick={() => onRemoveItem(item.id)}
@@ -93,7 +97,7 @@ export default function CheckoutSummary({
                   <div className="mt-6 border-t-2 border-line pt-6">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium text-muted">Subtotal</span>
-                      <span className="font-semibold text-fg">{formatPrice(calculateTotal())}</span>
+                      <span className="font-semibold text-fg">{totalLabel}</span>
                     </div>
                     <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
                       <span className="font-medium text-muted">Envío</span>
@@ -101,7 +105,7 @@ export default function CheckoutSummary({
                     </div>
                     <div className="flex items-center justify-between bg-accent p-4 text-on-accent">
                       <span className="text-sm font-extrabold uppercase tracking-[0.14em]">Total</span>
-                      <span className="price text-4xl">{formatPrice(calculateTotal())}</span>
+                      <span className="price text-4xl">{totalLabel}</span>
                     </div>
                   </div>
                 </>
@@ -128,7 +132,7 @@ export default function CheckoutSummary({
               <div className="flex items-end justify-between bg-accent p-5 text-on-accent">
                 <div>
                   <p className="mb-1 text-sm font-extrabold uppercase tracking-[0.14em]">Total a pagar</p>
-                  <span className="price text-5xl">{formatPrice(calculateTotal())}</span>
+                  <span className="price text-5xl">{totalLabel}</span>
                 </div>
               </div>
             </div>
