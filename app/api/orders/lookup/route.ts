@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
-import { isAdminEmail } from '@/lib/adminAuth';
+import { isVerifiedAdmin } from '@/lib/adminAccess';
 import { canViewOrder, toOrderView } from '@/lib/orders/lookup';
 
 /**
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       omit: { accessToken: true },
     });
 
-    const viewer = { userId, isAdmin: Boolean(session?.user?.email && isAdminEmail(session.user.email)) };
+    const viewer = { userId, isAdmin: await isVerifiedAdmin(session?.user?.email) };
     // Misma respuesta para "no existe" y "no es tuya": no revela qué órdenes existen.
     if (!order || !canViewOrder(order, viewer, orderIdParam ? guestToken : null)) {
       return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });

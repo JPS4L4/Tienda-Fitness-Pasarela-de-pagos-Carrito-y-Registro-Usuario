@@ -97,7 +97,7 @@ El seed crea estas cuentas (contraseña de ambas: `Prueba123!`):
 
 | Rol | Correo | Qué incluye |
 |---|---|---|
-| Administrador | `admin@fitness-studio.example` | Acceso a `/admin` (requiere estar en `ADMIN_EMAILS`) |
+| Administrador | `admin@fitness-studio.example` | Acceso a `/admin` (requiere estar en `ADMIN_EMAILS` y tener el correo verificado). Es de **solo lectura**: crear, editar o eliminar devuelve 403 |
 | Usuario | `demo@fitness-studio.example` | Perfil fitness completo, una suscripción activa y una orden completada |
 
 ## Tarjetas de prueba

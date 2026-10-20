@@ -10,6 +10,8 @@ import {
 } from '@/lib/catalogValidation'
 
 import { useEffect, useMemo, useState } from 'react'
+import toast from 'react-hot-toast'
+import ReadOnlyNotice from '@/components/admin/ReadOnlyNotice'
 
 type ItemFormState = {
   id?: number
@@ -73,7 +75,7 @@ const emptyForm: ItemFormState = {
   installments: '',
 }
 
-export default function ItemsCrud() {
+export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) {
   const [items, setItems] = useState<ItemRow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -204,6 +206,7 @@ export default function ItemsCrud() {
 
       if (!response.ok) {
         const data = await response.json()
+        if (response.status === 403) toast.error(data.error || 'Acción no permitida')
         throw new Error(data.error || 'Error guardando el item')
       }
 
@@ -247,6 +250,7 @@ export default function ItemsCrud() {
       const response = await fetch(`/api/admin/items/${id}`, { method: 'DELETE' })
       if (!response.ok) {
         const data = await response.json()
+        if (response.status === 403) toast.error(data.error || 'Acción no permitida')
         throw new Error(data.error || 'Error eliminando el item')
       }
       await fetchItems()
@@ -260,6 +264,8 @@ export default function ItemsCrud() {
   }
 
   return (
+    <>
+    {readOnly && <ReadOnlyNotice />}
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <section className="panel">
         <div className="flex items-center justify-between">
@@ -318,6 +324,8 @@ export default function ItemsCrud() {
                             onClick={() => handleDelete(item.id)}
                             className="btn btn-danger btn-sm"
                             type="button"
+                            disabled={readOnly || saving}
+                            title={readOnly ? 'Cuenta de solo lectura' : undefined}
                           >
                             Eliminar
                           </button>
@@ -546,7 +554,8 @@ export default function ItemsCrud() {
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || readOnly}
+            title={readOnly ? 'Cuenta de solo lectura' : undefined}
             className="btn btn-primary btn-block"
           >
             {saving ? 'Guardando...' : mode === 'create' ? 'Crear item' : 'Guardar cambios'}
@@ -554,5 +563,6 @@ export default function ItemsCrud() {
         </form>
       </section>
     </div>
+    </>
   )
 }

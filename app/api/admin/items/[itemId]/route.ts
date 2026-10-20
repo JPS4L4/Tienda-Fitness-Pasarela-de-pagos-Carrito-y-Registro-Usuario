@@ -32,7 +32,7 @@ export async function PUT(
   { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
-    const authResult = await requireAdmin()
+    const authResult = await requireAdmin({ write: true })
     if (authResult) return authResult
 
     const { itemId } = await params
@@ -95,7 +95,7 @@ export async function DELETE(
   { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
-    const authResult = await requireAdmin()
+    const authResult = await requireAdmin({ write: true })
     if (authResult) return authResult
 
     const { itemId } = await params

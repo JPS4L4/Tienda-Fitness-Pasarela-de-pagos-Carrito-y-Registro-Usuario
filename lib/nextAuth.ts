@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { validateCredentials, registerOAuthUser } from "@/app/api/auth/services/prismaAuthService"
 import { validateLoginForm, sanitizeInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
-import { isAdminEmail } from "@/lib/adminAuth"
+import { isVerifiedAdmin } from "@/lib/adminAccess"
 
 const providers = [
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -100,8 +100,8 @@ export const authOptions: NextAuthOptions = {
         token.phone = user.phone
       }
 
-      // El rol se recalcula en cada lectura a partir del correo (ADMIN_EMAILS)
-      token.role = isAdminEmail(token.email as string | undefined) ? "admin" : "user"
+      // El rol se recalcula en cada lectura: correo en ADMIN_EMAILS y verificado en la BD
+      token.role = (await isVerifiedAdmin(token.email as string | undefined)) ? "admin" : "user"
       
       // Para OAuth (Google, Facebook)
       if (account?.provider === "google" || account?.provider === "facebook") {

@@ -4,6 +4,8 @@ import { formatPrice, MAX_DISCOUNT } from '@/lib/money'
 import { CATALOG_CURRENCY, MIN_CATALOG_PRICE, validateCatalogMoney } from '@/lib/catalogValidation'
 
 import { useEffect, useMemo, useState } from 'react'
+import toast from 'react-hot-toast'
+import ReadOnlyNotice from '@/components/admin/ReadOnlyNotice'
 
 type PlanFormState = {
   id?: number
@@ -56,7 +58,7 @@ const emptyForm: PlanFormState = {
   shortDescription: '',
 }
 
-export default function PlansCrud() {
+export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) {
   const [plans, setPlans] = useState<PlanRow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -169,6 +171,7 @@ export default function PlansCrud() {
 
       if (!response.ok) {
         const data = await response.json()
+        if (response.status === 403) toast.error(data.error || 'Acción no permitida')
         throw new Error(data.error || 'Error guardando el plan')
       }
 
@@ -209,6 +212,7 @@ export default function PlansCrud() {
       const response = await fetch(`/api/admin/plans/${id}`, { method: 'DELETE' })
       if (!response.ok) {
         const data = await response.json()
+        if (response.status === 403) toast.error(data.error || 'Acción no permitida')
         throw new Error(data.error || 'Error eliminando el plan')
       }
       await fetchPlans()
@@ -222,6 +226,8 @@ export default function PlansCrud() {
   }
 
   return (
+    <>
+    {readOnly && <ReadOnlyNotice />}
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <section className=" w-2xl border border-line bg-surface p-6 ">
         <div className="flex items-center justify-between">
@@ -280,6 +286,8 @@ export default function PlansCrud() {
                             onClick={() => handleDelete(plan.id)}
                             className="btn btn-danger btn-sm"
                             type="button"
+                            disabled={readOnly || saving}
+                            title={readOnly ? 'Cuenta de solo lectura' : undefined}
                           >
                             Eliminar
                           </button>
@@ -455,7 +463,8 @@ export default function PlansCrud() {
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || readOnly}
+            title={readOnly ? 'Cuenta de solo lectura' : undefined}
             className="btn btn-primary btn-block"
           >
             {saving ? 'Guardando...' : mode === 'create' ? 'Crear plan' : 'Guardar cambios'}
@@ -463,5 +472,6 @@ export default function PlansCrud() {
         </form>
       </section>
     </div>
+    </>
   )
 }

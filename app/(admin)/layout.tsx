@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/nextAuth'
-import { isAdminEmail } from '@/lib/adminAuth'
+import { isVerifiedAdmin } from '@/lib/adminAccess'
+import { Toaster } from 'react-hot-toast'
 import AdminNav from '@/components/admin/AdminNav'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -11,13 +12,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/login')
   }
 
-  if (!isAdminEmail(session.user.email)) {
+  if (!(await isVerifiedAdmin(session.user.email))) {
     return (
       <main className="min-h-screen bg-bg">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <div className="panel border-t-4 border-t-danger">
             <h1 className="text-4xl text-fg">Acceso restringido</h1>
-            <p className="mt-3 text-muted">Tu cuenta no tiene permisos de administrador.</p>
+            <p className="mt-3 text-muted">Tu cuenta no tiene permisos de administrador o su correo aún no está verificado.</p>
             <Link href="/" className="btn btn-secondary mt-6">
               Volver al inicio
             </Link>
@@ -41,6 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       {children}
+      <Toaster position="top-center" />
     </div>
   )
 }

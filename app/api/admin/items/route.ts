@@ -35,7 +35,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await requireAdmin()
+    const authResult = await requireAdmin({ write: true })
     if (authResult) return authResult
 
     const body = await request.json()

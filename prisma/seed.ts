@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { applyDiscount } from '../lib/money';
+import { DEMO_ADMIN_EMAIL } from '../lib/adminAuth';
 
 function assertSafeSeedTarget() {
   const url = process.env.DATABASE_URL;
@@ -30,7 +31,6 @@ assertSafeSeedTarget();
 
 // Cuentas de demostración (documentadas en el README). Contraseña solo para entornos de prueba.
 const DEMO_PASSWORD = 'Prueba123!';
-const DEMO_ADMIN_EMAIL = 'admin@fitness-studio.example';
 const DEMO_USER_EMAIL = 'demo@fitness-studio.example';
 
 const prisma = new PrismaClient();

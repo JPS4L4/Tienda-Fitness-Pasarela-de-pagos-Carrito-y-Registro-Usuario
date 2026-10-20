@@ -267,6 +267,14 @@ export async function registerOAuthUser(payload: {
         });
       }
 
+      // Un proveedor que garantiza el correo (Google) también lo deja verificado en la cuenta
+      if (payload.emailVerified && !user.emailVerified) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        });
+      }
+
       // Actualizar imagen si viene del proveedor y el usuario no tiene una
       if (payload.image && !user.image) {
         await prisma.user.update({
