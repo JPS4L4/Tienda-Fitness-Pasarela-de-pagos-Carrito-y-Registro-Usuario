@@ -1,20 +1,24 @@
 'use client';
 
-import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js/pure';
 import { Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/context/CartContext';
 import CheckoutSummary from './components/CheckoutSummary';
 import CheckoutPaymentForm from './components/CheckoutPaymentForm';
+import { EMPTY_CARD } from './components/DemoCardForm';
+import PaymentProgress, { type PaymentStage } from './components/PaymentProgress';
+import { usePaymentMode } from '@/context/PaymentModeContext';
+import { validateCard, type CardInput } from '@/lib/payments/card';
 import { ItemUI } from '@/app/src/types/item';
 import FitnessProfileGate from '@/components/others/FitnessProfileGate';
 import { errorMessage } from "@/lib/utils";
 
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
+// En modo demo nunca se carga Stripe.js: la clave solo se usa con PAYMENT_MODE=live.
+const publicStripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 interface CartItem {
   id: number;
@@ -47,6 +51,7 @@ interface ShippingInfo {
 }
 
 const CheckoutForm = ({
+  demo,
   type,
   planId,
   buyNowItemId,
@@ -59,6 +64,7 @@ const CheckoutForm = ({
   onStripeIntentChange,
   onStripeIntentLoadingChange,
 }: {
+  demo: boolean;
   type: 'cart' | 'plan';
   planId?: string;
   buyNowItemId?: string;
@@ -81,6 +87,7 @@ const CheckoutForm = ({
   const { cart: contextCart, clearCart, removeFromCart, syncPrices } = useCart();
   const stripe = useStripe();
   const elements = useElements();
+  const stripeKey = demo ? undefined : publicStripeKey;
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -91,6 +98,13 @@ const CheckoutForm = ({
   const isBuyNow = Boolean(buyNowItemId);
   const [fitnessProfileLoading, setFitnessProfileLoading] = useState(false);
   const [requiresFitnessProfile, setRequiresFitnessProfile] = useState(false);
+
+  // Pago simulado (modo demo)
+  const [card, setCard] = useState<CardInput>(EMPTY_CARD);
+  const [invalidCardField, setInvalidCardField] = useState<keyof CardInput | null>(null);
+  const [stage, setStage] = useState<PaymentStage | null>(null);
+  // Orden PENDING ya creada para este pedido: un rechazo permite reintentar sin duplicarla
+  const demoOrderRef = useRef<{ key: string; orderId: number; guestToken: string | null } | null>(null);
 
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: '',
@@ -157,11 +171,11 @@ const CheckoutForm = ({
   }, [type, status]);
 
   useEffect(() => {
-    if (!stripeKey && paymentMethod === 'stripe') {
+    if (!demo && !stripeKey && paymentMethod === 'stripe') {
       toast.error('Stripe no está configurado. Usa MercadoPago o agrega la clave pública.');
       setPaymentMethod('mercadopago');
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, demo, stripeKey]);
 
   // Cargar datos según tipo
   useEffect(() => {
@@ -411,8 +425,96 @@ const CheckoutForm = ({
     requiresFitnessProfile,
   ]);
 
+  const handleDemoSubmit = async () => {
+    if (type === 'plan' && requiresFitnessProfile) {
+      toast.error('Completa tu perfil fitness antes de comprar un plan');
+      return;
+    }
+    if (type === 'cart' && !validateShippingInfo()) return;
+
+    const validation = validateCard(card);
+    if (!validation.ok) {
+      setInvalidCardField(validation.field);
+      toast.error(validation.message);
+      return;
+    }
+    setInvalidCardField(null);
+
+    // Con "reducir movimiento" los pasos avanzan sin pausas largas
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, reduceMotion ? 150 : ms));
+
+    setLoading(true);
+    setStage({ step: 0, result: 'running' });
+    try {
+      await pause(900); // Validando datos
+
+      const orderKey = JSON.stringify({
+        type,
+        planId,
+        items: type === 'cart' ? cartItems.map((item) => [item.id, item.quantity]) : null,
+        shipping: type === 'cart' ? shippingInfo : null,
+      });
+      let order = demoOrderRef.current;
+      if (!order || order.key !== orderKey) {
+        const created = await fetch('/api/payments/demo/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type,
+            items: type === 'cart' ? cartItems.map((item) => ({ id: item.id, quantity: item.quantity })) : undefined,
+            planId: type === 'plan' ? planId : undefined,
+            shippingInfo: type === 'cart' ? shippingInfo : undefined,
+          }),
+        });
+        const createdData = await created.json().catch(() => ({}));
+        if (!created.ok) throw new Error(createdData.error || 'No se pudo crear el pedido');
+        order = { key: orderKey, orderId: createdData.orderId, guestToken: createdData.guestToken ?? null };
+        demoOrderRef.current = order;
+      }
+
+      setStage({ step: 1, result: 'running' }); // Verificando con el banco
+      const [confirmResponse] = await Promise.all([
+        fetch('/api/payments/demo/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: order.orderId, guestToken: order.guestToken, card }),
+        }),
+        pause(1200),
+      ]);
+      const confirmData = await confirmResponse.json().catch(() => ({}));
+
+      if (confirmResponse.status === 402) {
+        setStage({ step: 2, result: 'declined', reason: confirmData.error });
+        return;
+      }
+      if (!confirmResponse.ok) throw new Error(confirmData.error || 'Error al confirmar el pago');
+
+      setStage({ step: 2, result: 'running' }); // Autorizando pago
+      await pause(1000);
+      setStage({ step: 3, result: 'approved' }); // Pago aprobado
+      await pause(1100);
+
+      const token = order.guestToken ? `&t=${encodeURIComponent(order.guestToken)}` : '';
+      demoOrderRef.current = null;
+      router.push(`/checkout/success?orderId=${order.orderId}${token}`);
+      if (type === 'cart' && !isBuyNow) clearCart();
+    } catch (error) {
+      setStage(null);
+      toast.error(errorMessage(error, 'Error al procesar el pago'));
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (demo) {
+      await handleDemoSubmit();
+      return;
+    }
 
     if (type === 'plan' && requiresFitnessProfile) {
       toast.error('Completa tu perfil fitness antes de comprar un plan');
@@ -584,6 +686,13 @@ const CheckoutForm = ({
               type={type}
               shippingInfo={shippingInfo}
               paymentMethod={paymentMethod}
+              demo={demo}
+              card={card}
+              onCardChange={(next) => {
+                setCard(next);
+                setInvalidCardField(null);
+              }}
+              invalidCardField={invalidCardField}
               loading={loading}
               cartItemsCount={cartItems.length}
               hasPlan={!!plan}
@@ -601,12 +710,19 @@ const CheckoutForm = ({
           </div>
         </div>
       </div>
+      <PaymentProgress stage={stage} amount={totalAmount} onRetry={() => setStage(null)} />
     </div>
   );
 };
 
 // Wrapper con Suspense y Elements
 const CheckoutPage = () => {
+  const demo = usePaymentMode() === 'demo';
+  // Stripe.js solo se descarga en modo live y con clave pública
+  const stripePromise = useMemo(
+    () => (!demo && publicStripeKey ? loadStripe(publicStripeKey) : null),
+    [demo]
+  );
   const searchParams = useSearchParams();
   const type = (searchParams.get('type') || 'cart') as 'cart' | 'plan';
   const planId = searchParams.get('planId') || undefined;
@@ -654,6 +770,7 @@ const CheckoutPage = () => {
   return (
     <Elements key={elementsKey} stripe={stripePromise} options={stripeElementsOptions}>
       <CheckoutForm
+        demo={demo}
         type={type}
         planId={planId}
         buyNowItemId={buyNowItemId}

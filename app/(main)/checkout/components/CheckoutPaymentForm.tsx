@@ -5,6 +5,8 @@ import { formatPrice } from '@/lib/money'
 import { PaymentElement } from '@stripe/react-stripe-js';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import DemoCardForm from './DemoCardForm';
+import type { CardInput } from '@/lib/payments/card';
 import stripeLogo from '@/images/Logos/stripe-logo-black-transparent.png';
 import mercadopagoLogo from '@/images/Logos/mercadopago_sin_letras.png';
 
@@ -23,6 +25,11 @@ interface CheckoutPaymentFormProps {
   type: 'cart' | 'plan';
   shippingInfo: ShippingInfo;
   paymentMethod: 'stripe' | 'mercadopago';
+  /** Modo demo: tarjeta simulada en lugar de Stripe / Mercado Pago */
+  demo: boolean;
+  card: CardInput;
+  onCardChange: (card: CardInput) => void;
+  invalidCardField: keyof CardInput | null;
   loading: boolean;
   cartItemsCount: number;
   hasPlan: boolean;
@@ -43,6 +50,10 @@ export default function CheckoutPaymentForm({
   type,
   shippingInfo,
   paymentMethod,
+  demo,
+  card,
+  onCardChange,
+  invalidCardField,
   loading,
   cartItemsCount,
   hasPlan,
@@ -223,6 +234,17 @@ export default function CheckoutPaymentForm({
             </div>
           )}
 
+          {demo && (
+            <div>
+              <p className="mb-5 flex items-center gap-2 text-2xl font-display uppercase text-fg">
+                Pago con tarjeta
+              </p>
+              <DemoCardForm card={card} onChange={onCardChange} invalidField={invalidCardField} disabled={loading} />
+            </div>
+          )}
+
+          {!demo && (
+          <>
           {/* Método de pago */}
           <div>
             <p className="mb-5 flex items-center gap-2 text-2xl font-display uppercase text-fg">
@@ -329,13 +351,16 @@ export default function CheckoutPaymentForm({
             </div>
           )}
 
+          </>
+          )}
+
           {/* Botón pagar */}
           <div className="space-y-4">
             <button
               type="submit"
               disabled={
                 loading ||
-                (paymentMethod === 'stripe' && (!hasStripeElements || stripeIntentLoading || !stripeClientSecret)) ||
+                (!demo && paymentMethod === 'stripe' && (!hasStripeElements || stripeIntentLoading || !stripeClientSecret)) ||
                 !totalReady ||
                 (type === 'cart' && cartItemsCount === 0) ||
                 (type === 'plan' && !hasPlan)
