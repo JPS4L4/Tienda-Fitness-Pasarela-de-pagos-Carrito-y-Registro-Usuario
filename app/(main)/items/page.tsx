@@ -439,7 +439,7 @@ function FiltersPanel({
           />
         </div>
         <div className="text-xs text-muted mt-2">
-          {formatPrice(minPrice || 0)} - {maxPrice ? formatPrice(maxPrice) : "∞"}
+          {minPrice ? formatPrice(minPrice) : "Sin mínimo"} - {maxPrice ? formatPrice(maxPrice) : "∞"}
         </div>
       </div>
 
