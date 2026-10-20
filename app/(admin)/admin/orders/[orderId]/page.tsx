@@ -2,6 +2,9 @@ import { formatPrice } from '@/lib/money'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/requireAdmin'
+import OrderFulfillment from '@/components/orders/OrderFulfillment'
+import { getOrderFulfillment } from '@/lib/orders/shipping'
+import { demoLast4, describePaymentMethod, getOrderStatusView } from '@/lib/orders/status'
 
 async function fetchOrder(orderId: string) {
   // Consulta directa en el servidor: un fetch interno no llevaría la cookie de sesión.
@@ -45,6 +48,8 @@ export default async function AdminOrderDetailPage({
   }
 
   const order = data.order
+  const statusView = getOrderStatusView(order.status)
+  const fulfillment = getOrderFulfillment(order)
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
@@ -67,7 +72,9 @@ export default async function AdminOrderDetailPage({
           <dl className="mt-4 space-y-2 text-sm text-fg-soft">
             <div className="flex justify-between">
               <dt>Estado</dt>
-              <dd className="font-semibold">{order.status}</dd>
+              <dd className="font-semibold">
+                {statusView.label} <span className="text-xs font-normal text-muted">({order.status})</span>
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt>Total</dt>
@@ -75,7 +82,7 @@ export default async function AdminOrderDetailPage({
             </div>
             <div className="flex justify-between">
               <dt>Método de pago</dt>
-              <dd>{order.paymentMethod || '—'}</dd>
+              <dd>{describePaymentMethod(order.paymentMethod, demoLast4(order.paymentId))}</dd>
             </div>
             <div className="flex justify-between">
               <dt>ID de pago</dt>
@@ -113,6 +120,12 @@ export default async function AdminOrderDetailPage({
             </div>
           </dl>
         </section>
+
+        {fulfillment && (
+          <section className="lg:col-span-2">
+            <OrderFulfillment fulfillment={fulfillment} />
+          </section>
+        )}
 
         <section className=" border border-line bg-surface p-6  lg:col-span-2">
           <h3 className="text-lg font-semibold text-fg">Items</h3>

@@ -7,6 +7,7 @@ import { type CardBrand, simulateCardOutcome, validateCard } from '@/lib/payment
 import { CheckoutError } from './pricing'
 import { ORDER_STATUS, PAYMENT_METHOD } from './constants'
 import { StockError, fulfillOrder } from './fulfillment'
+import { buildTrackingNumber } from './shipping'
 import { verifyGuestOrderToken } from './guestToken'
 import { type SimulatedEmail, buildOrderEmails } from './simulatedEmail'
 
@@ -25,12 +26,6 @@ export type DemoPaymentResult =
 /** `demo_<aleatorio>_<últimos 4>`: permite mostrar "•••• 4242" en el comprobante sin guardar la tarjeta. */
 export const buildDemoPaymentId = (last4: string) =>
   `demo_${crypto.randomBytes(5).toString('hex')}_${last4}`
-
-/** Últimos 4 dígitos guardados en el id de un pago demo (null para otros métodos). */
-export function demoLast4(paymentId: string | null | undefined): string | null {
-  const match = /^demo_[0-9a-f]+_(\d{4})$/.exec(paymentId ?? '')
-  return match ? match[1] : null
-}
 
 export async function confirmDemoPayment(input: {
   orderId: unknown
@@ -96,6 +91,6 @@ export async function confirmDemoPayment(input: {
     message: done.planId
       ? '¡Suscripción exitosa! Ya tienes acceso a tu plan.'
       : '¡Pago exitoso! Tu pedido ha sido confirmado.',
-    emails: buildOrderEmails(done),
+    emails: buildOrderEmails({ ...done, trackingNumber: done.planId ? null : buildTrackingNumber(done.id) }),
   }
 }

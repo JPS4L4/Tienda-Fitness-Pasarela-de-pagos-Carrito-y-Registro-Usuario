@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
+import OrderFulfillment from '@/components/orders/OrderFulfillment';
+import { getOrderFulfillment } from '@/lib/orders/shipping';
+import { demoLast4, describePaymentMethod, getOrderStatusView } from '@/lib/orders/status';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +43,7 @@ export default async function OrdersPage({
     orderBy: { createdAt: 'desc' },
   });
 
+  const now = new Date();
   const resolvedSearchParams = await searchParams;
   const focusOrderId = resolvedSearchParams.orderId
     ? Number(resolvedSearchParams.orderId)
@@ -71,6 +75,8 @@ export default async function OrdersPage({
           {orders.map((order) => {
             const items = Array.isArray(order.items) ? (order.items as OrderItem[]) : [];
             const isFocused = focusOrderId === order.id;
+            const statusView = getOrderStatusView(order.status);
+            const fulfillment = getOrderFulfillment(order, now);
             return (
               <div
                 key={order.id}
@@ -86,8 +92,8 @@ export default async function OrdersPage({
                   </div>
                   <div>
                     <p className="text-sm text-muted">Estado</p>
-                    <span className="badge badge-ok">
-                      {order.status}
+                    <span className={`badge ${statusView.badge}`}>
+                      {statusView.label}
                     </span>
                   </div>
                   <div>
@@ -114,7 +120,7 @@ export default async function OrdersPage({
                   <div className="bg-surface-2  p-4 border border-line">
                     <p className="text-xs text-muted">Pago</p>
                     <p className="text-sm font-semibold text-fg-soft">
-                      {order.paymentMethod || '—'}
+                      {describePaymentMethod(order.paymentMethod, demoLast4(order.paymentId))}
                     </p>
                     {order.paymentId && (
                       <p className="text-sm text-muted">ID: {order.paymentId}</p>
@@ -131,6 +137,12 @@ export default async function OrdersPage({
                       {order.shippingState ? `, ${order.shippingState}` : ''}
                       {order.shippingPostalCode ? ` (${order.shippingPostalCode})` : ''}
                     </p>
+                  </div>
+                )}
+
+                {fulfillment && (
+                  <div className="mb-6">
+                    <OrderFulfillment fulfillment={fulfillment} />
                   </div>
                 )}
 

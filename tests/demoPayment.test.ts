@@ -9,7 +9,8 @@ vi.mock('@/lib/orders/fulfillment', async () => {
   return { StockError: actual.StockError, fulfillOrder: fulfillMock.fulfillOrder }
 })
 
-import { buildDemoPaymentId, confirmDemoPayment, demoLast4 } from '@/lib/orders/demoPayment'
+import { buildDemoPaymentId, confirmDemoPayment } from '@/lib/orders/demoPayment'
+import { demoLast4 } from '@/lib/orders/status'
 import { StockError } from '@/lib/orders/fulfillment'
 import { signGuestOrderToken } from '@/lib/orders/guestToken'
 
