@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AddReviewForm from "@/components/others/AddReviewForm";
 import { CommentsUI } from "@/app/src/types/comments";
 import { CommentsCard } from "@/components/cards/CommentsCard";
@@ -13,7 +13,7 @@ export default function PlanReviewsSection({ planId }: PlanReviewsSectionProps) 
   const [comments, setComments] = useState<CommentsUI[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/comments?planId=${planId}`);
@@ -31,11 +31,11 @@ export default function PlanReviewsSection({ planId }: PlanReviewsSectionProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [planId]);
 
   useEffect(() => {
     loadComments();
-  }, [planId]);
+  }, [loadComments]);
 
   return (
     <section className="mt-16 bg-surface-2  p-8 sm:p-10 border border-line">

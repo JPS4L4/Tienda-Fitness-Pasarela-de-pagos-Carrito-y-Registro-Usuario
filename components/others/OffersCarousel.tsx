@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
@@ -58,11 +58,12 @@ const arrowClass =
   "absolute bottom-0 z-20 hidden h-12 w-12 items-center justify-center border-2 border-bg bg-bg text-fg transition-colors hover:bg-fg hover:text-bg md:flex"
 
 export default function OffersCarousel({ offers = DEFAULT_OFFERS }: OffersCarouselProps) {
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  // false en el servidor y durante la hidratación; true ya en el cliente (sin efecto ni setState)
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
 
   if (!isMounted) {
     // Reserva el mismo alto mientras carga (evita saltos y mismatch de hidratación)

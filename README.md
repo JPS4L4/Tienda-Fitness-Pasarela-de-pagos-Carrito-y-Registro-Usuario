@@ -69,7 +69,7 @@ sequenceDiagram
 - **Precios en el servidor:** montos de Stripe y Mercado Pago calculados desde la base de datos; la confirmación verifica estado y monto contra la API de la pasarela.
 - **Webhooks firmados:** Stripe con `constructEvent`; Mercado Pago con `x-signature`.
 - **Idempotencia:** un `UPDATE` condicional sobre el estado `PENDING` hace de cerrojo, sin duplicar stock, suscripciones ni correos.
-- **Admin fail-closed:** sin `ADMIN_EMAILS` nadie es administrador; se valida en middleware, layout y cada API.
+- **Admin fail-closed:** sin `ADMIN_EMAILS` nadie es administrador; se valida en el proxy, layout y cada API.
 - **Contenido de pago protegido**, sesiones con secreto obligatorio, errores genéricos hacia el cliente y límite de peticiones en el registro.
 
 Detalle en [docs/security.md](docs/security.md) y [docs/payments.md](docs/payments.md).

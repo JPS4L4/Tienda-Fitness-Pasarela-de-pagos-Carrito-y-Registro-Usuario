@@ -1,5 +1,5 @@
 // lib/adminAuth.ts
-// Reglas de administrador sin dependencias de servidor (se puede usar en middleware).
+// Reglas de administrador sin dependencias de servidor (se puede usar en el proxy).
 // Fail-closed: si ADMIN_EMAILS no está definida o está vacía, nadie es administrador.
 
 export const getAdminEmails = (): string[] =>

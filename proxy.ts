@@ -1,4 +1,4 @@
-// middleware.ts
+// proxy.ts (antes middleware.ts: Next 16 lo renombró a "proxy")
 import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
@@ -10,7 +10,7 @@ const protectedRoutes = [
   "/admin",
 ]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Excluir rutas de API de autenticación
@@ -97,11 +97,11 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-// Configurar qué rutas usan el middleware
+// Configurar qué rutas usan el proxy
 export const config = {
   matcher: [
     /*
-     * Aplicar middleware a:
+     * Aplicar el proxy a:
      * - rutas API privadas
      * - rutas protegidas
      * Excluir:

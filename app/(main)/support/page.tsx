@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import toast from "react-hot-toast"
+import Image from "next/image"
 import { LifeBuoy } from "lucide-react"
 import { errorMessage } from "@/lib/utils";
 
@@ -157,11 +158,14 @@ const Support = () => {
             {previews.length > 0 && (
               <div className="flex gap-2 mt-4 flex-wrap">
                 {previews.map((p, i) => (
-                  <img
+                  <Image
                     key={i}
                     src={p}
                     alt={`preview-${i}`}
-                    className="w-24 h-20 object-cover  border border-line "
+                    width={96}
+                    height={80}
+                    unoptimized
+                    className="w-24 h-20 object-cover border border-line"
                   />
                 ))}
               </div>

@@ -5,18 +5,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function VerifyEmailContent() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [message, setMessage] = useState('')
+  const [result, setResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
+  // Sin token no hay nada que verificar: el estado se deriva, no se guarda desde un efecto
+  const status: 'loading' | 'success' | 'error' = !token ? 'error' : (result?.status ?? 'loading')
+  const message = !token ? 'Token no proporcionado' : (result?.message ?? '')
+
   useEffect(() => {
-    if (!token) {
-      setStatus('error')
-      setMessage('Token no proporcionado')
-      return
-    }
+    if (!token) return
 
     const verifyEmail = async () => {
       try {
@@ -24,18 +23,15 @@ function VerifyEmailContent() {
         const data = await response.json()
 
         if (response.ok && data.success) {
-          setStatus('success')
-          setMessage('¡Email verificado exitosamente!')
+          setResult({ status: 'success', message: '¡Email verificado exitosamente!' })
           setTimeout(() => {
             router.push('/login')
           }, 3000)
         } else {
-          setStatus('error')
-          setMessage(data.error || 'Error al verificar email')
+          setResult({ status: 'error', message: data.error || 'Error al verificar email' })
         }
       } catch (error) {
-        setStatus('error')
-        setMessage('Error de conexión')
+        setResult({ status: 'error', message: 'Error de conexión' })
         console.error(error)
       }
     }

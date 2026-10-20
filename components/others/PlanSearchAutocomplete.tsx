@@ -2,7 +2,7 @@
 
 import { formatFinalPrice } from '@/lib/money'
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Plan } from "@/app/data/data";
 
 interface PlanSearchAutocompleteProps {
@@ -16,15 +16,9 @@ export default function PlanSearchAutocomplete({
   plans = [],
   onResultClick,
 }: PlanSearchAutocompleteProps) {
-  const [results, setResults] = useState<Plan[]>([]);
-  const [showResults, setShowResults] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim() || plans.length === 0) {
-      setShowResults(false);
-      return;
-    }
-
+  // Derivado de query + datos: no hace falta estado ni efecto
+  const results = useMemo(() => {
+    if (!query.trim() || plans.length === 0) return [];
     const searchTerm = query.toLowerCase();
     const filteredResults = plans.filter(
       (plan) =>
@@ -32,16 +26,16 @@ export default function PlanSearchAutocomplete({
         plan.type.toLowerCase().includes(searchTerm)
     );
 
-    setResults(filteredResults.slice(0, 10)); // Limita a 10 resultados
-    setShowResults(filteredResults.length > 0);
+    return filteredResults.slice(0, 10); // Limita a 10 resultados
   }, [query, plans]);
+  const [dismissedQuery, setDismissedQuery] = useState<string | null>(null);
 
   const handleSelectItem = (title: string) => {
     onResultClick?.(title);
-    setShowResults(false);
+    setDismissedQuery(query);
   };
 
-  if (!showResults || results.length === 0) {
+  if (dismissedQuery === query || results.length === 0) {
     return null;
   }
 

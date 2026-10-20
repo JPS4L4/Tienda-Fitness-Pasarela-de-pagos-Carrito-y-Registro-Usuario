@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { Star } from "lucide-react"
 
@@ -24,7 +24,7 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
 
   const targetType = planId ? "plan" : "producto"
 
-  const loadEligibility = async () => {
+  const loadEligibility = useCallback(async () => {
     if ((!productId && !planId) || !session) {
       setEligibilityChecked(true)
       return
@@ -60,7 +60,7 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
     } finally {
       setEligibilityChecked(true)
     }
-  }
+  }, [productId, planId, session, targetType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,7 +138,7 @@ export default function AddReviewForm({ onReviewAdded, productId, planId }: AddR
     }
 
     loadEligibility()
-  }, [productId, planId, session])
+  }, [productId, planId, session, loadEligibility])
 
   // Si no está autenticado, mostrar mensaje
   if (status === "loading") {

@@ -1,6 +1,6 @@
 // lib/adminAccess.ts
 // Acceso de administrador en el servidor: estar en ADMIN_EMAILS no basta, el correo debe estar
-// verificado (user.emailVerified). Usa Prisma, por eso no se importa desde el middleware.
+// verificado (user.emailVerified). Usa Prisma, por eso no se importa desde el proxy.
 import { prisma } from '@/lib/prisma'
 import { isAdminEmail } from '@/lib/adminAuth'
 

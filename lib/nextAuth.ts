@@ -194,7 +194,7 @@ const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
 
-// Para usar auth() en servidor/middleware
+// Para usar auth() en servidor/proxy
 export function auth() {
   return getServerSession(authOptions)
 }

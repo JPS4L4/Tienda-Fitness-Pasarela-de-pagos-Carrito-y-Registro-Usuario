@@ -2,7 +2,7 @@
 
 import { formatFinalPrice } from '@/lib/money'
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { db } from "@/app/data/data";
 import { X } from "lucide-react";
@@ -21,18 +21,14 @@ interface GlobalSearchResultsProps {
 }
 
 export default function GlobalSearchResults({ query }: GlobalSearchResultsProps) {
-  const [results, setResults] = useState<GlobalSearchResult[]>([]);
-  const [showResults, setShowResults] = useState(false);
   const pathname = usePathname();
 
   // No mostrar resultados en páginas de búsqueda local
   const isLocalSearchPage = pathname === "/items" || pathname === "/plans";
 
-  useEffect(() => {
-    if (isLocalSearchPage || !query.trim()) {
-      setShowResults(false);
-      return;
-    }
+  // Derivado de query + ruta: no hace falta estado ni efecto
+  const results = useMemo<GlobalSearchResult[]>(() => {
+    if (isLocalSearchPage || !query.trim()) return [];
 
     const searchTerm = query.toLowerCase();
     const productResults: GlobalSearchResult[] = db.items
@@ -67,11 +63,10 @@ export default function GlobalSearchResults({ query }: GlobalSearchResultsProps)
       }))
       .slice(0, 3);
 
-    setResults([...productResults, ...planResults]);
-    setShowResults(query.trim().length > 0);
+    return [...productResults, ...planResults];
   }, [query, isLocalSearchPage]);
 
-  if (!showResults || results.length === 0) {
+  if (results.length === 0) {
     return null;
   }
 

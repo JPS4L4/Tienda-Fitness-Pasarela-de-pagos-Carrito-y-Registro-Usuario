@@ -92,9 +92,6 @@ function SuccessContent() {
     searchParams.get('collection_id');
   // Invitados: token firmado de su orden (llega en la URL tras pagar)
   const guestToken = searchParams.get('t');
-  const [order, setOrder] = useState<OrderData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const lookupQuery = useMemo(() => {
     if (orderId) return `orderId=${encodeURIComponent(orderId)}${guestToken ? `&t=${encodeURIComponent(guestToken)}` : ''}`;
@@ -102,10 +99,16 @@ function SuccessContent() {
     return null;
   }, [orderId, paymentId, guestToken]);
 
+  // Resultado de la consulta, asociado a la consulta que lo originó: "cargando" = aún no hay resultado
+  const [result, setResult] = useState<{ query: string; order: OrderData | null; error: string | null } | null>(null);
+  const settled = result && result.query === lookupQuery ? result : null;
+  const order = settled?.order ?? null;
+  const error = settled?.error ?? null;
+  const loading = Boolean(lookupQuery) && !settled;
+
   useEffect(() => {
     if (!lookupQuery) return;
-    setLoading(true);
-    setError(null);
+    let cancelled = false;
 
     fetch(`/api/orders/lookup?${lookupQuery}`)
       .then(async (res) => {
@@ -115,9 +118,15 @@ function SuccessContent() {
         }
         return res.json();
       })
-      .then((data) => setOrder(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) setResult({ query: lookupQuery, order: data, error: null });
+      })
+      .catch((err) => {
+        if (!cancelled) setResult({ query: lookupQuery, order: null, error: err.message });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [lookupQuery]);
 
   const items = Array.isArray(order?.items) ? order.items : [];

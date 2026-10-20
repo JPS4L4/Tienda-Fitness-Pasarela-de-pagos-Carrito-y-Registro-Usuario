@@ -18,7 +18,14 @@ function StorePageContent() {
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
-  const [discountOnly, setDiscountOnly] = useState(false);
+  // El filtro "con descuento" puede llegar por la URL (?discount=true)
+  const discountParam = searchParams.get('discount') === 'true';
+  const [discountOnly, setDiscountOnly] = useState(discountParam);
+  const [seenDiscountParam, setSeenDiscountParam] = useState(discountParam);
+  if (seenDiscountParam !== discountParam) {
+    setSeenDiscountParam(discountParam);
+    if (discountParam) setDiscountOnly(true);
+  }
   const [sortBy, setSortBy] = useState("relevance");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -27,7 +34,6 @@ function StorePageContent() {
 
   // Traer productos desde la API
   const loadItems = useCallback(() => {
-    setStatus("loading");
     fetch("/api/items")
       .then(res => {
         if (!res.ok) throw new Error("items");
@@ -45,13 +51,10 @@ function StorePageContent() {
     loadItems();
   }, [loadItems]);
 
-  // Aplicar filtro de descuento desde URL
-  useEffect(() => {
-    const discountParam = searchParams.get('discount');
-    if (discountParam === 'true') {
-      setDiscountOnly(true);
-    }
-  }, [searchParams]);
+  const retryLoadItems = () => {
+    setStatus("loading");
+    loadItems();
+  };
 
   // Categorías dinámicas
   const allCategories = useMemo(
@@ -275,7 +278,7 @@ function StorePageContent() {
                 icon="!"
                 title="No pudimos cargar los productos"
                 description="Revisa tu conexión e inténtalo de nuevo."
-                action={{ label: "Reintentar", onClick: loadItems }}
+                action={{ label: "Reintentar", onClick: retryLoadItems }}
               />
             ) : featuredItems.length === 0 ? (
               <StateMessage

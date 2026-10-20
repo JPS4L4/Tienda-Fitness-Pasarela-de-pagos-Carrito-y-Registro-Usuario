@@ -2,7 +2,7 @@
 
 import { formatFinalPrice } from '@/lib/money'
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { Plan } from "@/app/data/data";
 
@@ -17,15 +17,9 @@ export default function PlanSearchResults({
   plans = [],
   onResultClick,
 }: PlanSearchResultsProps) {
-  const [results, setResults] = useState<Plan[]>([]);
-  const [showResults, setShowResults] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim() || plans.length === 0) {
-      setShowResults(false);
-      return;
-    }
-
+  // Derivado de query + datos: no hace falta estado ni efecto
+  const results = useMemo(() => {
+    if (!query.trim() || plans.length === 0) return [];
     const searchTerm = query.toLowerCase();
     const filteredResults = plans.filter(
       (plan) =>
@@ -33,11 +27,10 @@ export default function PlanSearchResults({
         plan.type.toLowerCase().includes(searchTerm)
     );
 
-    setResults(filteredResults);
-    setShowResults(filteredResults.length > 0);
+    return filteredResults;
   }, [query, plans]);
 
-  if (!showResults || results.length === 0) {
+  if (results.length === 0) {
     return null;
   }
 

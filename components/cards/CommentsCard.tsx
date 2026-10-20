@@ -1,5 +1,6 @@
 "use client"
 import { CommentsProps } from "@/app/data/data";
+import Image from "next/image";
 import { Star } from "lucide-react";
 
 
@@ -23,10 +24,12 @@ export const CommentsCard = ({ name, role, content, avatar, rating = 5 }: Commen
       {/* Info del Atleta */}
       <div className="flex items-center gap-4">
         {avatar ? (
-          <img 
-            src={avatar} 
-            alt={name} 
-            className="w-12 h-12  object-cover border-2 border-line"
+          <Image
+            src={avatar}
+            alt={name}
+            width={48}
+            height={48}
+            className="w-12 h-12 object-cover border-2 border-line"
           />
         ) : (
           <div className="w-12 h-12 bg-accent/10 text-accent  flex items-center justify-center font-bold text-sm">

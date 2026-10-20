@@ -2,7 +2,7 @@
 
 import { formatFinalPrice, getPriceDisplay } from '@/lib/money'
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { ItemProps } from "@/app/data/data";
 
@@ -17,15 +17,9 @@ export default function LocalSearchResults({
   items = [],
   onResultClick,
 }: LocalSearchResultsProps) {
-  const [results, setResults] = useState<ItemProps[]>([]);
-  const [showResults, setShowResults] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim() || items.length === 0) {
-      setShowResults(false);
-      return;
-    }
-
+  // Derivado de query + datos: no hace falta estado ni efecto
+  const results = useMemo(() => {
+    if (!query.trim() || items.length === 0) return [];
     const searchTerm = query.toLowerCase();
     const filteredResults = items.filter(
       (item) =>
@@ -33,11 +27,10 @@ export default function LocalSearchResults({
         item.category.toLowerCase().includes(searchTerm)
     );
 
-    setResults(filteredResults);
-    setShowResults(filteredResults.length > 0);
+    return filteredResults;
   }, [query, items]);
 
-  if (!showResults || results.length === 0) {
+  if (results.length === 0) {
     return null;
   }
 
