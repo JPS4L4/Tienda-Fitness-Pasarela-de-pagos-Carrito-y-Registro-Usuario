@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Facebook, Instagram } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { XIcon } from "@/components/others/XIcon"
+import { usePaymentMode } from "@/context/PaymentModeContext"
 import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand"
 import stripeLogo from "@/images/Logos/stripe-logo-black-transparent.png"
 import mercadopagoLogo from "@/images/Logos/logo_mercado_pago_con_letras.webp"
@@ -26,6 +27,7 @@ const footerLinks = [
 const Footer = () => {
   // Ocultar el footer en las páginas de soporte y contacto
   const pathname = usePathname()
+  const demo = usePaymentMode() === "demo"
   if (pathname === "/support" || pathname === "/contact") {
     return null
   }
@@ -75,16 +77,23 @@ const Footer = () => {
 
         {/* Pagos */}
         <div>
-          <p className="eyebrow mb-4">Pagos seguros</p>
-          <div className="flex flex-wrap items-center gap-2" aria-label="Métodos de pago aceptados">
-            <span className="sr-only">Métodos de pago aceptados:</span>
-            <span className="flex h-11 items-center bg-white px-3">
-              <Image src={stripeLogo} alt="Stripe" height={28} className="h-7 w-auto" />
-            </span>
-            <span className="flex h-11 items-center bg-white px-3">
-              <Image src={mercadopagoLogo} alt="Mercado Pago" height={32} className="h-8 w-auto" />
-            </span>
-          </div>
+          <p className="eyebrow mb-4">{demo ? "Pagos" : "Pagos seguros"}</p>
+          {demo ? (
+            <p className="text-sm text-muted">
+              <span className="badge badge-warn">Modo demo</span>
+              <span className="mt-2 block">Pagos simulados: no se realiza ningún cobro.</span>
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2" aria-label="Métodos de pago aceptados">
+              <span className="sr-only">Métodos de pago aceptados:</span>
+              <span className="flex h-11 items-center bg-white px-3">
+                <Image src={stripeLogo} alt="Stripe" height={28} className="h-7 w-auto" />
+              </span>
+              <span className="flex h-11 items-center bg-white px-3">
+                <Image src={mercadopagoLogo} alt="Mercado Pago" height={32} className="h-8 w-auto" />
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
