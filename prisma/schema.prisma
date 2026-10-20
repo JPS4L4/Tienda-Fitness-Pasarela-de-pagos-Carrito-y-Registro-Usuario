@@ -110,6 +110,8 @@ model Plan {
   currency         String     @default("COP")
   discount         Int?
   coverage         String[]
+  /// Duración de la suscripción: "monthly" | "quarterly" | "yearly" | "lifetime"
+  durationType     String     @default("monthly")
   slug             String     @unique
   content          String?
   createdAt        DateTime   @default(now())

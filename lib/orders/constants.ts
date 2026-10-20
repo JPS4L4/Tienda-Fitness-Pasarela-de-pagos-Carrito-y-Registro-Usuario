@@ -26,5 +26,5 @@ export const SUBSCRIPTION_STATUS = {
 /** Moneda única de la tienda (los montos se calculan y cobran en COP). */
 export const CURRENCY = 'COP'
 
-/** Duración de la suscripción de un plan (el modelo actual no guarda otra). */
+/** Duración de respaldo si una orden antigua no la guardó (cada plan define la suya en Plan.durationType). */
 export const DEFAULT_SUBSCRIPTION_TYPE = 'monthly'

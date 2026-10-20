@@ -410,6 +410,7 @@ async function main() {
         tags: ['nutrición', 'principiante'],
         price: 48900,
         slug: 'plan-nutricional-basico',
+        durationType: 'monthly',
         coverage: ['Evaluación nutricional inicial', 'Plan semanal', 'Recetas básicas'],
         rating: 4.5,
         reviewCount: 6,
@@ -424,6 +425,7 @@ async function main() {
         price: 68900,
         discount: 10,
         slug: 'plan-nutricional-perdida-grasa',
+        durationType: 'quarterly',
         coverage: [
           'Evaluación corporal completa',
           'Plan de alimentación de 4 semanas',
@@ -442,6 +444,7 @@ async function main() {
         tags: ['nutrición', 'volumen', 'masa muscular'],
         price: 74900,
         slug: 'plan-nutricional-ganancia-muscular',
+        durationType: 'quarterly',
         coverage: [
           'Cálculo de macros personalizado',
           'Plan de comidas de 4 semanas',
@@ -460,6 +463,7 @@ async function main() {
         tags: ['nutrición', 'vegetariano'],
         price: 58900,
         slug: 'plan-nutricional-vegetariano-fitness',
+        durationType: 'monthly',
         coverage: [
           'Evaluación nutricional inicial',
           'Plan semanal 100% vegetariano',
@@ -480,6 +484,7 @@ async function main() {
         tags: ['fitness', 'casa'],
         price: 58900,
         slug: 'plan-entrenamiento-home-gym',
+        durationType: 'monthly',
         coverage: ['Rutina personalizada', 'Videos de apoyo', 'Seguimiento semanal'],
         rating: 4.8,
         reviewCount: 9,
@@ -494,6 +499,7 @@ async function main() {
         price: 78900,
         discount: 15,
         slug: 'plan-entrenamiento-fuerza-gimnasio',
+        durationType: 'yearly',
         coverage: [
           'Programa de 8 semanas',
           'Rutinas por grupo muscular',
@@ -512,6 +518,7 @@ async function main() {
         tags: ['fitness', 'hiit', 'cardio'],
         price: 54900,
         slug: 'plan-entrenamiento-hiit-quema-grasa',
+        durationType: 'monthly',
         coverage: [
           'Rutinas diarias de 20-30 minutos',
           'Sin necesidad de equipo',
@@ -530,6 +537,7 @@ async function main() {
         tags: ['fitness', 'running', 'resistencia'],
         price: 64900,
         slug: 'plan-entrenamiento-running-5k-10k',
+        durationType: 'lifetime',
         coverage: [
           'Plan de 6 semanas',
           'Rutinas de resistencia y velocidad',

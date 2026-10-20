@@ -1,6 +1,7 @@
 "use client"
 
 import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from "@/lib/money"
+import { durationSuffix } from "@/lib/planDuration"
 import { Check, Apple, Dumbbell, ArrowRight, Heart } from "lucide-react"
 import Link from "next/link"
 import { useFavoritesStore } from "@/lib/stores/favoritesStore"
@@ -86,7 +87,7 @@ export const PlanCard = ({ plan }: { plan: PlanUI }) => {
           <div className="flex flex-wrap items-baseline gap-x-3">
             <span className="price text-4xl text-fg md:text-5xl">{actualPrice}</span>
             {hasValidPrice && (
-              <span className="text-sm font-semibold uppercase tracking-wider text-muted">total</span>
+              <span className="text-sm font-semibold uppercase tracking-wider text-muted">{durationSuffix(plan.durationType)}</span>
             )}
           </div>
           {previous && (

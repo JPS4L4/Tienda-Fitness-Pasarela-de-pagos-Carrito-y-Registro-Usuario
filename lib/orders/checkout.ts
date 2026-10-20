@@ -5,7 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/nextAuth'
 import { CheckoutError, priceCart, pricePlan, type PricedLine } from './pricing'
 import { signGuestOrderToken } from './guestToken'
-import { ORDER_STATUS, DEFAULT_SUBSCRIPTION_TYPE, type PaymentMethod } from './constants'
+import { ORDER_STATUS, type PaymentMethod } from './constants'
+import { normalizeDuration } from '@/lib/planDuration'
 import { expireStalePendingOrders } from './expiry'
 
 type ShippingInfo = {
@@ -81,7 +82,8 @@ export async function prepareCheckout(
         totalAmount: total,
         status: ORDER_STATUS.PENDING,
         paymentMethod: method,
-        subscriptionType: DEFAULT_SUBSCRIPTION_TYPE,
+        // La duración sale del plan (lo que el cliente vio al comprar), no de una constante global
+        subscriptionType: normalizeDuration(plan.durationType),
         items: [
           { type: 'plan', planId: plan.id, title: plan.title, price: total, currency: plan.currency },
         ] as Prisma.InputJsonValue,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
-import { validateCatalogMoney } from '@/lib/catalogValidation'
+import { validateCatalogMoney, validatePlanDuration } from '@/lib/catalogValidation'
 
 export async function GET() {
   try {
@@ -18,6 +18,7 @@ export async function GET() {
         price: true,
         discount: true,
         currency: true,
+        durationType: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -47,6 +48,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: money.error }, { status: 400 })
     }
 
+    const duration = validatePlanDuration(body.durationType)
+    if (!duration.ok) {
+      return NextResponse.json({ error: duration.error }, { status: 400 })
+    }
+
     const plan = await prisma.plan.create({
       data: {
         type,
@@ -55,6 +61,7 @@ export async function POST(request: NextRequest) {
         price: money.value.price!,
         discount: money.value.discount ?? null,
         currency: money.value.currency!,
+        durationType: duration.value,
         tags: body.tags ?? [],
         coverage: body.coverage ?? [],
         image: body.image ?? null,

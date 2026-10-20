@@ -1,4 +1,6 @@
 // app/src/types/plan.ts
+import type { SubscriptionType } from "@/lib/planDuration";
+
 export type PlanUI = {
     id: number;
     type: string;
@@ -12,6 +14,7 @@ export type PlanUI = {
     discount?: number | null;
     slug: string;
     coverage: string[];
+    durationType: SubscriptionType;
     content?: string;
     rating?: number;
     reviewCount?: number;

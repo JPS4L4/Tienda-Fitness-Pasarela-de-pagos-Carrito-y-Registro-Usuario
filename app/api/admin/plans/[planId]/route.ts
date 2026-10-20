@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
-import { validateCatalogMoney } from '@/lib/catalogValidation'
+import { validateCatalogMoney, validatePlanDuration } from '@/lib/catalogValidation'
 
 export async function GET(
   _request: NextRequest,
@@ -43,6 +43,11 @@ export async function PUT(
       return NextResponse.json({ error: money.error }, { status: 400 })
     }
 
+    const duration = validatePlanDuration(body.durationType, { partial: true })
+    if (!duration.ok) {
+      return NextResponse.json({ error: duration.error }, { status: 400 })
+    }
+
     const plan = await prisma.plan.update({
       where: { id: Number(planId) },
       data: {
@@ -51,6 +56,7 @@ export async function PUT(
         slug: body.slug,
         price: money.value.price,
         discount: money.value.discount,
+        durationType: duration.value,
         tags: body.tags,
         coverage: body.coverage,
         image: body.image,

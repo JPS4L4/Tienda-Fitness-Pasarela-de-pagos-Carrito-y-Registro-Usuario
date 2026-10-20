@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
 import { expireStalePendingOrders } from '@/lib/orders/expiry';
+import { durationName } from '@/lib/planDuration';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,7 +104,7 @@ export default async function PlansPage() {
                 <div className="bg-surface-2  p-4 border border-line">
                   <p className="text-xs text-muted">Tipo de suscripción</p>
                   <p className="text-sm font-semibold text-fg-soft">
-                    {plan.subscriptionType || 'No definido'}
+                    {plan.subscriptionType ? durationName(plan.subscriptionType) : 'No definido'}
                   </p>
                 </div>
                 <div className="bg-surface-2  p-4 border border-line">

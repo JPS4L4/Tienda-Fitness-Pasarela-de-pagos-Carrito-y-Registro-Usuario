@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { BRAND_NAME } from '@/lib/brand';
 import { formatPrice, getPriceDisplay, PRICE_UNAVAILABLE } from '@/lib/money'
+import { durationSuffix } from '@/lib/planDuration'
 import { notFound } from 'next/navigation';
 import { Check, ArrowRight, Apple, Dumbbell, Star, Tag } from 'lucide-react';
 import { getPlanBySlug } from '@/app/src/lib/plans';
@@ -112,7 +113,7 @@ const PlanDetailPage = async ({ params }: PlanDetailPageProps) => {
                 {hasValidPrice ? (
                   <>
                     <p className="price text-6xl text-fg md:text-7xl">{formatPrice(precioFinal, plan.currency)}</p>
-                    <span className="text-sm font-bold uppercase tracking-[0.14em] text-muted">{plan.currency} total</span>
+                    <span className="text-sm font-bold uppercase tracking-[0.14em] text-muted">{plan.currency} {durationSuffix(plan.durationType)}</span>
                   </>
                 ) : (
                   <p className="text-3xl font-bold text-muted">{PRICE_UNAVAILABLE}</p>

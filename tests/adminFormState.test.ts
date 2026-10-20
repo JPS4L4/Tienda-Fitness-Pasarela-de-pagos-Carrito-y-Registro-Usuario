@@ -17,7 +17,7 @@ const item: ItemRecord = {
 
 const plan: PlanRecord = {
   id: 3, type: 'nutricion', title: 'Plan Pro', slug: 'plan-pro', price: 90000, currency: 'COP', discount: 10,
-  tags: ['dieta'], coverage: ['Menú semanal', 'Chat de soporte'], image: '/images/p.jpg',
+  durationType: 'quarterly', tags: ['dieta'], coverage: ['Menú semanal', 'Chat de soporte'], image: '/images/p.jpg',
   description: 'Descripción', shortDescription: 'Resumen',
 }
 
@@ -58,7 +58,7 @@ describe('admin plan form mapping', () => {
     if (!result.ok) return
     expect(result.payload).toMatchObject({
       image: '/images/p.jpg', tags: ['dieta'], coverage: ['Menú semanal', 'Chat de soporte'],
-      description: 'Descripción', shortDescription: 'Resumen', discount: 10, type: 'nutricion',
+      description: 'Descripción', shortDescription: 'Resumen', discount: 10, type: 'nutricion', durationType: 'quarterly',
     })
   })
 

@@ -4,7 +4,8 @@
  * Al editar, cada campo editable se precarga desde el registro y el payload solo envía lo que el
  * formulario administra: así guardar sin tocar nada no vacía imágenes, tags, cobertura ni descripción.
  */
-import { CATALOG_CURRENCY, validateCatalogMoney } from '@/lib/catalogValidation'
+import { CATALOG_CURRENCY, validateCatalogMoney, validatePlanDuration } from '@/lib/catalogValidation'
+import { DEFAULT_PLAN_DURATION, normalizeDuration, type SubscriptionType } from '@/lib/planDuration'
 
 export const slugify = (value: string) =>
   value
@@ -145,6 +146,7 @@ export type PlanRecord = {
   price: number
   currency: string
   discount?: number | null
+  durationType?: string | null
   tags?: string[] | null
   coverage?: string[] | null
   image?: string | null
@@ -160,6 +162,7 @@ export type PlanFormState = {
   price: string
   discount: string
   currency: string
+  durationType: SubscriptionType
   tags: string
   coverage: string
   /** URL o data URL; se conserva al editar */
@@ -175,6 +178,7 @@ export const emptyPlanForm: PlanFormState = {
   price: '',
   discount: '',
   currency: CATALOG_CURRENCY,
+  durationType: DEFAULT_PLAN_DURATION,
   tags: '',
   coverage: '',
   image: '',
@@ -191,6 +195,7 @@ export function planToForm(plan: PlanRecord): PlanFormState {
     price: String(plan.price),
     discount: discountText(plan.discount),
     currency: plan.currency,
+    durationType: normalizeDuration(plan.durationType),
     tags: joinList(plan.tags),
     coverage: joinList(plan.coverage),
     image: plan.image ?? '',
@@ -202,6 +207,8 @@ export function planToForm(plan: PlanRecord): PlanFormState {
 export function planFormToPayload(form: PlanFormState): PayloadResult<Record<string, unknown>> {
   const money = validateCatalogMoney(form, { kind: 'plan' })
   if (!money.ok) return { ok: false, error: money.error }
+  const duration = validatePlanDuration(form.durationType)
+  if (!duration.ok) return { ok: false, error: duration.error }
   return {
     ok: true,
     payload: {
@@ -211,6 +218,7 @@ export function planFormToPayload(form: PlanFormState): PayloadResult<Record<str
       price: money.value.price,
       discount: money.value.discount,
       currency: CATALOG_CURRENCY,
+      durationType: duration.value,
       tags: parseList(form.tags),
       coverage: parseList(form.coverage),
       image: form.image.trim() || null,

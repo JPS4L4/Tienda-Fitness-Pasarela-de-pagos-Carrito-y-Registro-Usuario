@@ -4,6 +4,7 @@
  * Todo el catálogo se vende en COP; ningún precio puede ser 0, negativo o no numérico.
  */
 import { MAX_DISCOUNT } from '@/lib/money'
+import { isSubscriptionType, SUBSCRIPTION_TYPES, type SubscriptionType } from '@/lib/planDuration'
 
 export const CATALOG_CURRENCY = 'COP'
 export const MIN_CATALOG_PRICE = 100
@@ -130,4 +131,25 @@ export function validateCatalogMoney(
   if (!partial) out.currency = CATALOG_CURRENCY
 
   return { ok: true, value: out }
+}
+
+export type PlanDurationResult =
+  | { ok: true; value: SubscriptionType | undefined }
+  | { ok: false; error: string }
+
+/**
+ * Valida la duración de un plan. Si falta: en creación (no parcial) se usa mensual y en PUT parcial
+ * se omite (no se cambia). Un valor presente pero desconocido se rechaza.
+ */
+export function validatePlanDuration(
+  value: unknown,
+  { partial = false }: { partial?: boolean } = {}
+): PlanDurationResult {
+  if (value === undefined || value === null || value === '') {
+    return { ok: true, value: partial ? undefined : 'monthly' }
+  }
+  if (!isSubscriptionType(value)) {
+    return { ok: false, error: `La duración debe ser una de: ${SUBSCRIPTION_TYPES.join(', ')}.` }
+  }
+  return { ok: true, value }
 }

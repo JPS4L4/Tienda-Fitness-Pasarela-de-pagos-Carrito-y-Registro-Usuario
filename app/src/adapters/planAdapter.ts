@@ -1,6 +1,7 @@
 // app/src/adapters/planAdapter.ts
 import { PlanUI } from "../types/plan";
 import { Decimal } from "@prisma/client/runtime/library";
+import { normalizeDuration } from "@/lib/planDuration";
 
 export type PlanFromDB = {
   id: number;
@@ -16,6 +17,7 @@ export type PlanFromDB = {
   currency?: string;            // Opcional (default COP)
   discount?: number | null;
   coverage: string[];
+  durationType?: string | null;
   slug: string;
   content: string | null;
   createdAt: Date;
@@ -50,6 +52,7 @@ export function adaptPlanToPlanUI(
     price,
     discount: plan.discount ?? 0,
     currency: plan.currency ?? "COP",
+    durationType: normalizeDuration(plan.durationType),
     slug: plan.slug,
     content: options.includeContent ? plan.content ?? undefined : undefined,
     rating: plan.rating,

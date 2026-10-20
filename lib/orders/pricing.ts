@@ -82,7 +82,7 @@ export async function pricePlan(rawPlanId: unknown) {
 
   const plan = await prisma.plan.findUnique({
     where: { id: planId },
-    select: { id: true, title: true, price: true, discount: true, currency: true },
+    select: { id: true, title: true, price: true, discount: true, currency: true, durationType: true },
   })
   if (!plan) throw new CheckoutError('Plan no encontrado', 404)
 

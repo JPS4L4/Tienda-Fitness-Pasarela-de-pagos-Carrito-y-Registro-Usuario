@@ -1,6 +1,7 @@
 'use client'
 
 import { formatPrice, MAX_DISCOUNT } from '@/lib/money'
+import { DURATION_OPTIONS, durationName, type SubscriptionType } from '@/lib/planDuration'
 import { CATALOG_CURRENCY, MIN_CATALOG_PRICE } from '@/lib/catalogValidation'
 import {
   emptyPlanForm,
@@ -24,6 +25,7 @@ type PlanRow = {
   price: number
   discount: number | null
   currency: string
+  durationType?: string
   createdAt: string
   updatedAt: string
 }
@@ -208,6 +210,7 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
                     <th className="pb-3 pr-4 font-bold">Plan</th>
                     <th className="pb-3 pr-4 font-bold">Tipo</th>
                     <th className="pb-3 pr-4 font-bold">Precio</th>
+                    <th className="pb-3 pr-4 font-bold">Duración</th>
                     <th className="pb-3 pr-4 font-bold">Acciones</th>
                   </tr>
                 </thead>
@@ -222,6 +225,7 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
                       <td className="py-3 pr-4 text-fg-soft">
                         {formatPrice(plan.price, plan.currency)}
                       </td>
+                      <td className="py-3 pr-4 text-fg-soft">{durationName(plan.durationType)}</td>
                       <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-2">
                           <button
@@ -325,6 +329,20 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
                 onChange={(event) => handleChange('discount', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
               />
+            </label>
+            <label className="text-sm font-medium text-fg-soft">
+              Duración
+              <select
+                value={form.durationType}
+                onChange={(event) => handleChange('durationType', event.target.value as SubscriptionType)}
+                className="input mt-2 !min-h-10 text-sm"
+              >
+                {DURATION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-sm font-medium text-fg-soft">
               Moneda
