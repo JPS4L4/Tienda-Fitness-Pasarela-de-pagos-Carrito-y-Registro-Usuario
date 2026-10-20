@@ -1,26 +1,20 @@
 'use client'
 
 import { formatPrice, MAX_DISCOUNT } from '@/lib/money'
-import { CATALOG_CURRENCY, MIN_CATALOG_PRICE, validateCatalogMoney } from '@/lib/catalogValidation'
+import { CATALOG_CURRENCY, MIN_CATALOG_PRICE } from '@/lib/catalogValidation'
+import {
+  emptyPlanForm,
+  planFormToPayload,
+  planToForm,
+  slugify,
+  type PlanFormState,
+  type PlanRecord,
+} from '@/lib/admin/formState'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 import ReadOnlyNotice from '@/components/admin/ReadOnlyNotice'
-
-type PlanFormState = {
-  id?: number
-  type: string
-  title: string
-  slug: string
-  price: string
-  discount: string
-  currency: string
-  tags: string
-  coverage: string
-  image: string
-  description: string
-  shortDescription: string
-}
 
 type PlanRow = {
   id: number
@@ -34,38 +28,13 @@ type PlanRow = {
   updatedAt: string
 }
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-
-const emptyForm: PlanFormState = {
-  type: 'nutricion',
-  title: '',
-  slug: '',
-  price: '',
-  discount: '',
-  currency: 'COP',
-  tags: '',
-  coverage: '',
-  image: '',
-  description: '',
-  shortDescription: '',
-}
-
 export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) {
   const [plans, setPlans] = useState<PlanRow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [form, setForm] = useState<PlanFormState>(emptyForm)
+  const [form, setForm] = useState<PlanFormState>(emptyPlanForm)
   const [mode, setMode] = useState<'create' | 'edit'>('create')
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   const hasPlans = useMemo(() => plans.length > 0, [plans])
@@ -90,13 +59,12 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
   }, [])
 
   const resetForm = () => {
-    setForm(emptyForm)
+    setForm(emptyPlanForm)
     setMode('create')
-    setUploadedImage(null)
     setUploadError(null)
   }
 
-  const handleChange = (field: keyof PlanFormState, value: string) => {
+  const handleChange = (field: Exclude<keyof PlanFormState, 'id'>, value: string) => {
     if (field === 'title') {
       setForm((prev) => ({
         ...prev,
@@ -107,12 +75,6 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
     }
     setForm((prev) => ({ ...prev, [field]: value }))
   }
-
-  const parseArray = (value: string) =>
-    value
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter(Boolean)
 
   const handleImageUpload = (files: FileList | null) => {
     setUploadError(null)
@@ -127,7 +89,7 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
     }
 
     const reader = new FileReader()
-    reader.onload = () => setUploadedImage(reader.result as string)
+    reader.onload = () => setForm((prev) => ({ ...prev, image: reader.result as string }))
     reader.onerror = () => setUploadError('No se pudo leer la imagen.')
     reader.readAsDataURL(file)
   }
@@ -139,25 +101,12 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
 
     try {
       // Mismas reglas que el servidor: se informa el error antes de enviar
-      const money = validateCatalogMoney(form, { kind: 'plan' })
-      if (!money.ok) {
-        setError(money.error)
+      const result = planFormToPayload(form)
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-
-      const payload = {
-        type: form.type.trim(),
-        title: form.title.trim(),
-        slug: form.slug.trim() || slugify(form.title),
-        price: money.value.price,
-        discount: money.value.discount,
-        currency: CATALOG_CURRENCY,
-        tags: parseArray(form.tags),
-        coverage: parseArray(form.coverage),
-        image: uploadedImage || form.image.trim() || null,
-        description: form.description.trim() || null,
-        shortDescription: form.shortDescription.trim() || null,
-      }
+      const payload = result.payload
 
       const url = mode === 'create'
         ? '/api/admin/plans'
@@ -185,20 +134,20 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
     }
   }
 
-  const handleEdit = (plan: PlanRow) => {
-    setMode('edit')
-    setUploadedImage(null)
+  const handleEdit = async (row: PlanRow) => {
+    setError(null)
     setUploadError(null)
-    setForm((prev) => ({
-      ...prev,
-      id: plan.id,
-      type: plan.type,
-      title: plan.title,
-      slug: plan.slug,
-      price: String(plan.price),
-      discount: plan.discount ? String(plan.discount) : '',
-      currency: plan.currency,
-    }))
+    try {
+      // La lista no trae imagen, tags, cobertura ni descripción: se carga el registro completo
+      const response = await fetch(`/api/admin/plans/${row.id}`)
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No se pudo cargar el plan')
+      setForm(planToForm(data.plan as PlanRecord))
+      setMode('edit')
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'No se pudo cargar el plan')
+    }
   }
 
   const handleDelete = async (id: number) => {
@@ -388,7 +337,8 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
             <label className="text-sm font-medium text-fg-soft">
               Imagen (URL)
               <input
-                value={form.image}
+                value={form.image.startsWith('data:') ? '' : form.image}
+                placeholder={form.image.startsWith('data:') ? '(imagen subida)' : undefined}
                 onChange={(event) => handleChange('image', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
               />
@@ -408,12 +358,20 @@ export default function PlansCrud({ readOnly = false }: { readOnly?: boolean }) 
             {uploadError && (
               <p className="text-xs text-danger">{uploadError}</p>
             )}
-            {uploadedImage && (
-              <img
-                src={uploadedImage}
-                alt="Preview"
-                className="h-24 w-24  border border-line object-cover"
-              />
+            {form.image && (
+              <div className="flex items-center gap-3">
+                <Image
+                  src={form.image}
+                  alt="Vista previa"
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="h-24 w-24 border border-line object-cover"
+                />
+                <button type="button" onClick={() => handleChange('image', '')} className="btn btn-ghost btn-sm">
+                  Quitar imagen
+                </button>
+              </div>
             )}
           </div>
 

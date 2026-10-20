@@ -6,31 +6,20 @@ import {
   MAX_INSTALLMENTS,
   MAX_STOCK,
   MIN_CATALOG_PRICE,
-  validateCatalogMoney,
 } from '@/lib/catalogValidation'
+import {
+  emptyItemForm,
+  itemFormToPayload,
+  itemToForm,
+  slugify,
+  type ItemFormState,
+  type ItemRecord,
+} from '@/lib/admin/formState'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 import ReadOnlyNotice from '@/components/admin/ReadOnlyNotice'
-
-type ItemFormState = {
-  id?: number
-  title: string
-  slug: string
-  price: string
-  currency: string
-  category: string
-  stock: string
-  images: string
-  tags: string
-  description: string
-  shortDescription: string
-  freeShipping: boolean
-  isOfferOfTheDay: boolean
-  discount: string
-  originalPrice: string
-  installments: string
-}
 
 type ItemRow = {
   id: number
@@ -47,42 +36,14 @@ type ItemRow = {
   updatedAt: string
 }
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-
-const emptyForm: ItemFormState = {
-  title: '',
-  slug: '',
-  price: '',
-  currency: 'COP',
-  category: '',
-  stock: '0',
-  images: '',
-  tags: '',
-  description: '',
-  shortDescription: '',
-  freeShipping: false,
-  isOfferOfTheDay: false,
-  discount: '',
-  originalPrice: '',
-  installments: '',
-}
-
 export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) {
   const [items, setItems] = useState<ItemRow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [form, setForm] = useState<ItemFormState>(emptyForm)
+  const [form, setForm] = useState<ItemFormState>(emptyItemForm)
   const [mode, setMode] = useState<'create' | 'edit'>('create')
-  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [newImageUrl, setNewImageUrl] = useState('')
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   const hasItems = useMemo(() => items.length > 0, [items])
@@ -107,13 +68,13 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
   }, [])
 
   const resetForm = () => {
-    setForm(emptyForm)
+    setForm(emptyItemForm)
     setMode('create')
-    setUploadedImages([])
+    setNewImageUrl('')
     setUploadError(null)
   }
 
-  const handleChange = (field: keyof ItemFormState, value: string | boolean) => {
+  const handleChange = (field: Exclude<keyof ItemFormState, 'images' | 'id'>, value: string | boolean) => {
     if (field === 'title' && typeof value === 'string') {
       setForm((prev) => ({
         ...prev,
@@ -124,12 +85,6 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
     }
     setForm((prev) => ({ ...prev, [field]: value }))
   }
-
-  const parseArray = (value: string) =>
-    value
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter(Boolean)
 
   const handleImageUpload = async (files: FileList | null) => {
     setUploadError(null)
@@ -156,7 +111,7 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
 
     try {
       const results = await Promise.all(readers)
-      setUploadedImages(results)
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...results] }))
     } catch (err) {
       console.error(err)
       setUploadError('No se pudieron cargar las imágenes.')
@@ -170,29 +125,12 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
 
     try {
       // Mismas reglas que el servidor: se informa el error antes de enviar
-      const money = validateCatalogMoney(form, { kind: 'item' })
-      if (!money.ok) {
-        setError(money.error)
+      const result = itemFormToPayload(form)
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-
-      const payload = {
-        title: form.title.trim(),
-        slug: form.slug.trim() || slugify(form.title),
-        price: money.value.price,
-        currency: CATALOG_CURRENCY,
-        category: form.category.trim(),
-        stock: money.value.stock,
-        images: uploadedImages.length > 0 ? uploadedImages : parseArray(form.images),
-        tags: parseArray(form.tags),
-        description: form.description.trim() || null,
-        shortDescription: form.shortDescription.trim() || null,
-        freeShipping: form.freeShipping,
-        isOfferOfTheDay: form.isOfferOfTheDay,
-        discount: money.value.discount,
-        originalPrice: money.value.originalPrice,
-        installments: money.value.installments,
-      }
+      const payload = result.payload
 
       const url = mode === 'create'
         ? '/api/admin/items'
@@ -220,24 +158,32 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
     }
   }
 
-  const handleEdit = (item: ItemRow) => {
-    setMode('edit')
-    setUploadedImages([])
+  const handleEdit = async (row: ItemRow) => {
+    setError(null)
     setUploadError(null)
-    setForm((prev) => ({
-      ...prev,
-      id: item.id,
-      title: item.title,
-      slug: item.slug,
-      price: String(item.price),
-      currency: item.currency,
-      category: item.category,
-      stock: String(item.stock),
-      discount: item.discount ? String(item.discount) : '',
-      originalPrice: item.originalPrice ? String(item.originalPrice) : '',
-      installments: item.installments ? String(item.installments) : '',
-    }))
+    setNewImageUrl('')
+    try {
+      // La lista no trae imágenes, tags ni descripción: se carga el registro completo
+      const response = await fetch(`/api/admin/items/${row.id}`)
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'No se pudo cargar el item')
+      setForm(itemToForm(data.item as ItemRecord))
+      setMode('edit')
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'No se pudo cargar el item')
+    }
   }
+
+  const addImageUrl = () => {
+    const url = newImageUrl.trim()
+    if (!url) return
+    setForm((prev) => ({ ...prev, images: [...prev.images, url] }))
+    setNewImageUrl('')
+  }
+
+  const removeImage = (index: number) =>
+    setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }))
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm('¿Eliminar este item?')
@@ -437,15 +383,27 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
             {uploadError && (
               <p className="text-xs text-danger">{uploadError}</p>
             )}
-            {uploadedImages.length > 0 && (
+            {form.images.length > 0 && (
               <div className="flex flex-wrap gap-3">
-                {uploadedImages.map((src, index) => (
-                  <img
-                    key={`${src}-${index}`}
-                    src={src}
-                    alt="Preview"
-                    className="h-20 w-20  border border-line object-cover"
-                  />
+                {form.images.map((src, index) => (
+                  <div key={`${src.slice(0, 40)}-${index}`} className="relative">
+                    <Image
+                      src={src}
+                      alt={`Imagen ${index + 1}`}
+                      width={80}
+                      height={80}
+                      unoptimized
+                      className="h-20 w-20 border border-line object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center border border-line bg-surface text-xs text-danger"
+                      aria-label={`Quitar imagen ${index + 1}`}
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -471,14 +429,27 @@ export default function ItemsCrud({ readOnly = false }: { readOnly?: boolean }) 
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-fg-soft">
-              Imágenes (URLs separadas por coma, opcional)
-              <input
-                value={form.images}
-                onChange={(event) => handleChange('images', event.target.value)}
-                className="input mt-2 !min-h-10 text-sm"
-              />
-            </label>
+            <div className="text-sm font-medium text-fg-soft">
+              <label htmlFor="item-image-url">Agregar imagen por URL (opcional)</label>
+              <div className="mt-2 flex gap-2">
+                <input
+                  id="item-image-url"
+                  value={newImageUrl}
+                  onChange={(event) => setNewImageUrl(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      addImageUrl()
+                    }
+                  }}
+                  className="input !min-h-10 text-sm"
+                  placeholder="https://… o /images/…"
+                />
+                <button type="button" onClick={addImageUrl} className="btn btn-ghost btn-sm">
+                  Agregar
+                </button>
+              </div>
+            </div>
             <label className="text-sm font-medium text-fg-soft">
               Tags (separados por coma)
               <input
