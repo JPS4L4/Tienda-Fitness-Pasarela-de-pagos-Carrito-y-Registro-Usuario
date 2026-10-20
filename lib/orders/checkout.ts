@@ -4,6 +4,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/nextAuth'
 import { CheckoutError, priceCart, pricePlan, type PricedLine } from './pricing'
+import { signGuestOrderToken } from './guestToken'
 import { ORDER_STATUS, DEFAULT_SUBSCRIPTION_TYPE, type PaymentMethod } from './constants'
 
 type ShippingInfo = {
@@ -40,6 +41,8 @@ export type PreparedCheckout = {
   type: 'cart' | 'plan'
   lines: PricedLine[]
   planTitle?: string
+  /** Solo en órdenes de invitado: prueba de propiedad para ver y pagar la orden. */
+  guestToken?: string
 }
 
 /**
@@ -105,7 +108,14 @@ export async function prepareCheckout(
       },
       select: { id: true },
     })
-    return { orderId: order.id, total, userId, type: 'cart', lines }
+    return {
+      orderId: order.id,
+      total,
+      userId,
+      type: 'cart',
+      lines,
+      guestToken: userId === null ? signGuestOrderToken(order.id) : undefined,
+    }
   }
 
   throw new CheckoutError('Tipo de orden inválido')
