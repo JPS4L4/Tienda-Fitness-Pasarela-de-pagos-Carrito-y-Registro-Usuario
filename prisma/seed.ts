@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import { applyDiscount } from '../lib/money';
 
 function assertSafeSeedTarget() {
   const url = process.env.DATABASE_URL;
@@ -421,6 +422,7 @@ async function main() {
         shortDescription: 'Definición y control de peso',
         tags: ['nutrición', 'pérdida de grasa'],
         price: 68900,
+        discount: 10,
         slug: 'plan-nutricional-perdida-grasa',
         coverage: [
           'Evaluación corporal completa',
@@ -490,6 +492,7 @@ async function main() {
         shortDescription: 'Gana fuerza de forma progresiva',
         tags: ['fitness', 'fuerza', 'gimnasio'],
         price: 78900,
+        discount: 15,
         slug: 'plan-entrenamiento-fuerza-gimnasio',
         coverage: [
           'Programa de 8 semanas',
@@ -541,6 +544,16 @@ async function main() {
 
   const createdProducts = await prisma.item.findMany({ orderBy: { createdAt: 'desc' }, take: 21 });
   const createdPlans = await prisma.plan.findMany({ orderBy: { createdAt: 'desc' }, take: 8 });
+
+  // Guardia: ningún producto o plan puede quedar en 0, negativo, ni con un descuento fuera de 0-90
+  // ni con un precio final <= 0 (el catálogo del demo nunca debe mostrar "$ 0").
+  for (const entry of [...createdProducts, ...createdPlans]) {
+    const final = applyDiscount(entry.price, entry.discount);
+    const discount = entry.discount ?? 0;
+    if (!(entry.price > 0) || !(final > 0) || discount < 0 || discount > 90) {
+      throw new Error(`Seed inválido: "${entry.title}" (precio ${entry.price}, descuento ${entry.discount})`);
+    }
+  }
 
   await prisma.review.createMany({
     data: [
@@ -601,6 +614,9 @@ async function main() {
     ].filter((review) => review.userId && (review.productId || review.planId)),
   });
 
+  // Lo cobrado es el precio con descuento (mismo cálculo que el servidor)
+  const demoProduct = createdProducts[0];
+  const demoProductPrice = demoProduct ? applyDiscount(demoProduct.price, demoProduct.discount) : 0;
   await prisma.order.create({
     data: {
       userId: user.id,
@@ -608,17 +624,18 @@ async function main() {
       customerLastName: 'Demo',
       customerEmail: user.email!,
       customerPhone: user.phone!,
-      totalAmount: 129900,
+      totalAmount: demoProductPrice,
       status: 'COMPLETED',
       paymentMethod: 'STRIPE',
       paymentId: 'demo-payment-id',
-      items: [{ title: createdProducts[0]?.title, quantity: 1, price: 129900 }],
+      items: [{ title: demoProduct?.title, quantity: 1, price: demoProductPrice }],
     },
   });
 
   // Suscripción activa a un plan, para que el perfil y el contenido del plan no salgan vacíos.
   const demoPlan = createdPlans[0];
   if (demoPlan) {
+    const demoPlanPrice = applyDiscount(demoPlan.price, demoPlan.discount);
     await prisma.plan.update({
       where: { id: demoPlan.id },
       data: {
@@ -637,11 +654,11 @@ async function main() {
         customerLastName: 'Demo',
         customerEmail: user.email!,
         customerPhone: user.phone!,
-        totalAmount: demoPlan.price,
+        totalAmount: demoPlanPrice,
         status: 'COMPLETED',
         paymentMethod: 'STRIPE',
         paymentId: 'demo-plan-payment-id',
-        items: [{ title: demoPlan.title, quantity: 1, price: demoPlan.price }],
+        items: [{ title: demoPlan.title, quantity: 1, price: demoPlanPrice }],
         accessToken,
         tokenExpiresAt: endDate,
         subscriptionType: 'monthly',
