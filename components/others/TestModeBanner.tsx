@@ -4,6 +4,7 @@ import { TEST_CARDS } from '@/lib/payments/card'
 import type { PaymentMode } from '@/lib/payments/mode'
 
 const SHELL = 'border-b-2 border-warn bg-warn/10 text-warn'
+const LIST = 'list-disc space-y-0.5 pl-5 md:flex md:list-none md:flex-wrap md:gap-x-6 md:space-y-0 md:pl-0'
 
 /**
  * Aviso compacto: una línea con el resumen y el detalle plegable.
@@ -41,7 +42,7 @@ export default function TestModeBanner({ mode = 'demo' }: { mode?: PaymentMode }
           {BRAND_NAME} es un proyecto de demostración y no se conecta a ninguna pasarela. No ingreses datos reales;
           usa estas tarjetas de prueba:
         </p>
-        <ul className="list-disc space-y-0.5 pl-5">
+        <ul className={LIST}>
           {TEST_CARDS.map((card) => (
             <li key={card.number}>
               <code>{card.number}</code>: {card.label.toLowerCase()}.
@@ -62,7 +63,7 @@ export default function TestModeBanner({ mode = 'demo' }: { mode?: PaymentMode }
       <p>
         {BRAND_NAME} es un proyecto de demostración. Usa estas tarjetas de prueba; no ingreses datos reales.
       </p>
-      <ul className="list-disc space-y-0.5 pl-5">
+      <ul className={LIST}>
         <li>
           <strong>Stripe:</strong> <code>4242 4242 4242 4242</code>, cualquier fecha futura y cualquier CVC de 3
           dígitos.

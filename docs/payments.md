@@ -13,6 +13,8 @@ La tienda cobra en COP y tiene dos modos, elegidos con `PAYMENT_MODE` (ver `.env
 - `POST /api/payments/demo/confirm` valida la tarjeta (Luhn, vencimiento, CVC) y simula el resultado; si se aprueba reutiliza `fulfillOrder` con el método `DEMO` (stock y suscripción como en el modo live). La tarjeta no se guarda: solo los 4 últimos dígitos, dentro del `paymentId` (`demo_<aleatorio>_<4 dígitos>`).
 - Tarjetas de prueba: `4242 4242 4242 4242` aprobada; `4000 0000 0000 0002` rechazada (fondos insuficientes); `4000 0000 0000 9995` rechazada por el banco; cualquier otro número válido se aprueba. Un rechazo deja la orden `PENDING` para reintentar.
 - El envío (guía, etapas, entrega estimada) se calcula en `lib/orders/shipping.ts` desde el id y la hora del pago, sin escribir en la base de datos; los planes muestran "Acceso activado".
+- **Órdenes abandonadas:** una orden demo `PENDING` con más de 30 minutos pasa a `CANCELLED` de forma perezosa (`lib/orders/expiry.ts`, sin cron) al preparar un checkout y al listar órdenes (admin, ventas, perfil). Confirmar una orden vencida responde 410 "La orden expiró, vuelve a intentarlo" y el checkout crea una nueva. Solo se expiran las órdenes `DEMO`: Stripe/Mercado Pago pueden confirmar tarde. Las ventas cuentan únicamente órdenes `COMPLETED`.
+- Cada plan define su duración (`Plan.durationType`: mensual, trimestral, anual o pago único) y la orden la hereda al crearse.
 - El comprobante de invitados se abre con `/checkout/success?orderId=…&t=<token>`; sin token válido la orden responde 404.
 
 ## Modo live
