@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
+import { expireStalePendingOrders } from '@/lib/orders/expiry';
 
 /**
  * GET /api/orders
@@ -16,6 +17,8 @@ export async function GET() {
         { status: 401 }
       );
     }
+
+    await expireStalePendingOrders();
 
     const orders = await prisma.order.findMany({
       where: {

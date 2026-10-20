@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const prismaMock = vi.hoisted(() => ({ order: { findUnique: vi.fn() } }))
+const prismaMock = vi.hoisted(() => ({ order: { findUnique: vi.fn(), updateMany: vi.fn() } }))
 const fulfillMock = vi.hoisted(() => ({ fulfillOrder: vi.fn() }))
 
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }))
@@ -17,6 +17,7 @@ import { signGuestOrderToken } from '@/lib/orders/guestToken'
 const card = { number: '4242 4242 4242 4242', holder: 'Ana Pérez', expiry: '12/40', cvc: '123' }
 const pending = {
   id: 5, userId: 9, planId: null, status: 'PENDING', paymentMethod: 'DEMO', totalAmount: 99000,
+  createdAt: new Date(),
   customerEmail: 'ana@example.com', customerFirstName: 'Ana', items: [{ title: 'Whey', quantity: 1, price: 99000 }],
 }
 const completed = { ...pending, status: 'COMPLETED', paymentId: 'demo_abcdef0123_4242' }
@@ -28,6 +29,7 @@ describe('confirmDemoPayment', () => {
   beforeEach(() => {
     process.env.NEXTAUTH_SECRET = 'test-secret-value'
     prismaMock.order.findUnique.mockReset().mockResolvedValue(pending)
+    prismaMock.order.updateMany.mockReset().mockResolvedValue({ count: 1 })
     fulfillMock.fulfillOrder.mockReset().mockResolvedValue({ order: completed, alreadyFulfilled: false })
   })
 
@@ -79,6 +81,25 @@ describe('confirmDemoPayment', () => {
   it('refuses orders that are no longer pending', async () => {
     prismaMock.order.findUnique.mockResolvedValue(completed)
     await expect(run()).rejects.toMatchObject({ status: 409 })
+  })
+
+  it('fails cleanly with 410 on an order abandoned for more than 30 minutes and cancels it', async () => {
+    const now = new Date('2026-10-20T12:00:00Z')
+    prismaMock.order.findUnique.mockResolvedValue({ ...pending, createdAt: new Date('2026-10-20T11:29:00Z') })
+    await expect(run({ now })).rejects.toMatchObject({ status: 410, message: 'La orden expiró, vuelve a intentarlo' })
+    expect(prismaMock.order.updateMany).toHaveBeenCalledOnce()
+    expect(fulfillMock.fulfillOrder).not.toHaveBeenCalled()
+  })
+
+  it('still pays an order created 29 minutes ago', async () => {
+    const now = new Date('2026-10-20T12:00:00Z')
+    prismaMock.order.findUnique.mockResolvedValue({ ...pending, createdAt: new Date('2026-10-20T11:31:00Z') })
+    await expect(run({ now })).resolves.toMatchObject({ status: 'approved' })
+  })
+
+  it('answers 410 for an order already cancelled by the expiry', async () => {
+    prismaMock.order.findUnique.mockResolvedValue({ ...pending, status: 'CANCELLED' })
+    await expect(run()).rejects.toMatchObject({ status: 410 })
   })
 
   it('maps insufficient stock to a conflict', async () => {

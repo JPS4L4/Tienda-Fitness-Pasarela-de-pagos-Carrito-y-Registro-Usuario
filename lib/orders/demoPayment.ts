@@ -9,6 +9,7 @@ import { ORDER_STATUS, PAYMENT_METHOD } from './constants'
 import { StockError, fulfillOrder } from './fulfillment'
 import { buildTrackingNumber } from './shipping'
 import { verifyGuestOrderToken } from './guestToken'
+import { EXPIRED_ORDER_MESSAGE, expireStalePendingOrders, isPendingOrderExpired } from './expiry'
 import { type SimulatedEmail, buildOrderEmails } from './simulatedEmail'
 
 export type DemoPaymentResult =
@@ -32,6 +33,8 @@ export async function confirmDemoPayment(input: {
   card: unknown
   guestToken: unknown
   sessionUserId: number | null
+  /** Reloj inyectable (tests); por defecto, ahora */
+  now?: Date
 }): Promise<DemoPaymentResult> {
   const orderId = Number(input.orderId)
   if (!Number.isInteger(orderId) || orderId <= 0) throw new CheckoutError('Orden inválida')
@@ -47,6 +50,12 @@ export async function confirmDemoPayment(input: {
       : verifyGuestOrderToken(order.id, input.guestToken)
   if (!isOwner) throw notFound
 
+  // Orden abandonada: se cancela y el cliente debe crear una nueva (410 Gone)
+  if (order.status === ORDER_STATUS.PENDING && isPendingOrderExpired(order.createdAt, input.now)) {
+    await expireStalePendingOrders(input.now)
+    throw new CheckoutError(EXPIRED_ORDER_MESSAGE, 410)
+  }
+  if (order.status === ORDER_STATUS.CANCELLED) throw new CheckoutError(EXPIRED_ORDER_MESSAGE, 410)
   if (order.status !== ORDER_STATUS.PENDING) {
     throw new CheckoutError('Esta orden ya no está pendiente de pago', 409)
   }

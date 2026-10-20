@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
+import { expireStalePendingOrders } from '@/lib/orders/expiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,8 @@ export default async function PlansPage() {
   }
 
   const userId = parseInt(session.user.id, 10);
+
+  await expireStalePendingOrders();
 
   const orders = await prisma.order.findMany({
     where: {

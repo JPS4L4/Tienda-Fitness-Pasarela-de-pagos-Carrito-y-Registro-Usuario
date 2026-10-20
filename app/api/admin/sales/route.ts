@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
 import { ORDER_STATUS } from '@/lib/orders/constants'
+import { expireStalePendingOrders } from '@/lib/orders/expiry'
 
 type OrderItem = {
   productId?: number
@@ -18,6 +19,8 @@ export async function GET() {
   try {
     const authResult = await requireAdmin()
     if (authResult) return authResult
+
+    await expireStalePendingOrders()
 
     const statusGroups = await prisma.order.groupBy({
       by: ['status'],

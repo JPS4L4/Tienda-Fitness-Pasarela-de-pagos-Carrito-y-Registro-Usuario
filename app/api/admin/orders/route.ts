@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { expireStalePendingOrders } from '@/lib/orders/expiry'
 
 export async function GET() {
   try {
     const authResult = await requireAdmin()
     if (authResult) return authResult
+
+    await expireStalePendingOrders()
 
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: 'desc' },

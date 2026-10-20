@@ -455,8 +455,7 @@ const CheckoutForm = ({
         items: type === 'cart' ? cartItems.map((item) => [item.id, item.quantity]) : null,
         shipping: type === 'cart' ? shippingInfo : null,
       });
-      let order = demoOrderRef.current;
-      if (!order || order.key !== orderKey) {
+      const createOrder = async () => {
         const created = await fetch('/api/payments/demo/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -469,26 +468,41 @@ const CheckoutForm = ({
         });
         const createdData = await created.json().catch(() => ({}));
         if (!created.ok) throw new Error(createdData.error || 'No se pudo crear el pedido');
-        order = { key: orderKey, orderId: createdData.orderId, guestToken: createdData.guestToken ?? null };
-        demoOrderRef.current = order;
-      }
+        const next = { key: orderKey, orderId: createdData.orderId, guestToken: createdData.guestToken ?? null };
+        demoOrderRef.current = next;
+        return next;
+      };
+      const confirmOrder = (target: { orderId: number; guestToken: string | null }) =>
+        Promise.all([
+          fetch('/api/payments/demo/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: target.orderId, guestToken: target.guestToken, card }),
+          }),
+          pause(1200),
+        ]).then(([response]) => response);
+
+      let order = demoOrderRef.current;
+      if (!order || order.key !== orderKey) order = await createOrder();
 
       setStage({ step: 1, result: 'running' }); // Verificando con el banco
-      const [confirmResponse] = await Promise.all([
-        fetch('/api/payments/demo/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: order.orderId, guestToken: order.guestToken, card }),
-        }),
-        pause(1200),
-      ]);
+      let confirmResponse = await confirmOrder(order);
+      // La orden abandonada expiró (410): se crea una nueva y se reintenta una vez
+      if (confirmResponse.status === 410) {
+        demoOrderRef.current = null;
+        order = await createOrder();
+        confirmResponse = await confirmOrder(order);
+      }
       const confirmData = await confirmResponse.json().catch(() => ({}));
 
       if (confirmResponse.status === 402) {
         setStage({ step: 2, result: 'declined', reason: confirmData.error });
         return;
       }
-      if (!confirmResponse.ok) throw new Error(confirmData.error || 'Error al confirmar el pago');
+      if (!confirmResponse.ok) {
+        if (confirmResponse.status === 410) demoOrderRef.current = null;
+        throw new Error(confirmData.error || 'Error al confirmar el pago');
+      }
 
       setStage({ step: 2, result: 'running' }); // Autorizando pago
       await pause(1000);

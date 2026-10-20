@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
+import { expireStalePendingOrders } from '@/lib/orders/expiry';
 import OrderFulfillment from '@/components/orders/OrderFulfillment';
 import { getOrderFulfillment } from '@/lib/orders/shipping';
 import { demoLast4, describePaymentMethod, getOrderStatusView } from '@/lib/orders/status';
@@ -37,6 +38,8 @@ export default async function OrdersPage({
   }
 
   const userId = parseInt(session.user.id, 10);
+
+  await expireStalePendingOrders();
 
   const orders = await prisma.order.findMany({
     where: { userId },

@@ -6,6 +6,7 @@ import { auth } from '@/lib/nextAuth'
 import { CheckoutError, priceCart, pricePlan, type PricedLine } from './pricing'
 import { signGuestOrderToken } from './guestToken'
 import { ORDER_STATUS, DEFAULT_SUBSCRIPTION_TYPE, type PaymentMethod } from './constants'
+import { expireStalePendingOrders } from './expiry'
 
 type ShippingInfo = {
   firstName: string
@@ -53,6 +54,9 @@ export async function prepareCheckout(
   body: { type?: unknown; items?: unknown; planId?: unknown; shippingInfo?: unknown },
   method: PaymentMethod
 ): Promise<PreparedCheckout> {
+  // Limpieza perezosa de órdenes abandonadas antes de crear una nueva
+  await expireStalePendingOrders()
+
   const session = await auth()
   const parsedUserId = session?.user?.id ? Number.parseInt(session.user.id, 10) : NaN
   const userId = Number.isInteger(parsedUserId) ? parsedUserId : null

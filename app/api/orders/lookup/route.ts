@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/nextAuth';
 import { prisma } from '@/lib/prisma';
 import { isVerifiedAdmin } from '@/lib/adminAccess';
+import { expireStalePendingOrders } from '@/lib/orders/expiry';
 import { canViewOrder, toOrderView } from '@/lib/orders/lookup';
 
 /**
@@ -41,6 +42,8 @@ export async function GET(request: Request) {
     } else {
       where = { paymentId: paymentId! };
     }
+
+    await expireStalePendingOrders();
 
     const order = await prisma.order.findFirst({
       where,
