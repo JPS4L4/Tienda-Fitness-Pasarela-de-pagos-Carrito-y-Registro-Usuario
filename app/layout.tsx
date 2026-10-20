@@ -49,13 +49,11 @@ export const metadata: Metadata = {
     siteName: BRAND_NAME,
     title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
     description: BRAND_DESCRIPTION,
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: BRAND_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: `${BRAND_NAME} | ${BRAND_TAGLINE}`,
     description: BRAND_DESCRIPTION,
-    images: ["/og.jpg"],
   },
 };
 

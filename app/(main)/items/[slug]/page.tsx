@@ -45,7 +45,7 @@ const ItemDetailPage = async ({ params }: { params: Promise<{ slug: string }> })
           {/* Imagen: proporción fija 1:1 (igual que la card) */}
           <div className="media group aspect-square border border-line">
             <SafeImage
-              src={item.image || '/placeholder-product.jpg'}
+              src={item.image || '/placeholder-product.svg'}
               alt={item.title}
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               priority

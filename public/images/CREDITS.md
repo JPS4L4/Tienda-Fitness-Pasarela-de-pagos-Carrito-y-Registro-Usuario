@@ -41,4 +41,4 @@ Photographs in this folder come from Wikimedia Commons (license shown per file; 
 
 `plans/entrenamiento.webp`, `plans/fuerza.webp` and `plans/hogar.webp` are crops of `hero/transforma`, `hero/fuerza` and `hero/ofertas` (same authors and licenses as listed above). Photos in `products/` and `plans/` were selected to match each product or plan; hero and offer photos are shown with a uniform contrast/saturation treatment applied in CSS.
 
-`placeholder-product.jpg` and `og.jpg` are generated for this project (no third-party material besides the hero photo used as OG background).
+`placeholder-product.svg` is drawn for this project. The Open Graph image is generated at runtime by `app/opengraph-image.tsx` (no raster file). `app/fonts/Anton-Regular.ttf` is the Anton typeface by Vernon Adams, [SIL Open Font License 1.1](https://openfontlicense.org), used only to render that image.

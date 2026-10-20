@@ -71,7 +71,7 @@ const ItemCard = ({
       <div className="media aspect-square">
         <Link href={`/items/${slug}`} aria-label={`Ver ${title}`} className="absolute inset-0 block">
           <SafeImage
-            src={image || "/placeholder-product.jpg"}
+            src={image || "/placeholder-product.svg"}
             alt={title}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 50vw"
