@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { validateCatalogMoney } from '@/lib/catalogValidation'
 
 export async function GET(
   _request: NextRequest,
@@ -37,14 +38,19 @@ export async function PUT(
     const { planId } = await params
     const body = await request.json()
 
+    const money = validateCatalogMoney(body, { partial: true, kind: 'plan' })
+    if (!money.ok) {
+      return NextResponse.json({ error: money.error }, { status: 400 })
+    }
+
     const plan = await prisma.plan.update({
       where: { id: Number(planId) },
       data: {
         type: body.type,
         title: body.title,
         slug: body.slug,
-        price: body.price !== undefined ? Number(body.price) : undefined,
-        currency: body.currency,
+        price: money.value.price,
+        discount: money.value.discount,
         tags: body.tags,
         coverage: body.coverage,
         image: body.image,

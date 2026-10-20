@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { validateCatalogMoney } from '@/lib/catalogValidation'
 
 export async function GET(
   _request: NextRequest,
@@ -37,24 +38,48 @@ export async function PUT(
     const { itemId } = await params
     const body = await request.json()
 
+    const money = validateCatalogMoney(body, { partial: true, kind: 'item' })
+    if (!money.ok) {
+      return NextResponse.json({ error: money.error }, { status: 400 })
+    }
+
+    // El precio original debe seguir siendo mayor que el precio vigente aunque solo cambie uno de los dos
+    if (money.value.price !== undefined || money.value.originalPrice !== undefined) {
+      const current = await prisma.item.findUnique({
+        where: { id: Number(itemId) },
+        select: { price: true, originalPrice: true },
+      })
+      if (!current) {
+        return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 })
+      }
+      const price = money.value.price ?? current.price
+      const originalPrice =
+        money.value.originalPrice !== undefined ? money.value.originalPrice : current.originalPrice
+      if (originalPrice !== null && originalPrice <= price) {
+        return NextResponse.json(
+          { error: 'El precio original debe ser mayor que el precio actual.' },
+          { status: 400 }
+        )
+      }
+    }
+
     const item = await prisma.item.update({
       where: { id: Number(itemId) },
       data: {
         title: body.title,
         slug: body.slug,
-        price: body.price !== undefined ? Number(body.price) : undefined,
-        currency: body.currency,
+        price: money.value.price,
         category: body.category,
-        stock: body.stock !== undefined ? Number(body.stock) : undefined,
+        stock: money.value.stock,
         images: body.images,
         tags: body.tags,
         description: body.description,
         shortDescription: body.shortDescription,
         freeShipping: body.freeShipping,
         isOfferOfTheDay: body.isOfferOfTheDay,
-        discount: body.discount,
-        originalPrice: body.originalPrice,
-        installments: body.installments,
+        discount: money.value.discount,
+        originalPrice: money.value.originalPrice,
+        installments: money.value.installments,
       },
     })
 

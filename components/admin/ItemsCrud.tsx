@@ -1,6 +1,13 @@
 'use client'
 
-import { formatPrice } from '@/lib/money'
+import { formatPrice, MAX_DISCOUNT } from '@/lib/money'
+import {
+  CATALOG_CURRENCY,
+  MAX_INSTALLMENTS,
+  MAX_STOCK,
+  MIN_CATALOG_PRICE,
+  validateCatalogMoney,
+} from '@/lib/catalogValidation'
 
 import { useEffect, useMemo, useState } from 'react'
 
@@ -28,6 +35,9 @@ type ItemRow = {
   title: string
   slug: string
   price: number
+  discount: number | null
+  originalPrice: number | null
+  installments: number | null
   currency: string
   category: string
   stock: number
@@ -157,22 +167,29 @@ export default function ItemsCrud() {
     setError(null)
 
     try {
+      // Mismas reglas que el servidor: se informa el error antes de enviar
+      const money = validateCatalogMoney(form, { kind: 'item' })
+      if (!money.ok) {
+        setError(money.error)
+        return
+      }
+
       const payload = {
         title: form.title.trim(),
         slug: form.slug.trim() || slugify(form.title),
-        price: Number(form.price),
-        currency: form.currency.trim() || 'COP',
+        price: money.value.price,
+        currency: CATALOG_CURRENCY,
         category: form.category.trim(),
-        stock: Number(form.stock),
+        stock: money.value.stock,
         images: uploadedImages.length > 0 ? uploadedImages : parseArray(form.images),
         tags: parseArray(form.tags),
         description: form.description.trim() || null,
         shortDescription: form.shortDescription.trim() || null,
         freeShipping: form.freeShipping,
         isOfferOfTheDay: form.isOfferOfTheDay,
-        discount: form.discount ? Number(form.discount) : null,
-        originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
-        installments: form.installments ? Number(form.installments) : null,
+        discount: money.value.discount,
+        originalPrice: money.value.originalPrice,
+        installments: money.value.installments,
       }
 
       const url = mode === 'create'
@@ -213,6 +230,9 @@ export default function ItemsCrud() {
       currency: item.currency,
       category: item.category,
       stock: String(item.stock),
+      discount: item.discount ? String(item.discount) : '',
+      originalPrice: item.originalPrice ? String(item.originalPrice) : '',
+      installments: item.installments ? String(item.installments) : '',
     }))
   }
 
@@ -356,6 +376,8 @@ export default function ItemsCrud() {
               Precio
               <input
                 type="number"
+                min={MIN_CATALOG_PRICE}
+                step={100}
                 value={form.price}
                 onChange={(event) => handleChange('price', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
@@ -365,8 +387,8 @@ export default function ItemsCrud() {
             <label className="text-sm font-medium text-fg-soft">
               Moneda
               <input
-                value={form.currency}
-                onChange={(event) => handleChange('currency', event.target.value)}
+                value={CATALOG_CURRENCY}
+                readOnly
                 className="input mt-2 !min-h-10 text-sm"
               />
             </label>
@@ -383,6 +405,9 @@ export default function ItemsCrud() {
               Stock
               <input
                 type="number"
+                min={0}
+                max={MAX_STOCK}
+                step={1}
                 value={form.stock}
                 onChange={(event) => handleChange('stock', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
@@ -461,6 +486,8 @@ export default function ItemsCrud() {
               Precio original
               <input
                 type="number"
+                min={MIN_CATALOG_PRICE}
+                step={100}
                 value={form.originalPrice}
                 onChange={(event) => handleChange('originalPrice', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
@@ -470,6 +497,9 @@ export default function ItemsCrud() {
               Descuento (%)
               <input
                 type="number"
+                min={0}
+                max={MAX_DISCOUNT}
+                step={1}
                 value={form.discount}
                 onChange={(event) => handleChange('discount', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
@@ -479,6 +509,9 @@ export default function ItemsCrud() {
               Cuotas
               <input
                 type="number"
+                min={1}
+                max={MAX_INSTALLMENTS}
+                step={1}
                 value={form.installments}
                 onChange={(event) => handleChange('installments', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"

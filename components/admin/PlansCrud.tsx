@@ -1,6 +1,7 @@
 'use client'
 
-import { formatPrice } from '@/lib/money'
+import { formatPrice, MAX_DISCOUNT } from '@/lib/money'
+import { CATALOG_CURRENCY, MIN_CATALOG_PRICE, validateCatalogMoney } from '@/lib/catalogValidation'
 
 import { useEffect, useMemo, useState } from 'react'
 
@@ -10,6 +11,7 @@ type PlanFormState = {
   title: string
   slug: string
   price: string
+  discount: string
   currency: string
   tags: string
   coverage: string
@@ -24,6 +26,7 @@ type PlanRow = {
   title: string
   slug: string
   price: number
+  discount: number | null
   currency: string
   createdAt: string
   updatedAt: string
@@ -44,6 +47,7 @@ const emptyForm: PlanFormState = {
   title: '',
   slug: '',
   price: '',
+  discount: '',
   currency: 'COP',
   tags: '',
   coverage: '',
@@ -132,12 +136,20 @@ export default function PlansCrud() {
     setError(null)
 
     try {
+      // Mismas reglas que el servidor: se informa el error antes de enviar
+      const money = validateCatalogMoney(form, { kind: 'plan' })
+      if (!money.ok) {
+        setError(money.error)
+        return
+      }
+
       const payload = {
         type: form.type.trim(),
         title: form.title.trim(),
         slug: form.slug.trim() || slugify(form.title),
-        price: Number(form.price),
-        currency: form.currency.trim() || 'COP',
+        price: money.value.price,
+        discount: money.value.discount,
+        currency: CATALOG_CURRENCY,
         tags: parseArray(form.tags),
         coverage: parseArray(form.coverage),
         image: uploadedImage || form.image.trim() || null,
@@ -181,6 +193,7 @@ export default function PlansCrud() {
       title: plan.title,
       slug: plan.slug,
       price: String(plan.price),
+      discount: plan.discount ? String(plan.discount) : '',
       currency: plan.currency,
     }))
   }
@@ -336,6 +349,8 @@ export default function PlansCrud() {
               Precio
               <input
                 type="number"
+                min={MIN_CATALOG_PRICE}
+                step={100}
                 value={form.price}
                 onChange={(event) => handleChange('price', event.target.value)}
                 className="input mt-2 !min-h-10 text-sm"
@@ -343,10 +358,22 @@ export default function PlansCrud() {
               />
             </label>
             <label className="text-sm font-medium text-fg-soft">
+              Descuento (%)
+              <input
+                type="number"
+                min={0}
+                max={MAX_DISCOUNT}
+                step={1}
+                value={form.discount}
+                onChange={(event) => handleChange('discount', event.target.value)}
+                className="input mt-2 !min-h-10 text-sm"
+              />
+            </label>
+            <label className="text-sm font-medium text-fg-soft">
               Moneda
               <input
-                value={form.currency}
-                onChange={(event) => handleChange('currency', event.target.value)}
+                value={CATALOG_CURRENCY}
+                readOnly
                 className="input mt-2 !min-h-10 text-sm"
               />
             </label>

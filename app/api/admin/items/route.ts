@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { validateCatalogMoney } from '@/lib/catalogValidation'
 
 export async function GET() {
   try {
@@ -14,6 +15,9 @@ export async function GET() {
         title: true,
         slug: true,
         price: true,
+        discount: true,
+        originalPrice: true,
+        installments: true,
         currency: true,
         category: true,
         stock: true,
@@ -35,29 +39,34 @@ export async function POST(request: NextRequest) {
     if (authResult) return authResult
 
     const body = await request.json()
-    const { title, slug, price, currency, category } = body
+    const { title, slug, price, category } = body
 
     if (!title || !slug || price === undefined || !category) {
       return NextResponse.json({ error: 'Campos requeridos faltantes.' }, { status: 400 })
+    }
+
+    const money = validateCatalogMoney(body, { kind: 'item' })
+    if (!money.ok) {
+      return NextResponse.json({ error: money.error }, { status: 400 })
     }
 
     const item = await prisma.item.create({
       data: {
         title,
         slug,
-        price: Number(price),
-        currency: currency || 'COP',
+        price: money.value.price!,
+        currency: money.value.currency!,
         category,
-        stock: Number(body.stock ?? 0),
+        stock: money.value.stock!,
         images: body.images ?? [],
         tags: body.tags ?? [],
         description: body.description ?? null,
         shortDescription: body.shortDescription ?? null,
         freeShipping: body.freeShipping ?? false,
         isOfferOfTheDay: body.isOfferOfTheDay ?? false,
-        discount: body.discount ?? null,
-        originalPrice: body.originalPrice ?? null,
-        installments: body.installments ?? null,
+        discount: money.value.discount ?? null,
+        originalPrice: money.value.originalPrice ?? null,
+        installments: money.value.installments ?? null,
       },
     })
 

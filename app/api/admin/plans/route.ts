@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/requireAdmin'
+import { validateCatalogMoney } from '@/lib/catalogValidation'
 
 export async function GET() {
   try {
@@ -15,6 +16,7 @@ export async function GET() {
         title: true,
         slug: true,
         price: true,
+        discount: true,
         currency: true,
         createdAt: true,
         updatedAt: true,
@@ -40,13 +42,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Campos requeridos faltantes.' }, { status: 400 })
     }
 
+    const money = validateCatalogMoney(body, { kind: 'plan' })
+    if (!money.ok) {
+      return NextResponse.json({ error: money.error }, { status: 400 })
+    }
+
     const plan = await prisma.plan.create({
       data: {
         type,
         title,
         slug,
-        price: Number(price),
-        currency: body.currency || 'COP',
+        price: money.value.price!,
+        discount: money.value.discount ?? null,
+        currency: money.value.currency!,
         tags: body.tags ?? [],
         coverage: body.coverage ?? [],
         image: body.image ?? null,
